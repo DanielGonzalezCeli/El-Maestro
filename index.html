@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>El Maestro — Profesionales para tu hogar</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --azul:       #1B3F6E;
+    --azul-medio: #2A5FA5;
+    --azul-claro: #EAF1FB;
+    --azul-suave: #C4D9F2;
+    --naranja:    #F47B20;
+    --blanco:     #FFFFFF;
+    --fondo:      #F5F7FA;
+    --texto:      #111827;
+    --suave:      #4B5563;
+    --tenue:      #9CA3AF;
+    --borde:      #E5E9F0;
+    --error:      #DC2626;
+    --error-bg:   #FEF2F2;
+    --exito:      #16A34A;
+    --exito-bg:   #F0FDF4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--fondo); color: var(--texto); }
+
+  /* H7 / WCAG Operabilidad — enlace "saltar al contenido" para teclado */
+  .skip-link {
+    position: absolute; top: -100px; left: 16px; z-index: 9999;
+    background: var(--naranja); color: var(--blanco); padding: 10px 18px;
+    border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 16px; }
+
+  /* WCAG Operabilidad — foco visible en todos los elementos interactivos (H7) */
+  :focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--azul); padding: 0 48px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--blanco); }
+  .logo span { color: var(--naranja); }
+  .nav-links { list-style: none; display: flex; gap: 6px; font-size: 14px; }
+  .nav-links a {
+    text-decoration: none; color: var(--blanco); font-weight: 600;
+    padding: 8px 16px; border-radius: 8px; display: block;
+  }
+  .nav-links a:hover { background: rgba(255,255,255,0.15); }
+  /* H4 Consistencia — misma clase .activo en nav y tabs */
+  .nav-links a.activo { background: var(--naranja); }
+  .nav-acc { display: flex; gap: 10px; }
+  .btn-ghost {
+    padding: 8px 18px; border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: 8px; background: transparent; font-size: 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif; color: var(--blanco); font-weight: 600; cursor: pointer;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-naranja {
+    padding: 8px 18px; border: none; border-radius: 8px;
+    background: var(--naranja); color: var(--blanco); font-size: 13px;
+    font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+  }
+  .btn-naranja:hover { background: #d96a14; }
+
+  /* HERO */
+  .hero { background: var(--azul); display: flex; align-items: stretch; min-height: 420px; overflow: hidden; }
+  .hero-left-panel { flex: 1; padding: 64px 48px; display: flex; align-items: center; }
+  .hero-right-panel { flex: 0 0 45%; position: relative; overflow: hidden; }
+  .hero-right-panel img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; opacity: 0.9; }
+  .hero-right-panel::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to right, var(--azul) 0%, transparent 35%); }
+  .hero-content { max-width: 520px; }
+  .hero-chip {
+    display: inline-block; background: rgba(244,123,32,0.20); border: 1px solid rgba(244,123,32,0.45);
+    color: #FDBA74; font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 20px; margin-bottom: 18px;
+  }
+  .hero h1 { font-family: 'Sora', sans-serif; font-size: 40px; color: var(--blanco); line-height: 1.15; margin-bottom: 12px; }
+  .hero h1 span { color: #FDBA74; }
+  .hero-sub { font-size: 15px; color: #B8D0EA; line-height: 1.7; margin-bottom: 30px; }
+
+  /* H5 Prevención de errores — buscador con hint visible de qué ingresar */
+  .buscador {
+    display: flex; align-items: center; background: var(--blanco); border-radius: 10px;
+    overflow: hidden; border: 2px solid var(--naranja); max-width: 440px;
+  }
+  .buscador input { flex: 1; padding: 12px 14px; border: none; outline: none; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); }
+  .buscador input::placeholder { color: var(--tenue); }
+  .buscador button {
+    padding: 12px 20px; background: var(--naranja); border: none;
+    color: var(--blanco); font-size: 13px; font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+  }
+  .buscador button:hover { background: #d96a14; }
+  .hero-stats { display: flex; gap: 28px; margin-top: 28px; align-items: center; }
+  .stat-num { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--blanco); }
+  .stat-lbl { font-size: 11px; color: #93B8E0; margin-top: 2px; }
+  .stat-div { width: 1px; height: 30px; background: rgba(255,255,255,0.2); }
+
+  /* SECCIONES */
+  .seccion { padding: 44px 48px 0; }
+  .sec-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+  .sec-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); }
+  .ver-todos { font-size: 13px; color: var(--naranja); font-weight: 600; text-decoration: none; }
+
+  /* SERVICIOS */
+  .servicios-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 44px; }
+  /* H6 Reconocimiento — icono + etiqueta siempre visibles, nunca solo icono */
+  .serv-card {
+    background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px;
+    padding: 18px 8px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .serv-card:hover, .serv-card:focus { border-color: var(--azul-medio); background: var(--azul-claro); outline: none; }
+  .serv-card:focus-visible { outline: 3px solid var(--naranja); outline-offset: 2px; }
+  .serv-ico { font-size: 30px; color: var(--azul); margin-bottom: 10px; display: block; transition: color 0.2s; }
+  .serv-card:hover .serv-ico, .serv-card:focus .serv-ico { color: var(--naranja); }
+  .serv-lbl { font-size: 13px; color: var(--suave); font-weight: 500; }
+
+  /* H8 Diseño minimalista — tooltip simple solo cuando no es obvio */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip-wrap .tooltip {
+    visibility: hidden; opacity: 0; pointer-events: none;
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: var(--texto); color: var(--blanco); font-size: 11px; white-space: nowrap;
+    padding: 5px 10px; border-radius: 6px; transition: opacity 0.2s; z-index: 50;
+  }
+  .tooltip-wrap .tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--texto);
+  }
+  .tooltip-wrap:hover .tooltip,
+  .tooltip-wrap:focus-within .tooltip { visibility: visible; opacity: 1; }
+
+  /* PROFESIONALES */
+  .pros-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 44px; }
+  .pro-card {
+    background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px;
+    padding: 22px; cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .pro-card:hover, .pro-card:focus { border-color: var(--azul-suave); box-shadow: 0 4px 16px rgba(27,63,110,0.08); outline: none; }
+  .pro-card:focus-visible { outline: 3px solid var(--naranja); outline-offset: 2px; }
+
+  /* H6 — verificado inline junto al nombre, sin ocupar protagonismo */
+  .pro-top { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .pro-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+  .pro-nombre-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pro-nombre { font-size: 15px; font-weight: 600; }
+  /* Verificado: sutil, acompañando el nombre */
+  .pro-verificado { background: var(--azul-claro); color: var(--azul-medio); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .pro-oficio { font-size: 13px; color: var(--suave); margin-top: 2px; }
+
+  /* Disponibilidad: protagonismo visual propio, debajo del nombre */
+  .pro-disp-wrap { margin-bottom: 12px; }
+  .badge-hoy {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #DCFCE7; color: #166534;
+    font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid #86EFAC;
+  }
+  .badge-semana {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #FEF9C3; color: #854D0E;
+    font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid #FDE047;
+  }
+
+  .pro-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .estrellas { color: var(--naranja); font-size: 13px; }
+  .rating-num { font-size: 13px; font-weight: 600; }
+  .rating-count { font-size: 13px; color: var(--tenue); }
+  .pro-meta { display: flex; gap: 14px; font-size: 13px; color: var(--suave); border-top: 1px solid var(--borde); padding-top: 12px; align-items: center; flex-wrap: wrap; margin-top: auto; }
+  /* H4 Consistencia — btn-ver mismo estilo en todas las cards */
+  .btn-ver { margin-top: 14px; width: 100%; padding: 10px; border: 1px solid var(--azul-suave); border-radius: 8px; background: var(--azul-claro); color: var(--azul-medio); font-size: 13px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn-ver:hover { background: var(--azul-suave); border-color: var(--azul-medio); }
+
+  /* FOOTER */
+  footer { background: var(--azul); padding: 24px 48px; margin-top: 44px; text-align: center; }
+  .footer-copy { font-size: 13px; color: #93B8E0; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 999;
+    background: rgba(10,25,50,0.65);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.abierto { display: flex; }
+  .modal {
+    background: var(--blanco); border-radius: 16px;
+    width: 100%; max-width: 440px; padding: 36px;
+    position: relative; margin: 20px;
+  }
+  /* H3 Control y libertad — botón de cierre siempre visible y con label */
+  .modal-cerrar {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--fondo); border: none; border-radius: 8px;
+    width: 32px; height: 32px; font-size: 16px; cursor: pointer;
+    color: var(--suave); display: flex; align-items: center; justify-content: center;
+  }
+  .modal-cerrar:hover { background: var(--borde); }
+
+  /* tabs modal */
+  .tabs { display: flex; border-bottom: 2px solid var(--borde); margin-bottom: 28px; }
+  .tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--tenue); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab.activo { color: var(--azul); border-bottom-color: var(--naranja); }
+
+  .form-panel { display: none; }
+  .form-panel.activo { display: block; }
+  .form-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); margin-bottom: 4px; }
+  .form-sub { font-size: 13px; color: var(--tenue); margin-bottom: 22px; }
+
+  .campo { margin-bottom: 16px; }
+  .campo label { display: block; font-size: 12px; font-weight: 600; color: var(--suave); margin-bottom: 5px; }
+  /* H10 Ayuda — texto de ayuda bajo campos con instrucción concreta */
+  .campo-ayuda { font-size: 11px; color: var(--tenue); margin-top: 4px; }
+  .input-wrap { position: relative; }
+  .input-wrap i.ico-campo { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; }
+  .input-wrap input {
+    width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid var(--borde);
+    border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s;
+  }
+  .input-wrap input:focus { border-color: var(--azul-medio); background: var(--blanco); }
+  .input-wrap input.campo-error-input { border-color: var(--error); background: var(--error-bg); }
+  .input-wrap input.campo-ok { border-color: var(--exito); }
+  .ojo { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; cursor: pointer; }
+  .campo-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* H9 — mensajes de error descriptivos (texto ya indicado en cada error) */
+  .msg-error { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+  .msg-error.visible { display: block; }
+
+  .extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 12px; }
+  .recordar { display: flex; align-items: center; gap: 6px; color: var(--suave); cursor: pointer; }
+  .recordar input { accent-color: var(--azul); }
+  .link-olvide { color: var(--azul-medio); text-decoration: none; font-weight: 600; }
+  .link-olvide:hover { color: var(--naranja); }
+
+  /* H4 Consistencia — btn-submit igual en login y registro */
+  .btn-submit {
+    width: 100%; padding: 12px; background: var(--azul); border: none; border-radius: 8px;
+    color: var(--blanco); font-size: 14px; font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-bottom: 16px; transition: background 0.2s;
+  }
+  .btn-submit:hover { background: var(--azul-medio); }
+
+  .cambiar { text-align: center; font-size: 12px; color: var(--tenue); }
+  .cambiar a { color: var(--azul-medio); font-weight: 600; text-decoration: none; cursor: pointer; }
+  .cambiar a:hover { color: var(--naranja); }
+
+  /* H1 parcial — alerta con ícono + texto claro (feedback inmediato) */
+  .alerta-modal { display: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; margin-bottom: 16px; align-items: center; gap: 8px; }
+  .alerta-modal.exito { background: var(--exito-bg); color: var(--exito); border: 1px solid #BBF7D0; display: flex; }
+  .alerta-modal.err { background: var(--error-bg); color: var(--error); border: 1px solid #FECACA; display: flex; }
+
+  .terminos { font-size: 11px; color: var(--tenue); text-align: center; margin-top: 12px; line-height: 1.6; }
+  .terminos a { color: var(--azul-medio); text-decoration: none; }
+
+  /* Indicador de fortaleza de contraseña — H5 Prevención de errores */
+  .fortaleza { margin-top: 6px; }
+  .fortaleza-barras { display: flex; gap: 4px; margin-bottom: 3px; }
+  .barra { flex: 1; height: 3px; border-radius: 2px; background: var(--borde); transition: background 0.3s; }
+  .barra.debil { background: var(--error); }
+  .barra.media { background: #F59E0B; }
+  .barra.fuerte { background: var(--exito); }
+  .fortaleza-txt { font-size: 11px; color: var(--tenue); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    nav { padding: 0 12px; height: auto; min-height: 56px; flex-wrap: wrap; align-items: center; }
+    .logo { height: 56px; display: flex; align-items: center; flex: 1; }
+    .nav-acc { gap: 6px; }
+    .btn-ghost { padding: 6px 10px; font-size: 12px; }
+    .btn-naranja { padding: 6px 10px; font-size: 12px; }
+    .nav-links {
+      order: 10; width: 100%; gap: 2px;
+      padding: 4px 0 8px; border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .nav-links a { padding: 7px 10px; font-size: 13px; }
+
+    .hero { flex-direction: column; min-height: auto; }
+    .hero-right-panel { display: none; }
+    .hero-left-panel { padding: 32px 20px; }
+    .hero h1 { font-size: 28px; }
+    .buscador { max-width: 100%; }
+    .hero-stats { gap: 16px; }
+
+    .seccion { padding: 28px 16px 0; }
+    .servicios-grid { grid-template-columns: repeat(4, 1fr); }
+    .pros-grid { grid-template-columns: 1fr; }
+    footer { padding: 20px 16px; }
+  }
+
+  @media (max-width: 420px) {
+    .hero h1 { font-size: 22px; }
+    .hero-stats { flex-wrap: wrap; gap: 10px; }
+    .stat-div { display: none; }
+    .serv-lbl { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- H7 / WCAG Operabilidad — saltar navegación con teclado -->
+<a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
+<!-- NAV — aria-label identifica la región para lectores de pantalla (WCAG Robustez) -->
+<nav aria-label="Navegación principal">
+  <div class="logo" aria-label="El Maestro — inicio">El <span>Maestro</span></div>
+  <ul class="nav-links" role="list">
+    <!-- H4 Consistencia + WCAG — aria-current indica página activa -->
+    <li><a href="#" class="activo" aria-current="page">Inicio</a></li>
+    <li><a href="resultados.html">Servicios</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <div class="nav-acc">
+    <!-- H2 Lenguaje del usuario — texto en primera persona, familiar -->
+    <button class="btn-ghost" onclick="abrirModal('login')" aria-haspopup="dialog">Iniciar sesión</button>
+    <button class="btn-naranja" onclick="abrirModal('registro')" aria-haspopup="dialog">Registrarme</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<!-- id="contenido-principal" para el skip-link y role="main" para semántica WCAG -->
+<main id="contenido-principal">
+<section class="hero" aria-label="Presentación del servicio">
+  <div class="hero-left-panel">
+    <div class="hero-content">
+      <!-- H2 Correspondencia con el mundo real — ubicación física visible -->
+      <div class="hero-chip" aria-label="Servicio disponible en Quito, Ecuador">📍 Quito, Ecuador</div>
+      <h1>Profesionales de <span>confianza</span><br>para tu hogar</h1>
+      <p class="hero-sub">Encuentra electricistas, plomeros, cerrajeros y más.<br>Con calificaciones reales de personas como tú.</p>
+
+      <!-- H5 Prevención de errores — role="search" + aria-label describe el propósito -->
+      <div class="buscador" role="search" aria-label="Buscar profesionales por servicio">
+        <input
+          type="search"
+          id="busqueda-hero"
+          placeholder="Ej: electricista, plomero, pintor…"
+          aria-label="Ingresa el servicio que necesitas"
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') irAResultados()"
+        />
+        <button onclick="irAResultados()" aria-label="Buscar profesional">Buscar</button>
+      </div>
+
+      <!-- H6 Reconocimiento — estadísticas visibles refuerzan credibilidad sin requerir memoria -->
+      <div class="hero-stats" aria-label="Estadísticas de la plataforma">
+        <div><div class="stat-num" aria-label="Más de 320 profesionales registrados">+320</div><div class="stat-lbl">Profesionales</div></div>
+        <div class="stat-div" aria-hidden="true"></div>
+        <div><div class="stat-num" aria-label="Más de 1800 servicios realizados">+1.800</div><div class="stat-lbl">Servicios realizados</div></div>
+        <div class="stat-div" aria-hidden="true"></div>
+        <div><div class="stat-num" aria-label="Calificación promedio de 4.7 sobre 5">4.7 ★</div><div class="stat-lbl">Calificación promedio</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right-panel">
+    <!-- WCAG Perceptibilidad — alt descriptivo para lectores de pantalla -->
+    <img
+      src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=900&q=85&fit=crop&crop=center"
+      alt="Electricista profesional con casco y herramientas trabajando en un panel eléctrico"
+      onerror="this.parentElement.style.background='#163356';"
+    />
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<!-- H6 Reconocimiento — cada categoría tiene icono + texto, nunca icono solo -->
+<section class="seccion" aria-labelledby="titulo-servicios">
+  <div class="sec-header">
+    <h2 class="sec-titulo" id="titulo-servicios">Servicios disponibles</h2>
+    <a class="ver-todos" href="resultados.html" aria-label="Ver todos los servicios disponibles">Ver todos →</a>
+  </div>
+  <div class="servicios-grid" role="list" aria-label="Categorías de servicios">
+    <!-- H7 Eficiencia — tabindex="0" permite navegar con teclado; Enter activa la tarjeta -->
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Electricista')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Electricista')}"
+         aria-label="Buscar electricistas">
+      <i class="fa-solid fa-bolt serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Electricista</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Plomero')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Plomero')}"
+         aria-label="Buscar plomeros">
+      <i class="fa-solid fa-faucet serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Plomero</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Cerrajero')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Cerrajero')}"
+         aria-label="Buscar cerrajeros">
+      <i class="fa-solid fa-lock serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Cerrajero</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Pintor')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Pintor')}"
+         aria-label="Buscar pintores">
+      <i class="fa-solid fa-paint-roller serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Pintor</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Aire acondicionado')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Aire acondicionado')}"
+         aria-label="Buscar técnicos de aire acondicionado">
+      <i class="fa-solid fa-wind serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Aire acond.</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Carpintero')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Carpintero')}"
+         aria-label="Buscar carpinteros">
+      <i class="fa-solid fa-hammer serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Carpintero</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Limpieza')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Limpieza')}"
+         aria-label="Buscar servicios de limpieza">
+      <i class="fa-solid fa-broom serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Limpieza</div>
+    </div>
+    <div class="serv-card" role="listitem" tabindex="0"
+         onclick="irAResultados('Mudanzas')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irAResultados('Mudanzas')}"
+         aria-label="Buscar servicios de mudanzas">
+      <i class="fa-solid fa-truck-moving serv-ico" aria-hidden="true"></i>
+      <div class="serv-lbl">Mudanzas</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFESIONALES -->
+<section class="seccion" aria-labelledby="titulo-profesionales">
+  <div class="sec-header">
+    <h2 class="sec-titulo" id="titulo-profesionales">Profesionales mejor calificados</h2>
+    <a class="ver-todos" href="resultados.html" aria-label="Ver todos los profesionales disponibles">Ver todos →</a>
+  </div>
+  <div class="pros-grid" role="list" aria-label="Lista de profesionales destacados">
+
+    <article class="pro-card" role="listitem" tabindex="0"
+             onclick="window.location.href='perfil.html'"
+             onkeydown="if(event.key==='Enter') window.location.href='perfil.html'"
+             aria-label="Ver perfil de José Ramírez, Electricista, calificación 4.9">
+      <div class="pro-top">
+        <div class="pro-avatar" aria-hidden="true">JR</div>
+        <div>
+          <div class="pro-nombre-row">
+            <span class="pro-nombre">José Ramírez</span>
+            <div class="tooltip-wrap">
+              <span class="pro-verificado" aria-label="Profesional verificado por El Maestro">✔ Verificado</span>
+              <span class="tooltip" role="tooltip">Identidad y certificaciones comprobadas</span>
+            </div>
+          </div>
+          <div class="pro-oficio">Electricista</div>
+        </div>
+      </div>
+      <!-- Disponibilidad con protagonismo visual propio -->
+      <div class="pro-disp-wrap">
+        <span class="badge-hoy" aria-label="Disponible para trabajar hoy">
+          <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Disponible hoy
+        </span>
+      </div>
+      <div class="pro-rating" aria-label="Calificación: 4.9 de 5, basada en 87 reseñas">
+        <span class="estrellas" aria-hidden="true">★★★★★</span>
+        <span class="rating-num">4.9</span>
+        <span class="rating-count">· 87 reseñas</span>
+      </div>
+      <div class="pro-meta">
+        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Norte</span>
+      </div>
+      <button class="btn-ver" aria-label="Ver perfil y contactar a José Ramírez">Ver perfil y contactar</button>
+    </article>
+
+    <article class="pro-card" role="listitem" tabindex="0"
+             onclick="window.location.href='perfil.html'"
+             onkeydown="if(event.key==='Enter') window.location.href='perfil.html'"
+             aria-label="Ver perfil de Mario Pinto, Plomero, calificación 4.6">
+      <div class="pro-top">
+        <div class="pro-avatar" aria-hidden="true">MP</div>
+        <div>
+          <div class="pro-nombre-row">
+            <span class="pro-nombre">Mario Pinto</span>
+            <div class="tooltip-wrap">
+              <span class="pro-verificado" aria-label="Profesional verificado por El Maestro">✔ Verificado</span>
+              <span class="tooltip" role="tooltip">Identidad y certificaciones comprobadas</span>
+            </div>
+          </div>
+          <div class="pro-oficio">Plomero</div>
+        </div>
+      </div>
+      <div class="pro-disp-wrap">
+        <span class="badge-hoy" aria-label="Disponible para trabajar hoy">
+          <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Disponible hoy
+        </span>
+      </div>
+      <div class="pro-rating" aria-label="Calificación: 4.6 de 5, basada en 54 reseñas">
+        <span class="estrellas" aria-hidden="true">★★★★☆</span>
+        <span class="rating-num">4.6</span>
+        <span class="rating-count">· 54 reseñas</span>
+      </div>
+      <div class="pro-meta">
+        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Centro</span>
+      </div>
+      <button class="btn-ver" aria-label="Ver perfil y contactar a Mario Pinto">Ver perfil y contactar</button>
+    </article>
+
+    <article class="pro-card" role="listitem" tabindex="0"
+             onclick="window.location.href='perfil.html'"
+             onkeydown="if(event.key==='Enter') window.location.href='perfil.html'"
+             aria-label="Ver perfil de Luis Cabrera, Cerrajero, calificación 4.3">
+      <div class="pro-top">
+        <div class="pro-avatar" aria-hidden="true">LC</div>
+        <div>
+          <div class="pro-nombre-row">
+            <span class="pro-nombre">Luis Cabrera</span>
+          </div>
+          <div class="pro-oficio">Cerrajero</div>
+        </div>
+      </div>
+      <div class="pro-disp-wrap">
+        <span class="badge-semana" aria-label="Disponible esta semana">
+          <i class="fa-solid fa-clock" aria-hidden="true"></i> Disponible esta semana
+        </span>
+      </div>
+      <div class="pro-rating" aria-label="Calificación: 4.3 de 5, basada en 31 reseñas">
+        <span class="estrellas" aria-hidden="true">★★★★☆</span>
+        <span class="rating-num">4.3</span>
+        <span class="rating-count">· 31 reseñas</span>
+      </div>
+      <div class="pro-meta">
+        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Sur</span>
+      </div>
+      <button class="btn-ver" aria-label="Ver perfil y contactar a Luis Cabrera">Ver perfil y contactar</button>
+    </article>
+
+  </div>
+</section>
+</main>
+
+<footer role="contentinfo">
+  <div class="footer-copy">© 2026 El Maestro · Hecho con esfuerzo, para el hogar ecuatoriano</div>
+</footer>
+
+<!-- MODAL LOGIN / REGISTRO -->
+<!-- H3 Control y libertad — role="dialog" + aria-modal + ESC para cerrar (en JS) -->
+<div class="modal-overlay" id="modal-overlay"
+     onclick="cerrarModalFuera(event)"
+     role="presentation">
+  <div class="modal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="modal-titulo-activo"
+       id="modal-contenedor">
+    <!-- H3 Control y libertad — X visible siempre, con aria-label claro -->
+    <button class="modal-cerrar" onclick="cerrarModal()" aria-label="Cerrar ventana">✕</button>
+
+    <!-- H4 Consistencia — mismo patrón de tabs que la navegación principal -->
+    <div class="tabs" role="tablist" aria-label="Tipo de acceso">
+      <div class="tab activo" id="tab-login" role="tab" aria-selected="true"  aria-controls="panel-login"   tabindex="0" onclick="cambiarTab('login')"   onkeydown="if(event.key==='Enter') cambiarTab('login')">Iniciar sesión</div>
+      <div class="tab"        id="tab-registro" role="tab" aria-selected="false" aria-controls="panel-registro" tabindex="0" onclick="cambiarTab('registro')" onkeydown="if(event.key==='Enter') cambiarTab('registro')">Crear cuenta</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form-panel activo" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+      <div class="form-titulo" id="modal-titulo-activo">Bienvenido de vuelta</div>
+      <!-- H2 Lenguaje del usuario — mensaje cercano y directo -->
+      <div class="form-sub">Ingresa tus datos para continuar</div>
+      <!-- aria-live="polite" — el lector anuncia errores/éxitos sin interrumpir (WCAG Robustez) -->
+      <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
+      <div class="campo">
+        <label for="login-email">Correo electrónico</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+          <!-- H5 Prevención — autocomplete evita errores de tipeo en email -->
+          <input type="email" id="login-email" placeholder="tucorreo@email.com"
+                 autocomplete="email" aria-required="true" aria-describedby="err-login-email"/>
+        </div>
+        <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido (ej: nombre@dominio.com)</div>
+      </div>
+      <div class="campo">
+        <label for="login-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="login-pass" placeholder="Tu contraseña"
+                 autocomplete="current-password" aria-required="true" aria-describedby="err-login-pass"/>
+          <button type="button" class="ojo" onclick="togglePass('login-pass',this)"
+                  aria-label="Mostrar u ocultar contraseña">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
+      </div>
+      <div class="extras">
+        <label class="recordar">
+          <input type="checkbox" aria-label="Recordar sesión en este dispositivo"/> Recordarme
+        </label>
+        <!-- H3 Control y libertad — salida clara ante olvido de contraseña -->
+        <a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
+      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')" tabindex="0">Regístrate aquí</a></div>
+    </div>
+
+    <!-- REGISTRO -->
+    <div class="form-panel" id="panel-registro" role="tabpanel" aria-labelledby="tab-registro">
+      <div class="form-titulo">Crea tu cuenta</div>
+      <div class="form-sub">Es gratis y solo toma un momento</div>
+      <div class="alerta-modal" id="alerta-registro" role="alert" aria-live="polite"></div>
+      <div class="campo-fila">
+        <div class="campo">
+          <label for="reg-nombre">Nombre</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user ico-campo" aria-hidden="true"></i>
+            <input type="text" id="reg-nombre" placeholder="Tu nombre"
+                   autocomplete="given-name" aria-required="true" aria-describedby="err-reg-nombre"/>
+          </div>
+          <div class="msg-error" id="err-reg-nombre" role="alert">Ingresa tu nombre (mínimo 2 caracteres)</div>
+        </div>
+        <div class="campo">
+          <label for="reg-apellido">Apellido</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user ico-campo" aria-hidden="true"></i>
+            <input type="text" id="reg-apellido" placeholder="Tu apellido"
+                   autocomplete="family-name" aria-required="true" aria-describedby="err-reg-apellido"/>
+          </div>
+          <div class="msg-error" id="err-reg-apellido" role="alert">Ingresa tu apellido (mínimo 2 caracteres)</div>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="reg-email">Correo electrónico</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+          <input type="email" id="reg-email" placeholder="tucorreo@email.com"
+                 autocomplete="email" aria-required="true" aria-describedby="err-reg-email"/>
+        </div>
+        <div class="msg-error" id="err-reg-email" role="alert">Ingresa un correo válido (ej: nombre@dominio.com)</div>
+      </div>
+      <div class="campo">
+        <label for="reg-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="reg-pass" placeholder="Mínimo 8 caracteres"
+                 autocomplete="new-password" aria-required="true"
+                 aria-describedby="fortaleza-txt err-reg-pass"
+                 oninput="checkFortaleza(this.value)"/>
+          <button type="button" class="ojo" onclick="togglePass('reg-pass',this)"
+                  aria-label="Mostrar u ocultar contraseña">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          </button>
+        </div>
+        <!-- H5 Prevención — indicador de fortaleza guía al usuario antes del error -->
+        <div class="fortaleza" id="fortaleza-wrap" style="display:none;" aria-live="polite">
+          <div class="fortaleza-barras" aria-hidden="true">
+            <div class="barra" id="b1"></div>
+            <div class="barra" id="b2"></div>
+            <div class="barra" id="b3"></div>
+            <div class="barra" id="b4"></div>
+          </div>
+          <div class="fortaleza-txt" id="fortaleza-txt"></div>
+        </div>
+        <!-- H10 Ayuda — instrucción concreta antes de que el usuario cometa el error -->
+        <p class="campo-ayuda">Usa al menos 8 caracteres, una mayúscula y un número.</p>
+        <div class="msg-error" id="err-reg-pass" role="alert">La contraseña debe tener mínimo 8 caracteres</div>
+      </div>
+      <div class="campo">
+        <label for="reg-pass2">Confirmar contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="reg-pass2" placeholder="Repite tu contraseña"
+                 autocomplete="new-password" aria-required="true" aria-describedby="err-reg-pass2"/>
+          <button type="button" class="ojo" onclick="togglePass('reg-pass2',this)"
+                  aria-label="Mostrar u ocultar contraseña">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="msg-error" id="err-reg-pass2" role="alert">Las contraseñas no coinciden, verifica e inténtalo de nuevo</div>
+      </div>
+      <button class="btn-submit" onclick="submitRegistro()">Crear mi cuenta</button>
+      <div class="terminos">Al registrarte aceptas nuestros <a href="#">Términos de uso</a> y <a href="#">Política de privacidad</a></div>
+      <div class="cambiar" style="margin-top:12px;">¿Ya tienes cuenta? <a onclick="cambiarTab('login')" tabindex="0">Inicia sesión</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // MODAL
+  function abrirModal(tab) {
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.add('abierto');
+    cambiarTab(tab || 'login');
+    document.body.style.overflow = 'hidden';
+    // H7 Eficiencia — foco automático al primer campo al abrir el modal
+    setTimeout(() => {
+      const primerCampo = document.querySelector('#modal-contenedor input:not([type=checkbox])');
+      if (primerCampo) primerCampo.focus();
+    }, 50);
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal-overlay').classList.remove('abierto');
+    document.body.style.overflow = '';
+  }
+
+  function cerrarModalFuera(e) {
+    if (e.target === document.getElementById('modal-overlay')) cerrarModal();
+  }
+
+  // H3 Control y libertad — ESC cierra el modal (convención universal de "salida de emergencia")
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('abierto')) {
+      cerrarModal();
+    }
+  });
+
+  // TABS — H4 Consistencia: mismo comportamiento que la navegación principal
+  function cambiarTab(tab) {
+    const esLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('activo', esLogin);
+    document.getElementById('tab-login').setAttribute('aria-selected', esLogin);
+    document.getElementById('tab-registro').classList.toggle('activo', !esLogin);
+    document.getElementById('tab-registro').setAttribute('aria-selected', !esLogin);
+    document.getElementById('panel-login').classList.toggle('activo', esLogin);
+    document.getElementById('panel-registro').classList.toggle('activo', !esLogin);
+    // H6 Reconocimiento — el título del modal se actualiza para que el contexto sea siempre claro
+    document.getElementById('modal-titulo-activo').textContent = esLogin ? 'Bienvenido de vuelta' : 'Crea tu cuenta';
+  }
+
+  // OJO CONTRASEÑA
+  function togglePass(id, btn) {
+    const input = document.getElementById(id);
+    const visible = input.type === 'text';
+    input.type = visible ? 'password' : 'text';
+    const ico = btn.querySelector('i') || btn;
+    ico.className = (visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash');
+    btn.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+  }
+
+  // VALIDACIÓN — H9 Recuperación de errores: mensaje específico por campo
+  function marcar(id, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('campo-error-input','campo-ok');
+    el.classList.add(ok ? 'campo-ok' : 'campo-error-input');
+  }
+  function mostrarErr(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('visible', show);
+  }
+  function alerta(id, tipo, msg) {
+    const el = document.getElementById(id);
+    el.className = 'alerta-modal ' + tipo;
+    el.innerHTML = `<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;
+  }
+
+  function submitLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    let ok = true;
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    marcar('login-email', emailOk); mostrarErr('err-login-email', !emailOk);
+    if (!emailOk) ok = false;
+    const passOk = pass.length > 0;
+    marcar('login-pass', passOk); mostrarErr('err-login-pass', !passOk);
+    if (!passOk) ok = false;
+    if (ok) { alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…'); setTimeout(cerrarModal, 1500); }
+    else alerta('alerta-login','err','Corrige los campos marcados antes de continuar.');
+  }
+
+  function submitRegistro() {
+    const nombre   = document.getElementById('reg-nombre').value.trim();
+    const apellido = document.getElementById('reg-apellido').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const pass     = document.getElementById('reg-pass').value;
+    const pass2    = document.getElementById('reg-pass2').value;
+    let ok = true;
+    const nOk = nombre.length > 1;   marcar('reg-nombre',nOk);   mostrarErr('err-reg-nombre',!nOk);   if(!nOk) ok=false;
+    const aOk = apellido.length > 1; marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false;
+    const eOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
+    const pOk = pass.length >= 8;    marcar('reg-pass',pOk);     mostrarErr('err-reg-pass',!pOk);     if(!pOk) ok=false;
+    const p2Ok = pass===pass2 && pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false;
+    if (ok) { alerta('alerta-registro','exito','¡Cuenta creada! Redirigiendo…'); setTimeout(cerrarModal, 1500); }
+    else alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');
+  }
+
+  // H5 Prevención — fortaleza en tiempo real, antes de que el usuario envíe
+  function checkFortaleza(val) {
+    document.getElementById('fortaleza-wrap').style.display = val.length > 0 ? 'block' : 'none';
+    let nivel = 0;
+    if (val.length >= 6) nivel++;
+    if (val.length >= 8) nivel++;
+    if (/[A-Z]/.test(val) && /[0-9]/.test(val)) nivel++;
+    if (/[^A-Za-z0-9]/.test(val)) nivel++;
+    const clases = ['debil','debil','media','fuerte'];
+    const textos = ['','Débil — agrega más caracteres','Aceptable','Fuerte','Muy fuerte'];
+    ['b1','b2','b3','b4'].forEach((b,i) => {
+      document.getElementById(b).className = 'barra' + (i < nivel ? ' ' + clases[nivel-1] : '');
+    });
+    document.getElementById('fortaleza-txt').textContent = textos[nivel] || '';
+  }
+
+  // NAVEGACIÓN A RESULTADOS
+  function irAResultados(servicio) {
+    const q = servicio || document.getElementById('busqueda-hero').value || '';
+    window.location.href = 'resultados.html?q=' + encodeURIComponent(q);
+  }
+</script>
+</body>
+</html>

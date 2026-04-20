@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Contacto — El Maestro</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --azul:       #1B3F6E;
+    --azul-medio: #2A5FA5;
+    --azul-claro: #EAF1FB;
+    --azul-suave: #C4D9F2;
+    --naranja:    #F47B20;
+    --blanco:     #FFFFFF;
+    --fondo:      #F5F7FA;
+    --texto:      #111827;
+    --suave:      #4B5563;
+    --tenue:      #9CA3AF;
+    --borde:      #E5E9F0;
+    --error:      #DC2626;
+    --error-bg:   #FEF2F2;
+    --exito:      #16A34A;
+    --exito-bg:   #F0FDF4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--fondo); color: var(--texto); }
+
+  .skip-link { position: absolute; top: -100px; left: 16px; z-index: 9999; background: var(--naranja); color: var(--blanco); padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; transition: top 0.2s; }
+  .skip-link:focus { top: 16px; }
+  :focus-visible { outline: 3px solid var(--naranja); outline-offset: 3px; border-radius: 4px; }
+
+  /* NAV */
+  nav { background: var(--azul); padding: 0 48px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--blanco); text-decoration: none; }
+  .logo span { color: var(--naranja); }
+  .nav-links { list-style: none; display: flex; gap: 6px; font-size: 14px; }
+  .nav-links a { text-decoration: none; color: var(--blanco); font-weight: 600; padding: 8px 16px; border-radius: 8px; display: block; }
+  .nav-links a:hover { background: rgba(255,255,255,0.15); }
+  .nav-links a.activo { background: var(--naranja); }
+  .nav-acc { display: flex; gap: 10px; }
+  .btn-ghost { padding: 8px 18px; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; background: transparent; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--blanco); font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-naranja { padding: 8px 18px; border: none; border-radius: 8px; background: var(--naranja); color: var(--blanco); font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .btn-naranja:hover { background: #d96a14; }
+
+  /* HERO PEQUEÑO */
+  .page-hero { background: var(--azul); padding: 40px 48px; }
+  .page-hero-inner { max-width: 600px; }
+  .page-hero h1 { font-family: 'Sora', sans-serif; font-size: 28px; color: var(--blanco); margin-bottom: 8px; }
+  .page-hero p { font-size: 14px; color: #B8D0EA; line-height: 1.6; }
+
+  /* BREADCRUMB */
+  .breadcrumb-bar { background: var(--blanco); border-bottom: 1px solid var(--borde); padding: 12px 48px; }
+  .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--tenue); }
+  .breadcrumb a { color: var(--azul-medio); text-decoration: none; font-weight: 500; }
+  .breadcrumb a:hover { color: var(--naranja); }
+
+  /* LAYOUT */
+  .contenido { display: grid; grid-template-columns: 1fr 360px; gap: 28px; padding: 36px 48px 60px; max-width: 1100px; margin: 0 auto; }
+
+  /* FORMULARIO */
+  .form-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; padding: 32px; }
+  .form-card-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); margin-bottom: 6px; }
+  .form-card-sub { font-size: 13px; color: var(--tenue); margin-bottom: 24px; }
+
+  .campo { margin-bottom: 18px; }
+  .campo label { display: block; font-size: 12px; font-weight: 700; color: var(--suave); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .campo input, .campo select, .campo textarea {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--borde);
+    border-radius: 8px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s;
+  }
+  .campo input:focus, .campo select:focus, .campo textarea:focus { border-color: var(--azul-medio); background: var(--blanco); }
+  .campo input.campo-error-input, .campo select.campo-error-input, .campo textarea.campo-error-input { border-color: var(--error); background: var(--error-bg); }
+  .campo input.campo-ok { border-color: var(--exito); }
+  .campo textarea { resize: vertical; min-height: 110px; }
+  .campo-ayuda { font-size: 11px; color: var(--tenue); margin-top: 5px; }
+  .campo-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .msg-error { font-size: 11px; color: var(--error); margin-top: 5px; display: none; }
+  .msg-error.visible { display: block; }
+
+  /* H5 Prevención — caracteres restantes visibles en textarea */
+  .campo-contador { display: flex; justify-content: flex-end; font-size: 11px; color: var(--tenue); margin-top: 4px; }
+
+  .alerta-form { display: none; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; margin-bottom: 18px; align-items: center; gap: 10px; }
+  .alerta-form.exito { background: var(--exito-bg); color: var(--exito); border: 1px solid #BBF7D0; display: flex; }
+  .alerta-form.err { background: var(--error-bg); color: var(--error); border: 1px solid #FECACA; display: flex; }
+
+  /* H4 Consistencia — mismo estilo de botón primario que en todo el sitio */
+  .btn-enviar { width: 100%; padding: 13px; background: var(--azul); border: none; border-radius: 10px; color: var(--blanco); font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-enviar:hover { background: var(--azul-medio); }
+
+  /* SIDEBAR INFORMATIVO */
+  .info-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+  .info-titulo { font-family: 'Sora', sans-serif; font-size: 15px; color: var(--azul); margin-bottom: 14px; }
+  .info-item { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .info-item:last-child { margin-bottom: 0; }
+  .info-ico { width: 36px; height: 36px; background: var(--azul-claro); color: var(--azul); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .info-texto { font-size: 13px; }
+  .info-texto strong { display: block; color: var(--texto); margin-bottom: 2px; }
+  .info-texto span { color: var(--suave); }
+
+  /* FAQ — H10 Ayuda y documentación */
+  .faq-lista { display: flex; flex-direction: column; gap: 8px; }
+  .faq-item { border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; }
+  .faq-pregunta { width: 100%; padding: 12px 14px; background: var(--fondo); border: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--texto); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; }
+  .faq-pregunta:hover { background: var(--azul-claro); color: var(--azul); }
+  .faq-pregunta[aria-expanded="true"] { background: var(--azul-claro); color: var(--azul); }
+  .faq-ico { font-size: 12px; color: var(--tenue); flex-shrink: 0; transition: transform 0.2s; }
+  .faq-pregunta[aria-expanded="true"] .faq-ico { transform: rotate(180deg); color: var(--azul); }
+  .faq-respuesta { display: none; padding: 12px 14px; font-size: 13px; color: var(--suave); line-height: 1.6; border-top: 1px solid var(--borde); }
+  .faq-respuesta.abierta { display: block; }
+
+  /* FOOTER */
+  footer { background: var(--azul); padding: 24px 48px; text-align: center; }
+  .footer-copy { font-size: 13px; color: #93B8E0; }
+
+  /* MODAL AUTH */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(10,25,50,0.65); align-items: center; justify-content: center; }
+  .modal-overlay.abierto { display: flex; }
+  .modal { background: var(--blanco); border-radius: 16px; width: 100%; max-width: 440px; padding: 36px; position: relative; margin: 20px; }
+  .modal-cerrar { position: absolute; top: 16px; right: 16px; background: var(--fondo); border: none; border-radius: 8px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: var(--suave); display: flex; align-items: center; justify-content: center; }
+  .modal-cerrar:hover { background: var(--borde); }
+  .tabs { display: flex; border-bottom: 2px solid var(--borde); margin-bottom: 28px; }
+  .tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--tenue); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab.activo { color: var(--azul); border-bottom-color: var(--naranja); }
+  .form-panel { display: none; }
+  .form-panel.activo { display: block; }
+  .form-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); margin-bottom: 4px; }
+  .form-sub { font-size: 13px; color: var(--tenue); margin-bottom: 22px; }
+  .campo-modal { margin-bottom: 16px; }
+  .campo-modal label { display: block; font-size: 12px; font-weight: 600; color: var(--suave); margin-bottom: 5px; }
+  .input-wrap { position: relative; }
+  .input-wrap i.ico-campo { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; }
+  .input-wrap input { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s; }
+  .input-wrap input:focus { border-color: var(--azul-medio); background: var(--blanco); }
+  .input-wrap input.campo-error-input { border-color: var(--error); background: var(--error-bg); }
+  .input-wrap input.campo-ok { border-color: var(--exito); }
+  .ojo { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; cursor: pointer; background: none; border: none; }
+  .campo-fila-modal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .msg-error-modal { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+  .msg-error-modal.visible { display: block; }
+  .extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 12px; }
+  .recordar { display: flex; align-items: center; gap: 6px; color: var(--suave); cursor: pointer; }
+  .recordar input { accent-color: var(--azul); }
+  .link-olvide { color: var(--azul-medio); text-decoration: none; font-weight: 600; }
+  .btn-submit { width: 100%; padding: 12px; background: var(--azul); border: none; border-radius: 8px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-bottom: 16px; transition: background 0.2s; }
+  .btn-submit:hover { background: var(--azul-medio); }
+  .cambiar { text-align: center; font-size: 12px; color: var(--tenue); }
+  .cambiar a { color: var(--azul-medio); font-weight: 600; text-decoration: none; cursor: pointer; }
+  .alerta-modal { display: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; margin-bottom: 16px; align-items: center; gap: 8px; }
+  .alerta-modal.exito { background: var(--exito-bg); color: var(--exito); border: 1px solid #BBF7D0; display: flex; }
+  .alerta-modal.err { background: var(--error-bg); color: var(--error); border: 1px solid #FECACA; display: flex; }
+  .terminos { font-size: 11px; color: var(--tenue); text-align: center; margin-top: 12px; line-height: 1.6; }
+  .terminos a { color: var(--azul-medio); text-decoration: none; }
+  .fortaleza { margin-top: 6px; }
+  .fortaleza-barras { display: flex; gap: 4px; margin-bottom: 3px; }
+  .barra { flex: 1; height: 3px; border-radius: 2px; background: var(--borde); transition: background 0.3s; }
+  .barra.debil { background: var(--error); }
+  .barra.media { background: #F59E0B; }
+  .barra.fuerte { background: var(--exito); }
+  .fortaleza-txt { font-size: 11px; color: var(--tenue); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    nav { padding: 0 12px; height: auto; min-height: 56px; flex-wrap: wrap; align-items: center; }
+    .logo { height: 56px; display: flex; align-items: center; flex: 1; }
+    .nav-acc { gap: 6px; }
+    .btn-ghost { padding: 6px 10px; font-size: 12px; }
+    .btn-naranja { padding: 6px 10px; font-size: 12px; }
+    .nav-links {
+      order: 10; width: 100%; gap: 2px;
+      padding: 4px 0 8px; border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .nav-links a { padding: 7px 10px; font-size: 13px; }
+
+    .page-hero { padding: 24px 16px; }
+    .breadcrumb-bar { padding: 12px 16px; }
+    .contenido { grid-template-columns: 1fr; padding: 16px 16px 40px; gap: 16px; }
+    .campo-fila { grid-template-columns: 1fr; }
+    footer { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
+<nav aria-label="Navegación principal">
+  <a href="index.html" class="logo" aria-label="El Maestro — volver al inicio">El <span>Maestro</span></a>
+  <ul class="nav-links" role="list">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="resultados.html">Servicios</a></li>
+    <li><a href="contacto.html" class="activo" aria-current="page">Contacto</a></li>
+  </ul>
+  <div class="nav-acc">
+    <button class="btn-ghost" onclick="abrirModal('login')" aria-haspopup="dialog">Iniciar sesión</button>
+    <button class="btn-naranja" onclick="abrirModal('registro')" aria-haspopup="dialog">Registrarme</button>
+  </div>
+</nav>
+
+<!-- H2 Correspondencia — título claro que refleja el propósito de la página -->
+<div class="page-hero" aria-label="Encabezado de página de contacto">
+  <div class="page-hero-inner">
+    <h1>¿Cómo podemos ayudarte?</h1>
+    <p>Escríbenos para cualquier consulta, reportar un problema o conocer más sobre El Maestro. Respondemos en menos de 24 horas.</p>
+  </div>
+</div>
+
+<main id="contenido-principal">
+  <div class="contenido">
+
+    <!-- FORMULARIO DE CONTACTO -->
+    <section aria-labelledby="form-titulo">
+      <div class="form-card">
+        <h2 class="form-card-titulo" id="form-titulo">Envíanos un mensaje</h2>
+        <p class="form-card-sub">Completa el formulario y te responderemos a la brevedad posible.</p>
+
+        <!-- H1 Visibilidad — alerta informa del estado de envío -->
+        <div class="alerta-form" id="alerta-principal" role="alert" aria-live="polite"></div>
+
+        <div class="campo-fila">
+          <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" placeholder="Tu nombre" autocomplete="given-name" aria-required="true" aria-describedby="err-nombre"/>
+            <div class="msg-error" id="err-nombre" role="alert">Ingresa tu nombre (mínimo 2 caracteres)</div>
+          </div>
+          <div class="campo">
+            <label for="apellido">Apellido</label>
+            <input type="text" id="apellido" placeholder="Tu apellido" autocomplete="family-name" aria-required="true" aria-describedby="err-apellido"/>
+            <div class="msg-error" id="err-apellido" role="alert">Ingresa tu apellido</div>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="email">Correo electrónico</label>
+          <!-- H5 Prevención — autocomplete reduce errores de tipeo -->
+          <input type="email" id="email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true" aria-describedby="err-email"/>
+          <div class="msg-error" id="err-email" role="alert">Ingresa un correo válido (ej: nombre@dominio.com)</div>
+        </div>
+
+        <div class="campo">
+          <label for="asunto">Asunto</label>
+          <!-- H6 Reconocimiento — opciones predefinidas evitan que el usuario tenga que recordar qué escribir -->
+          <select id="asunto" aria-required="true" aria-describedby="err-asunto">
+            <option value="">Selecciona el motivo de contacto…</option>
+            <option value="servicio">Quiero solicitar un servicio</option>
+            <option value="profesional">Quiero registrarme como profesional</option>
+            <option value="problema">Reportar un problema con un servicio</option>
+            <option value="facturacion">Consulta sobre pagos o facturación</option>
+            <option value="otro">Otro</option>
+          </select>
+          <div class="msg-error" id="err-asunto" role="alert">Selecciona el motivo de tu mensaje</div>
+        </div>
+
+        <div class="campo">
+          <label for="mensaje">Mensaje <span style="color:var(--tenue);font-weight:400">(opcional)</span></label>
+          <textarea
+            id="mensaje"
+            placeholder="Cuéntanos en qué podemos ayudarte…"
+            maxlength="500"
+            aria-describedby="ayuda-mensaje contador-mensaje"
+            oninput="actualizarContador()"
+          ></textarea>
+          <!-- H5 Prevención — contador en tiempo real evita superar el límite -->
+          <div class="campo-contador"><span id="contador-mensaje" aria-live="polite">0 / 500 caracteres</span></div>
+          <p class="campo-ayuda" id="ayuda-mensaje">Máximo 500 caracteres. Cuanta más información des, más rápido podremos ayudarte.</p>
+        </div>
+
+        <!-- H4 Consistencia — botón primario con mismo estilo que el resto del sitio -->
+        <button class="btn-enviar" onclick="enviarFormulario()" aria-label="Enviar formulario de contacto">
+          <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+          Enviar mensaje
+        </button>
+      </div>
+    </section>
+
+    <!-- SIDEBAR INFORMATIVO — H10 Ayuda y documentación -->
+    <aside aria-label="Información de contacto y preguntas frecuentes">
+
+      <div class="info-card" aria-labelledby="info-titulo">
+        <h2 class="info-titulo" id="info-titulo">Otras formas de contacto</h2>
+        <div class="info-item">
+          <div class="info-ico" aria-hidden="true"><i class="fa-solid fa-envelope"></i></div>
+          <div class="info-texto">
+            <strong>Correo electrónico</strong>
+            <span>hola@elmaestro.ec</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-ico" aria-hidden="true"><i class="fa-brands fa-whatsapp"></i></div>
+          <div class="info-texto">
+            <strong>WhatsApp</strong>
+            <span>+593 99 000 0000</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-ico" aria-hidden="true"><i class="fa-solid fa-clock"></i></div>
+          <div class="info-texto">
+            <strong>Horario de atención</strong>
+            <span>Lunes a viernes, 8h00 – 18h00</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-ico" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="info-texto">
+            <strong>Ubicación</strong>
+            <span>Quito, Ecuador</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- H10 Ayuda — preguntas frecuentes reducen necesidad de contactar para dudas comunes -->
+      <div class="info-card" aria-labelledby="faq-titulo">
+        <h2 class="info-titulo" id="faq-titulo">Preguntas frecuentes</h2>
+        <div class="faq-lista" role="list">
+
+          <div class="faq-item" role="listitem">
+            <button class="faq-pregunta" aria-expanded="false" aria-controls="faq-r1" onclick="toggleFaq(this)">
+              ¿Cómo solicito un profesional?
+              <i class="fa-solid fa-chevron-down faq-ico" aria-hidden="true"></i>
+            </button>
+            <div class="faq-respuesta" id="faq-r1" role="region">
+              Busca el servicio que necesitas en la barra de búsqueda, elige un profesional y haz clic en "Ver perfil y contactar". También puedes escribirle directamente por WhatsApp desde su perfil.
+            </div>
+          </div>
+
+          <div class="faq-item" role="listitem">
+            <button class="faq-pregunta" aria-expanded="false" aria-controls="faq-r2" onclick="toggleFaq(this)">
+              ¿El servicio tiene algún costo?
+              <i class="fa-solid fa-chevron-down faq-ico" aria-hidden="true"></i>
+            </button>
+            <div class="faq-respuesta" id="faq-r2" role="region">
+              Registrarte y buscar profesionales en El Maestro es completamente gratis. El cobro lo acuerda directamente el profesional contigo antes de iniciar el trabajo.
+            </div>
+          </div>
+
+          <div class="faq-item" role="listitem">
+            <button class="faq-pregunta" aria-expanded="false" aria-controls="faq-r3" onclick="toggleFaq(this)">
+              ¿Cómo sé que el profesional es de confianza?
+              <i class="fa-solid fa-chevron-down faq-ico" aria-hidden="true"></i>
+            </button>
+            <div class="faq-respuesta" id="faq-r3" role="region">
+              Los profesionales marcados con "✔ Verificado" han pasado por revisión de identidad y certificaciones. Además, todas las reseñas son de clientes reales que contrataron el servicio.
+            </div>
+          </div>
+
+          <div class="faq-item" role="listitem">
+            <button class="faq-pregunta" aria-expanded="false" aria-controls="faq-r4" onclick="toggleFaq(this)">
+              ¿Cómo me registro como profesional?
+              <i class="fa-solid fa-chevron-down faq-ico" aria-hidden="true"></i>
+            </button>
+            <div class="faq-respuesta" id="faq-r4" role="region">
+              Selecciona "Quiero registrarme como profesional" en el formulario de contacto o escríbenos al correo. Te enviamos los pasos del proceso de verificación.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</main>
+
+<footer role="contentinfo">
+  <div class="footer-copy">© 2026 El Maestro · Hecho con esfuerzo, para el hogar ecuatoriano</div>
+</footer>
+
+<!-- MODAL AUTH -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModalFuera(event)" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-activo" id="modal-contenedor">
+    <button class="modal-cerrar" onclick="cerrarModal()" aria-label="Cerrar ventana">✕</button>
+    <div class="tabs" role="tablist">
+      <div class="tab activo" id="tab-login" role="tab" aria-selected="true" tabindex="0" onclick="cambiarTab('login')" onkeydown="if(event.key==='Enter') cambiarTab('login')">Iniciar sesión</div>
+      <div class="tab" id="tab-registro" role="tab" aria-selected="false" tabindex="0" onclick="cambiarTab('registro')" onkeydown="if(event.key==='Enter') cambiarTab('registro')">Crear cuenta</div>
+    </div>
+    <div class="form-panel activo" id="panel-login" role="tabpanel">
+      <div class="form-titulo" id="modal-titulo-activo">Bienvenido de vuelta</div>
+      <div class="form-sub">Ingresa tus datos para continuar</div>
+      <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
+      <div class="campo-modal"><label for="login-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div><div class="msg-error-modal" id="err-login-email" role="alert">Ingresa un correo válido</div></div>
+      <div class="campo-modal"><label for="login-pass">Contraseña</label><div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/><button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><div class="msg-error-modal" id="err-login-pass" role="alert">Ingresa tu contraseña</div></div>
+      <div class="extras"><label class="recordar"><input type="checkbox"/> Recordarme</label><a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a></div>
+      <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
+      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
+    </div>
+    <div class="form-panel" id="panel-registro" role="tabpanel">
+      <div class="form-titulo">Crea tu cuenta</div>
+      <div class="form-sub">Es gratis y solo toma un momento</div>
+      <div class="alerta-modal" id="alerta-registro" role="alert" aria-live="polite"></div>
+      <div class="campo-fila-modal">
+        <div class="campo-modal"><label for="reg-nombre">Nombre</label><div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="given-name" aria-required="true"/></div><div class="msg-error-modal" id="err-reg-nombre" role="alert">Ingresa tu nombre</div></div>
+        <div class="campo-modal"><label for="reg-apellido">Apellido</label><div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-apellido" placeholder="Tu apellido" autocomplete="family-name" aria-required="true"/></div><div class="msg-error-modal" id="err-reg-apellido" role="alert">Ingresa tu apellido</div></div>
+      </div>
+      <div class="campo-modal"><label for="reg-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="reg-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div><div class="msg-error-modal" id="err-reg-email" role="alert">Ingresa un correo válido</div></div>
+      <div class="campo-modal">
+        <label for="reg-pass">Contraseña</label>
+        <div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="reg-pass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" aria-required="true" oninput="checkFortaleza(this.value)"/><button type="button" class="ojo" onclick="togglePass('reg-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div>
+        <div class="fortaleza" id="fortaleza-wrap" style="display:none;" aria-live="polite"><div class="fortaleza-barras" aria-hidden="true"><div class="barra" id="b1"></div><div class="barra" id="b2"></div><div class="barra" id="b3"></div><div class="barra" id="b4"></div></div><div class="fortaleza-txt" id="fortaleza-txt"></div></div>
+        <div class="msg-error-modal" id="err-reg-pass" role="alert">Mínimo 8 caracteres</div>
+      </div>
+      <div class="campo-modal"><label for="reg-pass2">Confirmar contraseña</label><div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="reg-pass2" placeholder="Repite tu contraseña" autocomplete="new-password" aria-required="true"/><button type="button" class="ojo" onclick="togglePass('reg-pass2',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><div class="msg-error-modal" id="err-reg-pass2" role="alert">Las contraseñas no coinciden</div></div>
+      <button class="btn-submit" onclick="submitRegistro()">Crear mi cuenta</button>
+      <div class="terminos">Al registrarte aceptas nuestros <a href="#">Términos de uso</a> y <a href="#">Política de privacidad</a></div>
+      <div class="cambiar" style="margin-top:12px;">¿Ya tienes cuenta? <a onclick="cambiarTab('login')">Inicia sesión</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // CONTADOR DE CARACTERES — H5 Prevención
+  function actualizarContador() {
+    const txt = document.getElementById('mensaje');
+    document.getElementById('contador-mensaje').textContent = `${txt.value.length} / 500 caracteres`;
+  }
+
+  // FAQ TOGGLE — H10 Ayuda
+  function toggleFaq(btn) {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    // H3 Control — cierra otros antes de abrir (evita acumular elementos abiertos)
+    document.querySelectorAll('.faq-pregunta[aria-expanded="true"]').forEach(b => {
+      if (b !== btn) {
+        b.setAttribute('aria-expanded', 'false');
+        document.getElementById(b.getAttribute('aria-controls')).classList.remove('abierta');
+      }
+    });
+    btn.setAttribute('aria-expanded', !expanded);
+    document.getElementById(btn.getAttribute('aria-controls')).classList.toggle('abierta', !expanded);
+  }
+
+  // FORMULARIO DE CONTACTO
+  function enviarFormulario() {
+    const nombre   = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const asunto   = document.getElementById('asunto').value;
+    let ok = true;
+
+    function validar(id, errId, condicion) {
+      const el = document.getElementById(id);
+      el.classList.toggle('campo-error-input', !condicion);
+      document.getElementById(errId).classList.toggle('visible', !condicion);
+      if (!condicion) ok = false;
+    }
+
+    validar('nombre',   'err-nombre',   nombre.length > 1);
+    validar('apellido', 'err-apellido', apellido.length > 1);
+    validar('email',    'err-email',    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    validar('asunto',   'err-asunto',   asunto !== '');
+
+    const alerta = document.getElementById('alerta-principal');
+    if (ok) {
+      alerta.className = 'alerta-form exito';
+      alerta.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Mensaje enviado! Te responderemos en menos de 24 horas.';
+      document.getElementById('nombre').value = '';
+      document.getElementById('apellido').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('asunto').value = '';
+      document.getElementById('mensaje').value = '';
+      actualizarContador();
+    } else {
+      alerta.className = 'alerta-form err';
+      alerta.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Completa los campos marcados antes de enviar.';
+    }
+    alerta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // MODAL AUTH
+  function abrirModal(tab) { document.getElementById('modal-overlay').classList.add('abierto'); cambiarTab(tab||'login'); document.body.style.overflow='hidden'; setTimeout(()=>{const p=document.querySelector('#modal-contenedor input:not([type=checkbox])');if(p)p.focus();},50); }
+  function cerrarModal() { document.getElementById('modal-overlay').classList.remove('abierto'); document.body.style.overflow=''; }
+  function cerrarModalFuera(e) { if(e.target===document.getElementById('modal-overlay')) cerrarModal(); }
+  document.addEventListener('keydown', e => { if(e.key==='Escape'&&document.getElementById('modal-overlay').classList.contains('abierto')) cerrarModal(); });
+  function cambiarTab(tab) {
+    const esLogin=tab==='login';
+    document.getElementById('tab-login').classList.toggle('activo',esLogin); document.getElementById('tab-login').setAttribute('aria-selected',esLogin);
+    document.getElementById('tab-registro').classList.toggle('activo',!esLogin); document.getElementById('tab-registro').setAttribute('aria-selected',!esLogin);
+    document.getElementById('panel-login').classList.toggle('activo',esLogin);
+    document.getElementById('panel-registro').classList.toggle('activo',!esLogin);
+    document.getElementById('modal-titulo-activo').textContent=esLogin?'Bienvenido de vuelta':'Crea tu cuenta';
+  }
+  function togglePass(id,btn){const input=document.getElementById(id);const visible=input.type==='text';input.type=visible?'password':'text';btn.querySelector('i').className=visible?'fa-solid fa-eye':'fa-solid fa-eye-slash';}
+  function marcar(id,ok){const el=document.getElementById(id);if(!el)return;el.classList.remove('campo-error-input','campo-ok');el.classList.add(ok?'campo-ok':'campo-error-input');}
+  function mostrarErr(id,show){const el=document.getElementById(id);if(el)el.classList.toggle('visible',show);}
+  function alertaModal(id,tipo,msg){const el=document.getElementById(id);el.className='alerta-modal '+tipo;el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;}
+  function submitLogin(){const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;let ok=true;const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;if(ok){alertaModal('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}else alertaModal('alerta-login','err','Corrige los campos marcados.');}
+  function submitRegistro(){const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;let ok=true;const nOk=nombre.length>1;marcar('reg-nombre',nOk);mostrarErr('err-reg-nombre',!nOk);if(!nOk)ok=false;const aOk=apellido.length>1;marcar('reg-apellido',aOk);mostrarErr('err-reg-apellido',!aOk);if(!aOk)ok=false;const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('reg-email',eOk);mostrarErr('err-reg-email',!eOk);if(!eOk)ok=false;const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;if(ok){alertaModal('alerta-registro','exito','¡Cuenta creada! Redirigiendo…');setTimeout(cerrarModal,1500);}else alertaModal('alerta-registro','err','Completa correctamente todos los campos.');}
+  function checkFortaleza(val){document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none';let nivel=0;if(val.length>=6)nivel++;if(val.length>=8)nivel++;if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++;if(/[^A-Za-z0-9]/.test(val))nivel++;const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte'];['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');});document.getElementById('fortaleza-txt').textContent=textos[nivel]||'';}
+</script>
+</body>
+</html>

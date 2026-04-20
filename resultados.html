@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Resultados de búsqueda — El Maestro</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --azul:       #1B3F6E;
+    --azul-medio: #2A5FA5;
+    --azul-claro: #EAF1FB;
+    --azul-suave: #C4D9F2;
+    --naranja:    #F47B20;
+    --blanco:     #FFFFFF;
+    --fondo:      #F5F7FA;
+    --texto:      #111827;
+    --suave:      #4B5563;
+    --tenue:      #9CA3AF;
+    --borde:      #E5E9F0;
+    --error:      #DC2626;
+    --error-bg:   #FEF2F2;
+    --exito:      #16A34A;
+    --exito-bg:   #F0FDF4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--fondo); color: var(--texto); }
+
+  /* WCAG Operabilidad — skip link */
+  .skip-link {
+    position: absolute; top: -100px; left: 16px; z-index: 9999;
+    background: var(--naranja); color: var(--blanco); padding: 10px 18px;
+    border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 16px; }
+  :focus-visible { outline: 3px solid var(--naranja); outline-offset: 3px; border-radius: 4px; }
+
+  /* NAV */
+  nav {
+    background: var(--azul); padding: 0 48px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--blanco); text-decoration: none; }
+  .logo span { color: var(--naranja); }
+  .nav-links { list-style: none; display: flex; gap: 6px; font-size: 14px; }
+  .nav-links a { text-decoration: none; color: var(--blanco); font-weight: 600; padding: 8px 16px; border-radius: 8px; display: block; }
+  .nav-links a:hover { background: rgba(255,255,255,0.15); }
+  .nav-links a.activo { background: var(--naranja); }
+  .nav-acc { display: flex; gap: 10px; }
+  .btn-ghost { padding: 8px 18px; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; background: transparent; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--blanco); font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-naranja { padding: 8px 18px; border: none; border-radius: 8px; background: var(--naranja); color: var(--blanco); font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .btn-naranja:hover { background: #d96a14; }
+
+  /* BARRA DE BÚSQUEDA SUPERIOR — H1 Visibilidad: la query actual siempre visible */
+  .barra-busqueda {
+    background: var(--azul); padding: 20px 48px; border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .busqueda-wrap {
+    display: flex; align-items: center; background: var(--blanco); border-radius: 10px;
+    overflow: hidden; border: 2px solid var(--naranja); max-width: 600px;
+  }
+  .busqueda-wrap input { flex: 1; padding: 12px 14px; border: none; outline: none; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); }
+  .busqueda-wrap input::placeholder { color: var(--tenue); }
+  .busqueda-wrap button { padding: 12px 22px; background: var(--naranja); border: none; color: var(--blanco); font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .busqueda-wrap button:hover { background: #d96a14; }
+
+  /* LAYOUT PRINCIPAL */
+  .contenido { display: grid; grid-template-columns: 260px 1fr; gap: 24px; padding: 28px 48px 48px; }
+
+  /* BREADCRUMB — H6 Reconocimiento: dónde está el usuario sin necesidad de recordar */
+  .breadcrumb { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--tenue); }
+  .breadcrumb a { color: var(--azul-medio); text-decoration: none; font-weight: 500; }
+  .breadcrumb a:hover { color: var(--naranja); }
+  .breadcrumb span { color: var(--tenue); }
+
+  /* FILTROS — H7 Eficiencia: filtros visibles sin necesidad de buscar dónde están */
+  .sidebar { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 22px; height: fit-content; position: sticky; top: 88px; }
+  .filtro-titulo { font-family: 'Sora', sans-serif; font-size: 15px; color: var(--azul); margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+  .filtro-limpiar { font-size: 12px; color: var(--naranja); font-weight: 600; cursor: pointer; background: none; border: none; font-family: inherit; }
+  .filtro-limpiar:hover { text-decoration: underline; }
+  .filtro-grupo { margin-bottom: 20px; }
+  .filtro-grupo-titulo { font-size: 12px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .filtro-opcion { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--texto); cursor: pointer; }
+  .filtro-opcion input[type="checkbox"], .filtro-opcion input[type="radio"] { accent-color: var(--azul); width: 15px; height: 15px; cursor: pointer; }
+  .filtro-sep { height: 1px; background: var(--borde); margin: 16px 0; }
+  .btn-aplicar { width: 100%; padding: 10px; background: var(--azul); color: var(--blanco); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; }
+  .btn-aplicar:hover { background: var(--azul-medio); }
+
+  /* RESULTADOS */
+  .resultados { min-width: 0; }
+
+  /* H1 Visibilidad del estado — contador de resultados y query activa */
+  .resultados-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+  .resultados-info { font-size: 14px; color: var(--suave); }
+  .resultados-info strong { color: var(--texto); }
+  .orden-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--suave); }
+  .select-orden { padding: 7px 12px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); background: var(--blanco); cursor: pointer; outline: none; }
+  .select-orden:focus { border-color: var(--azul-medio); }
+
+  /* TAGS DE FILTROS ACTIVOS — H6 Reconocimiento: qué filtros están aplicados */
+  .tags-activos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; background: var(--azul-claro); color: var(--azul-medio); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; }
+  .tag button { background: none; border: none; cursor: pointer; color: var(--azul-medio); font-size: 14px; line-height: 1; padding: 0; }
+  .tag button:hover { color: var(--error); }
+
+  /* TARJETAS DE PROFESIONALES */
+  .pros-lista { display: flex; flex-direction: column; gap: 14px; }
+  .pro-card {
+    background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px;
+    padding: 20px 22px; display: flex; gap: 18px; align-items: flex-start;
+    cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit;
+  }
+  .pro-card:hover, .pro-card:focus { border-color: var(--azul-suave); box-shadow: 0 4px 16px rgba(27,63,110,0.08); outline: none; }
+  .pro-card:focus-visible { outline: 3px solid var(--naranja); outline-offset: 2px; }
+  .pro-avatar { width: 58px; height: 58px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+  .pro-cuerpo { flex: 1; min-width: 0; }
+  .pro-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .pro-nombre { font-size: 15px; font-weight: 700; }
+  .pro-oficio { font-size: 13px; color: var(--suave); margin-top: 2px; }
+  .pro-verificado { background: var(--azul-claro); color: var(--azul-medio); font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .pro-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .estrellas { color: var(--naranja); font-size: 13px; }
+  .rating-num { font-size: 13px; font-weight: 600; }
+  .rating-count { font-size: 13px; color: var(--tenue); }
+  .pro-descripcion { font-size: 13px; color: var(--suave); line-height: 1.5; margin-bottom: 10px; }
+  .pro-meta { display: flex; gap: 16px; font-size: 13px; color: var(--suave); align-items: center; flex-wrap: wrap; }
+  .badge-hoy { background: #DCFCE7; color: #166534; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .badge-semana { background: #FEF9C3; color: #854D0E; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .pro-accion { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .pro-precio { font-size: 13px; color: var(--suave); text-align: right; }
+  .pro-precio strong { font-size: 16px; color: var(--texto); display: block; }
+  .btn-ver { padding: 9px 18px; border: 1px solid var(--azul-suave); border-radius: 8px; background: var(--azul-claro); color: var(--azul-medio); font-size: 13px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+  .btn-ver:hover { background: var(--azul-suave); }
+
+  /* SIN RESULTADOS — H9 Recuperación: mensaje claro + acción sugerida */
+  .sin-resultados { text-align: center; padding: 60px 20px; display: none; }
+  .sin-resultados i { font-size: 48px; color: var(--tenue); margin-bottom: 16px; display: block; }
+  .sin-resultados h3 { font-family: 'Sora', sans-serif; font-size: 18px; color: var(--azul); margin-bottom: 8px; }
+  .sin-resultados p { font-size: 14px; color: var(--suave); margin-bottom: 20px; }
+  .sin-resultados a { color: var(--naranja); font-weight: 600; text-decoration: none; }
+
+  /* PAGINACIÓN — H3 Control y libertad */
+  .paginacion { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 28px; }
+  .pag-btn { width: 36px; height: 36px; border: 1.5px solid var(--borde); border-radius: 8px; background: var(--blanco); font-size: 13px; font-weight: 600; color: var(--suave); cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; }
+  .pag-btn:hover { border-color: var(--azul-medio); color: var(--azul); }
+  .pag-btn.activo { background: var(--azul); color: var(--blanco); border-color: var(--azul); }
+  .pag-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* FOOTER */
+  footer { background: var(--azul); padding: 24px 48px; text-align: center; }
+  .footer-copy { font-size: 13px; color: #93B8E0; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(10,25,50,0.65); align-items: center; justify-content: center; }
+  .modal-overlay.abierto { display: flex; }
+  .modal { background: var(--blanco); border-radius: 16px; width: 100%; max-width: 440px; padding: 36px; position: relative; margin: 20px; }
+  .modal-cerrar { position: absolute; top: 16px; right: 16px; background: var(--fondo); border: none; border-radius: 8px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: var(--suave); display: flex; align-items: center; justify-content: center; }
+  .modal-cerrar:hover { background: var(--borde); }
+  .tabs { display: flex; border-bottom: 2px solid var(--borde); margin-bottom: 28px; }
+  .tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--tenue); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab.activo { color: var(--azul); border-bottom-color: var(--naranja); }
+  .form-panel { display: none; }
+  .form-panel.activo { display: block; }
+  .form-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); margin-bottom: 4px; }
+  .form-sub { font-size: 13px; color: var(--tenue); margin-bottom: 22px; }
+  .campo { margin-bottom: 16px; }
+  .campo label { display: block; font-size: 12px; font-weight: 600; color: var(--suave); margin-bottom: 5px; }
+  .input-wrap { position: relative; }
+  .input-wrap i.ico-campo { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; }
+  .input-wrap input { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s; }
+  .input-wrap input:focus { border-color: var(--azul-medio); background: var(--blanco); }
+  .input-wrap input.campo-error-input { border-color: var(--error); background: var(--error-bg); }
+  .input-wrap input.campo-ok { border-color: var(--exito); }
+  .ojo { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; cursor: pointer; background: none; border: none; }
+  .campo-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .msg-error { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+  .msg-error.visible { display: block; }
+  .extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 12px; }
+  .recordar { display: flex; align-items: center; gap: 6px; color: var(--suave); cursor: pointer; }
+  .recordar input { accent-color: var(--azul); }
+  .link-olvide { color: var(--azul-medio); text-decoration: none; font-weight: 600; }
+  .btn-submit { width: 100%; padding: 12px; background: var(--azul); border: none; border-radius: 8px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-bottom: 16px; transition: background 0.2s; }
+  .btn-submit:hover { background: var(--azul-medio); }
+  .cambiar { text-align: center; font-size: 12px; color: var(--tenue); }
+  .cambiar a { color: var(--azul-medio); font-weight: 600; text-decoration: none; cursor: pointer; }
+  .alerta-modal { display: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; margin-bottom: 16px; align-items: center; gap: 8px; }
+  .alerta-modal.exito { background: var(--exito-bg); color: var(--exito); border: 1px solid #BBF7D0; display: flex; }
+  .alerta-modal.err { background: var(--error-bg); color: var(--error); border: 1px solid #FECACA; display: flex; }
+  .terminos { font-size: 11px; color: var(--tenue); text-align: center; margin-top: 12px; line-height: 1.6; }
+  .terminos a { color: var(--azul-medio); text-decoration: none; }
+  .fortaleza { margin-top: 6px; }
+  .fortaleza-barras { display: flex; gap: 4px; margin-bottom: 3px; }
+  .barra { flex: 1; height: 3px; border-radius: 2px; background: var(--borde); transition: background 0.3s; }
+  .barra.debil { background: var(--error); }
+  .barra.media { background: #F59E0B; }
+  .barra.fuerte { background: var(--exito); }
+  .fortaleza-txt { font-size: 11px; color: var(--tenue); }
+
+  /* ── RESPONSIVE ── */
+  .btn-filtros-mobile {
+    display: none; width: 100%; padding: 12px 16px;
+    background: var(--blanco); border: 1.5px solid var(--borde);
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif; color: var(--azul);
+    cursor: pointer; align-items: center; justify-content: space-between; gap: 8px;
+    transition: border-color 0.2s;
+  }
+  .btn-filtros-mobile:hover { border-color: var(--azul-medio); }
+  .btn-filtros-mobile .ico-ch { transition: transform 0.25s; }
+  .btn-filtros-mobile[aria-expanded="true"] .ico-ch { transform: rotate(180deg); }
+
+  @media (max-width: 720px) {
+    nav { padding: 0 12px; height: auto; min-height: 56px; flex-wrap: wrap; align-items: center; }
+    .logo { height: 56px; display: flex; align-items: center; flex: 1; }
+    .nav-acc { gap: 6px; }
+    .btn-ghost { padding: 6px 10px; font-size: 12px; }
+    .btn-naranja { padding: 6px 10px; font-size: 12px; }
+    .nav-links {
+      order: 10; width: 100%; gap: 2px;
+      padding: 4px 0 8px; border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .nav-links a { padding: 7px 10px; font-size: 13px; }
+
+    .barra-busqueda { padding: 16px; }
+    .busqueda-wrap { max-width: 100%; }
+    .contenido { grid-template-columns: 1fr; padding: 16px 16px 32px; gap: 16px; }
+    .btn-filtros-mobile { display: flex; }
+    #sidebar-filtros { display: none; }
+    #sidebar-filtros.filtros-abierto { display: block; }
+    .sidebar { position: static; }
+    .resultados-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .pro-card { flex-wrap: wrap; }
+    .pro-accion { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; }
+    footer { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
+<nav aria-label="Navegación principal">
+  <a href="index.html" class="logo" aria-label="El Maestro — volver al inicio">El <span>Maestro</span></a>
+  <ul class="nav-links" role="list">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="resultados.html" class="activo" aria-current="page">Servicios</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <div class="nav-acc">
+    <button class="btn-ghost" onclick="abrirModal('login')" aria-haspopup="dialog">Iniciar sesión</button>
+    <button class="btn-naranja" onclick="abrirModal('registro')" aria-haspopup="dialog">Registrarme</button>
+  </div>
+</nav>
+
+
+<main id="contenido-principal">
+  <div class="contenido">
+
+
+    <!-- SIDEBAR DE FILTROS -->
+    <aside aria-label="Filtros de búsqueda">
+      <button class="btn-filtros-mobile" id="btn-filtros" onclick="toggleFiltros()" aria-expanded="false" aria-controls="sidebar-filtros">
+        <span><i class="fa-solid fa-sliders" aria-hidden="true"></i> Filtros</span>
+        <i class="fa-solid fa-chevron-down ico-ch" aria-hidden="true"></i>
+      </button>
+      <div class="sidebar" id="sidebar-filtros">
+        <div class="filtro-titulo">
+          <span>Filtros</span>
+          <button class="filtro-limpiar" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros">Limpiar todo</button>
+        </div>
+
+        <div class="filtro-grupo" role="group" aria-labelledby="filtro-cat-titulo">
+          <div class="filtro-grupo-titulo" id="filtro-cat-titulo">Categoría</div>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="todos" checked onchange="aplicarFiltros()"/> Todos los servicios</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Electricista" onchange="aplicarFiltros()"/> Electricista</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Plomero" onchange="aplicarFiltros()"/> Plomero</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Cerrajero" onchange="aplicarFiltros()"/> Cerrajero</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Pintor" onchange="aplicarFiltros()"/> Pintor</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Carpintero" onchange="aplicarFiltros()"/> Carpintero</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Limpieza" onchange="aplicarFiltros()"/> Limpieza</label>
+        </div>
+
+        <div class="filtro-sep" role="separator"></div>
+
+        <div class="filtro-grupo" role="group" aria-labelledby="filtro-zona-titulo">
+          <div class="filtro-grupo-titulo" id="filtro-zona-titulo">Zona</div>
+          <label class="filtro-opcion"><input type="checkbox" value="norte" onchange="aplicarFiltros()"/> Quito Norte</label>
+          <label class="filtro-opcion"><input type="checkbox" value="centro" onchange="aplicarFiltros()"/> Quito Centro</label>
+          <label class="filtro-opcion"><input type="checkbox" value="sur" onchange="aplicarFiltros()"/> Quito Sur</label>
+          <label class="filtro-opcion"><input type="checkbox" value="valles" onchange="aplicarFiltros()"/> Valles</label>
+        </div>
+
+        <div class="filtro-sep" role="separator"></div>
+
+        <div class="filtro-grupo" role="group" aria-labelledby="filtro-disp-titulo">
+          <div class="filtro-grupo-titulo" id="filtro-disp-titulo">Disponibilidad</div>
+          <label class="filtro-opcion"><input type="checkbox" id="filtro-hoy" onchange="aplicarFiltros()"/> Disponible hoy</label>
+          <label class="filtro-opcion"><input type="checkbox" id="filtro-semana" onchange="aplicarFiltros()"/> Esta semana</label>
+        </div>
+
+        <div class="filtro-sep" role="separator"></div>
+
+        <div class="filtro-grupo" role="group" aria-labelledby="filtro-cal-titulo">
+          <div class="filtro-grupo-titulo" id="filtro-cal-titulo">Calificación mínima</div>
+          <label class="filtro-opcion"><input type="radio" name="calificacion" value="0" checked onchange="aplicarFiltros()"/> Cualquier calificación</label>
+          <label class="filtro-opcion"><input type="radio" name="calificacion" value="4" onchange="aplicarFiltros()"/> 4.0 ★ o más</label>
+          <label class="filtro-opcion"><input type="radio" name="calificacion" value="4.5" onchange="aplicarFiltros()"/> 4.5 ★ o más</label>
+          <label class="filtro-opcion"><input type="radio" name="calificacion" value="verificado" onchange="aplicarFiltros()"/> Solo verificados</label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RESULTADOS -->
+    <section class="resultados" aria-labelledby="titulo-resultados">
+
+      <div class="resultados-header">
+        <!-- H1 Visibilidad del estado — conteo visible en tiempo real -->
+        <p class="resultados-info" id="info-resultados" aria-live="polite">
+          Mostrando <strong id="contador-resultados">6</strong> profesionales
+        </p>
+        <div class="orden-wrap">
+          <label for="select-orden">Ordenar por:</label>
+          <select class="select-orden" id="select-orden" onchange="aplicarFiltros()" aria-label="Criterio de ordenamiento">
+            <option value="rating">Mejor calificados</option>
+            <option value="resenas">Más reseñas</option>
+            <option value="disponible">Disponibles hoy</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- H6 Reconocimiento — tags muestran filtros activos sin necesidad de abrir el sidebar -->
+      <div class="tags-activos" id="tags-activos" aria-label="Filtros aplicados" aria-live="polite"></div>
+
+      <div class="pros-lista" id="lista-profesionales" role="list" aria-label="Profesionales encontrados">
+        <!-- Las tarjetas se generan dinámicamente con JavaScript -->
+      </div>
+
+      <!-- H9 Sin resultados — mensaje claro + sugerencia de acción -->
+      <div class="sin-resultados" id="sin-resultados" aria-live="polite">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <h3>No encontramos profesionales</h3>
+        <p>Intenta con otra categoría o amplía los filtros de búsqueda.</p>
+        <a href="resultados.html">Ver todos los profesionales</a>
+      </div>
+
+      <!-- H3 Control y libertad — paginación clara con página actual marcada -->
+      <nav class="paginacion" aria-label="Paginación de resultados">
+        <button class="pag-btn" disabled aria-label="Página anterior" aria-disabled="true">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button class="pag-btn activo" aria-current="page" aria-label="Página 1, página actual">1</button>
+        <button class="pag-btn" aria-label="Ir a página 2">2</button>
+        <button class="pag-btn" aria-label="Ir a página 3">3</button>
+        <button class="pag-btn" aria-label="Página siguiente">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </nav>
+
+    </section>
+  </div>
+</main>
+
+<footer role="contentinfo">
+  <div class="footer-copy">© 2026 El Maestro · Hecho con esfuerzo, para el hogar ecuatoriano</div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModalFuera(event)" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-activo" id="modal-contenedor">
+    <button class="modal-cerrar" onclick="cerrarModal()" aria-label="Cerrar ventana">✕</button>
+    <div class="tabs" role="tablist">
+      <div class="tab activo" id="tab-login" role="tab" aria-selected="true" tabindex="0" onclick="cambiarTab('login')" onkeydown="if(event.key==='Enter') cambiarTab('login')">Iniciar sesión</div>
+      <div class="tab" id="tab-registro" role="tab" aria-selected="false" tabindex="0" onclick="cambiarTab('registro')" onkeydown="if(event.key==='Enter') cambiarTab('registro')">Crear cuenta</div>
+    </div>
+    <div class="form-panel activo" id="panel-login" role="tabpanel">
+      <div class="form-titulo" id="modal-titulo-activo">Bienvenido de vuelta</div>
+      <div class="form-sub">Ingresa tus datos para continuar</div>
+      <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
+      <div class="campo">
+        <label for="login-email">Correo electrónico</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+          <input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/>
+        </div>
+        <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido</div>
+      </div>
+      <div class="campo">
+        <label for="login-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/>
+          <button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+        </div>
+        <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
+      </div>
+      <div class="extras">
+        <label class="recordar"><input type="checkbox"/> Recordarme</label>
+        <a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
+      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
+    </div>
+    <div class="form-panel" id="panel-registro" role="tabpanel">
+      <div class="form-titulo">Crea tu cuenta</div>
+      <div class="form-sub">Es gratis y solo toma un momento</div>
+      <div class="alerta-modal" id="alerta-registro" role="alert" aria-live="polite"></div>
+      <div class="campo-fila">
+        <div class="campo">
+          <label for="reg-nombre">Nombre</label>
+          <div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="given-name" aria-required="true"/></div>
+          <div class="msg-error" id="err-reg-nombre" role="alert">Ingresa tu nombre</div>
+        </div>
+        <div class="campo">
+          <label for="reg-apellido">Apellido</label>
+          <div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-apellido" placeholder="Tu apellido" autocomplete="family-name" aria-required="true"/></div>
+          <div class="msg-error" id="err-reg-apellido" role="alert">Ingresa tu apellido</div>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="reg-email">Correo electrónico</label>
+        <div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="reg-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div>
+        <div class="msg-error" id="err-reg-email" role="alert">Ingresa un correo válido</div>
+      </div>
+      <div class="campo">
+        <label for="reg-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="reg-pass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" aria-required="true" oninput="checkFortaleza(this.value)"/>
+          <button type="button" class="ojo" onclick="togglePass('reg-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+        </div>
+        <div class="fortaleza" id="fortaleza-wrap" style="display:none;" aria-live="polite">
+          <div class="fortaleza-barras" aria-hidden="true"><div class="barra" id="b1"></div><div class="barra" id="b2"></div><div class="barra" id="b3"></div><div class="barra" id="b4"></div></div>
+          <div class="fortaleza-txt" id="fortaleza-txt"></div>
+        </div>
+        <div class="msg-error" id="err-reg-pass" role="alert">Mínimo 8 caracteres</div>
+      </div>
+      <div class="campo">
+        <label for="reg-pass2">Confirmar contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="reg-pass2" placeholder="Repite tu contraseña" autocomplete="new-password" aria-required="true"/>
+          <button type="button" class="ojo" onclick="togglePass('reg-pass2',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+        </div>
+        <div class="msg-error" id="err-reg-pass2" role="alert">Las contraseñas no coinciden</div>
+      </div>
+      <button class="btn-submit" onclick="submitRegistro()">Crear mi cuenta</button>
+      <div class="terminos">Al registrarte aceptas nuestros <a href="#">Términos de uso</a> y <a href="#">Política de privacidad</a></div>
+      <div class="cambiar" style="margin-top:12px;">¿Ya tienes cuenta? <a onclick="cambiarTab('login')">Inicia sesión</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleFiltros() {
+    const sidebar = document.getElementById('sidebar-filtros');
+    const btn = document.getElementById('btn-filtros');
+    const abierto = sidebar.classList.toggle('filtros-abierto');
+    btn.setAttribute('aria-expanded', abierto);
+  }
+
+  /* ── DATOS ── */
+  const PROFESIONALES = [
+    { nombre: 'José',     apellido: 'Ramírez', oficio: 'Electricista', zona: 'norte',  calificacion: 4.9, resenas: 87, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Especialista en instalaciones residenciales y comerciales, tableros eléctricos y reparación de cortocircuitos. Más de 10 años de experiencia.', precio: 25, unidad: 'hora',     experiencia: 10, avatarBg: '',        avatarColor: '' },
+    { nombre: 'Mario',    apellido: 'Pinto',   oficio: 'Plomero',      zona: 'centro', calificacion: 4.6, resenas: 54, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Reparación de tuberías, instalación de sanitarios, detección de fugas y mantenimiento de sistemas de agua fría y caliente.',                   precio: 20, unidad: 'hora',     experiencia:  7, avatarBg: '',        avatarColor: '' },
+    { nombre: 'Luis',     apellido: 'Cabrera', oficio: 'Cerrajero',    zona: 'sur',    calificacion: 4.3, resenas: 31, disponibilidad: 'semana', verificado: false, descripcion: 'Apertura de puertas, cambio de chapa, instalación de cerraduras de seguridad y duplicado de llaves. Atención de emergencias 24/7.',              precio: 18, unidad: 'servicio', experiencia:  5, avatarBg: '',        avatarColor: '' },
+    { nombre: 'Ana',      apellido: 'Torres',  oficio: 'Pintor',       zona: 'norte',  calificacion: 4.8, resenas: 62, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Pintura interior y exterior, acabados de primera, preparación de superficies y asesoría en paletas de color. Trabajo limpio y puntual.',          precio: 22, unidad: 'hora',     experiencia:  8, avatarBg: '#FEF3C7', avatarColor: '#92400E' },
+    { nombre: 'Roberto',  apellido: 'Mora',    oficio: 'Carpintero',   zona: 'valles', calificacion: 4.5, resenas: 43, disponibilidad: 'semana', verificado: true,  descripcion: 'Fabricación de muebles a medida, reparación de estructuras de madera, instalación de closets y puertas. Materiales de calidad garantizados.',     precio: 30, unidad: 'hora',     experiencia: 12, avatarBg: '#DCFCE7', avatarColor: '#166534' },
+    { nombre: 'Carmen',   apellido: 'Vega',    oficio: 'Limpieza',     zona: 'norte',  calificacion: 4.7, resenas: 78, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Limpieza profunda de hogares, oficinas y departamentos. Incluye cocina, baños y ventanas. Productos de limpieza incluidos en el servicio.',      precio: 15, unidad: 'hora',     experiencia:  6, avatarBg: '#F3E8FF', avatarColor: '#7E22CE' },
+    { nombre: 'Carlos',   apellido: 'Mendoza', oficio: 'Electricista', zona: 'sur',    calificacion: 4.2, resenas: 19, disponibilidad: 'semana', verificado: false, descripcion: 'Instalación y mantenimiento eléctrico en viviendas. Reparación de tableros y conexiones. Precios accesibles y trabajo garantizado.',              precio: 18, unidad: 'hora',     experiencia:  4, avatarBg: '',        avatarColor: '' },
+    { nombre: 'Patricia', apellido: 'Salazar', oficio: 'Pintor',       zona: 'centro', calificacion: 4.4, resenas: 28, disponibilidad: 'hoy',    verificado: false, descripcion: 'Pintura de interiores y exteriores. Especialidad en acabados texturizados y pintura de fachadas. Presupuesto sin costo adicional.',              precio: 19, unidad: 'hora',     experiencia:  6, avatarBg: '',        avatarColor: '' },
+  ];
+
+  const ZONA_LABEL = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
+
+  /* ── HELPERS ── */
+  function estrellas(cal) {
+    const r = Math.round(cal);
+    return '★'.repeat(r) + '☆'.repeat(5 - r);
+  }
+
+  function renderCard(p) {
+    const ini = (p.nombre[0] + p.apellido[0]).toUpperCase();
+    const avatarStyle = p.avatarBg ? `style="background:${p.avatarBg};color:${p.avatarColor}"` : '';
+    const verificadoHTML = p.verificado
+      ? `<div class="pro-verificado" aria-label="Profesional verificado por El Maestro">✔ Verificado</div>` : '';
+    const dispBadge = p.disponibilidad === 'hoy'
+      ? `<span class="badge-hoy" aria-label="Disponible para trabajar hoy">● Disponible hoy</span>`
+      : `<span class="badge-semana" aria-label="Disponible esta semana">● Esta semana</span>`;
+
+    return `
+      <a href="perfil.html" class="pro-card" role="listitem" tabindex="0"
+         aria-label="Ver perfil de ${p.nombre} ${p.apellido}, ${p.oficio}, calificación ${p.calificacion}">
+        <div class="pro-avatar" ${avatarStyle} aria-hidden="true">${ini}</div>
+        <div class="pro-cuerpo">
+          <div class="pro-cabecera">
+            <div>
+              <div class="pro-nombre">${p.nombre} ${p.apellido}</div>
+              <div class="pro-oficio">${p.oficio}</div>
+            </div>
+            ${verificadoHTML}
+          </div>
+          <div class="pro-rating" aria-label="Calificación ${p.calificacion} de 5, ${p.resenas} reseñas">
+            <span class="estrellas" aria-hidden="true">${estrellas(p.calificacion)}</span>
+            <span class="rating-num">${p.calificacion}</span>
+            <span class="rating-count">· ${p.resenas} reseñas</span>
+          </div>
+          <p class="pro-descripcion">${p.descripcion}</p>
+          <div class="pro-meta">
+            <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${ZONA_LABEL[p.zona]}</span>
+            ${dispBadge}
+            <span><i class="fa-solid fa-briefcase" aria-hidden="true"></i> ${p.experiencia} años exp.</span>
+          </div>
+        </div>
+        <div class="pro-accion">
+          <div class="pro-precio"><strong>desde $${p.precio}</strong>por ${p.unidad}</div>
+          <button class="btn-ver" onclick="event.stopPropagation(); window.location.href='perfil.html'"
+                  aria-label="Ver perfil de ${p.nombre} ${p.apellido}">Ver perfil</button>
+        </div>
+      </a>`;
+  }
+
+  /* ── FILTRADO PRINCIPAL ── */
+  function aplicarFiltros() {
+    const cat      = document.querySelector('input[name="categoria"]:checked').value;
+    const calMin   = document.querySelector('input[name="calificacion"]:checked').value;
+    const orden    = document.getElementById('select-orden').value;
+    const dispHoy    = document.getElementById('filtro-hoy').checked;
+    const dispSemana = document.getElementById('filtro-semana').checked;
+
+    // Zonas: checkboxes que NO son filtro-hoy ni filtro-semana
+    const zonas = [...document.querySelectorAll('input[type=checkbox]:checked')]
+      .filter(c => c.id !== 'filtro-hoy' && c.id !== 'filtro-semana')
+      .map(c => c.value);
+
+    let resultado = PROFESIONALES.filter(p => {
+      if (cat !== 'todos' && p.oficio !== cat)              return false;
+      if (zonas.length > 0 && !zonas.includes(p.zona))     return false;
+      if (dispHoy    && p.disponibilidad !== 'hoy')         return false;
+      if (dispSemana && p.disponibilidad !== 'semana')      return false;
+      if (calMin === 'verificado' && !p.verificado)         return false;
+      if (calMin !== 'verificado' && p.calificacion < parseFloat(calMin)) return false;
+      return true;
+    });
+
+    // Ordenar
+    if (orden === 'rating')     resultado.sort((a, b) => b.calificacion - a.calificacion);
+    else if (orden === 'resenas') resultado.sort((a, b) => b.resenas - a.resenas);
+    else if (orden === 'disponible') resultado.sort((a, b) => a.disponibilidad === 'hoy' ? -1 : 1);
+
+    // Actualizar título dinámico
+    const n = resultado.length;
+    const encontrados = `${n} encontrado${n !== 1 ? 's' : ''}`;
+    const info = document.getElementById('info-resultados');
+    if (cat !== 'todos') {
+      info.innerHTML = `Resultados para: <strong>${cat}</strong> (${encontrados})`;
+    } else {
+      info.innerHTML = `Todos los profesionales (<strong>${encontrados}</strong>)`;
+    }
+
+    // Renderizar tarjetas
+    const lista = document.getElementById('lista-profesionales');
+    const sinRes = document.getElementById('sin-resultados');
+    if (resultado.length === 0) {
+      lista.innerHTML = '';
+      sinRes.style.display = 'block';
+    } else {
+      lista.innerHTML = resultado.map(renderCard).join('');
+      sinRes.style.display = 'none';
+    }
+
+    actualizarTags(cat, zonas);
+  }
+
+  function actualizarTags(cat, zonas) {
+    const contenedor = document.getElementById('tags-activos');
+    contenedor.innerHTML = '';
+    if (cat && cat !== 'todos') {
+      contenedor.innerHTML += `<span class="tag">${cat} <button onclick="limpiarCategoria()" aria-label="Quitar filtro ${cat}">×</button></span>`;
+    }
+    zonas.forEach(z => {
+      contenedor.innerHTML += `<span class="tag">${ZONA_LABEL[z] || z} <button aria-label="Quitar filtro zona">×</button></span>`;
+    });
+  }
+
+  function limpiarCategoria() {
+    document.querySelector('input[name="categoria"][value="todos"]').checked = true;
+    aplicarFiltros();
+  }
+
+  function limpiarFiltros() {
+    document.querySelector('input[name="categoria"][value="todos"]').checked = true;
+    document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+    document.querySelector('input[name="calificacion"][value="0"]').checked = true;
+    aplicarFiltros();
+  }
+
+  /* ── INICIALIZACIÓN ── */
+  window.addEventListener('DOMContentLoaded', () => {
+    const q = (new URLSearchParams(window.location.search).get('q') || '').trim();
+    if (q) {
+      // Selecciona el radio que coincide con la búsqueda (case-insensitive)
+      const radio = [...document.querySelectorAll('input[name="categoria"]')]
+        .find(r => r.value.toLowerCase() === q.toLowerCase());
+      if (radio) radio.checked = true;
+    }
+    aplicarFiltros();
+  });
+
+  /* ── MODAL AUTH ── */
+  function abrirModal(tab) {
+    document.getElementById('modal-overlay').classList.add('abierto');
+    cambiarTab(tab || 'login');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => { const p = document.querySelector('#modal-contenedor input:not([type=checkbox])'); if (p) p.focus(); }, 50);
+  }
+  function cerrarModal() { document.getElementById('modal-overlay').classList.remove('abierto'); document.body.style.overflow = ''; }
+  function cerrarModalFuera(e) { if (e.target === document.getElementById('modal-overlay')) cerrarModal(); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('abierto')) cerrarModal(); });
+  function cambiarTab(tab) {
+    const esLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('activo', esLogin);
+    document.getElementById('tab-login').setAttribute('aria-selected', esLogin);
+    document.getElementById('tab-registro').classList.toggle('activo', !esLogin);
+    document.getElementById('tab-registro').setAttribute('aria-selected', !esLogin);
+    document.getElementById('panel-login').classList.toggle('activo', esLogin);
+    document.getElementById('panel-registro').classList.toggle('activo', !esLogin);
+  }
+  function togglePass(id, btn) { const input = document.getElementById(id); const visible = input.type === 'text'; input.type = visible ? 'password' : 'text'; btn.querySelector('i').className = visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'; }
+  function marcar(id, ok) { const el = document.getElementById(id); if (!el) return; el.classList.remove('campo-error-input','campo-ok'); el.classList.add(ok ? 'campo-ok' : 'campo-error-input'); }
+  function mostrarErr(id, show) { const el = document.getElementById(id); if (el) el.classList.toggle('visible', show); }
+  function alerta(id, tipo, msg) { const el = document.getElementById(id); el.className = 'alerta-modal ' + tipo; el.innerHTML = `<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`; }
+  function submitLogin() { const email=document.getElementById('login-email').value.trim(), pass=document.getElementById('login-pass').value; let ok=true; const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('login-email',emailOk); mostrarErr('err-login-email',!emailOk); if(!emailOk) ok=false; const passOk=pass.length>0; marcar('login-pass',passOk); mostrarErr('err-login-pass',!passOk); if(!passOk) ok=false; if(ok){alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}else alerta('alerta-login','err','Corrige los campos marcados antes de continuar.'); }
+  function submitRegistro() { const nombre=document.getElementById('reg-nombre').value.trim(), apellido=document.getElementById('reg-apellido').value.trim(), email=document.getElementById('reg-email').value.trim(), pass=document.getElementById('reg-pass').value, pass2=document.getElementById('reg-pass2').value; let ok=true; const nOk=nombre.length>1; marcar('reg-nombre',nOk); mostrarErr('err-reg-nombre',!nOk); if(!nOk) ok=false; const aOk=apellido.length>1; marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false; const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false; const pOk=pass.length>=8; marcar('reg-pass',pOk); mostrarErr('err-reg-pass',!pOk); if(!pOk) ok=false; const p2Ok=pass===pass2&&pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false; if(ok){alerta('alerta-registro','exito','¡Cuenta creada! Redirigiendo…');setTimeout(cerrarModal,1500);}else alerta('alerta-registro','err','Completa correctamente todos los campos marcados.'); }
+  function checkFortaleza(val) { document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none'; let nivel=0; if(val.length>=6)nivel++; if(val.length>=8)nivel++; if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++; if(/[^A-Za-z0-9]/.test(val))nivel++; const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte']; ['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');}); document.getElementById('fortaleza-txt').textContent=textos[nivel]||''; }
+</script>
+</body>
+</html>

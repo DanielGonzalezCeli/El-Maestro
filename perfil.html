@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>José Ramírez — Electricista | El Maestro</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --azul:       #1B3F6E;
+    --azul-medio: #2A5FA5;
+    --azul-claro: #EAF1FB;
+    --azul-suave: #C4D9F2;
+    --naranja:    #F47B20;
+    --blanco:     #FFFFFF;
+    --fondo:      #F5F7FA;
+    --texto:      #111827;
+    --suave:      #4B5563;
+    --tenue:      #9CA3AF;
+    --borde:      #E5E9F0;
+    --error:      #DC2626;
+    --error-bg:   #FEF2F2;
+    --exito:      #16A34A;
+    --exito-bg:   #F0FDF4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--fondo); color: var(--texto); }
+
+  .skip-link { position: absolute; top: -100px; left: 16px; z-index: 9999; background: var(--naranja); color: var(--blanco); padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; transition: top 0.2s; }
+  .skip-link:focus { top: 16px; }
+  :focus-visible { outline: 3px solid var(--naranja); outline-offset: 3px; border-radius: 4px; }
+
+  /* NAV */
+  nav { background: var(--azul); padding: 0 48px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--blanco); text-decoration: none; }
+  .logo span { color: var(--naranja); }
+  .nav-links { list-style: none; display: flex; gap: 6px; font-size: 14px; }
+  .nav-links a { text-decoration: none; color: var(--blanco); font-weight: 600; padding: 8px 16px; border-radius: 8px; display: block; }
+  .nav-links a:hover { background: rgba(255,255,255,0.15); }
+  .nav-links a.activo { background: var(--naranja); }
+  .nav-acc { display: flex; gap: 10px; }
+  .btn-ghost { padding: 8px 18px; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; background: transparent; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--blanco); font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-naranja { padding: 8px 18px; border: none; border-radius: 8px; background: var(--naranja); color: var(--blanco); font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .btn-naranja:hover { background: #d96a14; }
+
+  /* BREADCRUMB */
+  /* Botón volver — H3 Control y libertad */
+  .btn-volver {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--blanco); border: 1.5px solid var(--borde);
+    color: var(--suave); font-size: 13px; font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    text-decoration: none; margin-bottom: 16px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-volver:hover { border-color: var(--azul-medio); color: var(--azul); }
+
+  /* LAYOUT */
+  .contenido { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 28px 48px 48px; max-width: 1200px; margin: 0 auto; }
+
+  /* PERFIL PRINCIPAL */
+  .perfil-header { background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+  .perfil-top { display: flex; gap: 22px; align-items: flex-start; }
+  .perfil-avatar { width: 88px; height: 88px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; border: 3px solid var(--azul-suave); }
+  .perfil-info { flex: 1; }
+  .perfil-nombre { font-family: 'Sora', sans-serif; font-size: 24px; color: var(--azul); margin-bottom: 4px; }
+  .perfil-oficio { font-size: 15px; color: var(--suave); margin-bottom: 10px; }
+  .perfil-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .badge-verificado { background: var(--azul-claro); color: var(--azul-medio); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+  .badge-hoy { background: #DCFCE7; color: #166534; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+  .perfil-rating { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .estrellas { color: var(--naranja); font-size: 16px; }
+  .rating-num { font-size: 18px; font-weight: 700; }
+  .rating-count { font-size: 13px; color: var(--tenue); }
+  .perfil-meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--suave); }
+  .perfil-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* SECCIÓN CARD */
+  .card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .card-titulo { font-family: 'Sora', sans-serif; font-size: 16px; color: var(--azul); margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--borde); }
+  .card p { font-size: 14px; color: var(--suave); line-height: 1.7; }
+
+  /* SERVICIOS */
+  .servicios-lista { display: flex; flex-direction: column; gap: 12px; }
+  .servicio-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--fondo); border-radius: 10px; border: 1px solid var(--borde); }
+  .servicio-nombre { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .servicio-ico { width: 32px; height: 32px; background: var(--azul-claro); color: var(--azul); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .servicio-precio { font-size: 13px; color: var(--suave); text-align: right; }
+  .servicio-precio strong { font-size: 15px; color: var(--texto); display: block; }
+
+  /* RESEÑAS */
+  .resenas-lista { display: flex; flex-direction: column; gap: 16px; }
+  .resena { padding-bottom: 16px; border-bottom: 1px solid var(--borde); }
+  .resena:last-child { border-bottom: none; padding-bottom: 0; }
+  .resena-cabecera { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .resena-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--azul-suave); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .resena-nombre { font-size: 13px; font-weight: 600; }
+  .resena-fecha { font-size: 11px; color: var(--tenue); margin-top: 2px; }
+  .resena-estrellas { color: var(--naranja); font-size: 12px; margin-left: auto; }
+  .resena-texto { font-size: 13px; color: var(--suave); line-height: 1.6; }
+
+  /* SIDEBAR FIJO — H3 Control: CTA de contacto siempre accesible */
+  .sidebar { position: sticky; top: 88px; height: fit-content; }
+  .contacto-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .contacto-precio { margin-bottom: 16px; }
+  .precio-lbl { font-size: 12px; color: var(--tenue); margin-bottom: 2px; }
+  .precio-valor { font-family: 'Sora', sans-serif; font-size: 26px; color: var(--azul); }
+  .precio-unidad { font-size: 13px; color: var(--tenue); }
+  .btn-contactar { width: 100%; padding: 13px; background: var(--naranja); border: none; border-radius: 10px; color: var(--blanco); font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-bottom: 10px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-contactar:hover { background: #d96a14; }
+  .btn-wsp { width: 100%; padding: 11px; background: #25D366; border: none; border-radius: 10px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-wsp:hover { background: #1ebe5b; }
+  .contacto-garantia { margin-top: 14px; padding: 10px 12px; background: var(--exito-bg); border-radius: 8px; font-size: 12px; color: var(--exito); display: flex; gap: 8px; align-items: flex-start; }
+  .disponibilidad-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 20px; }
+  .disp-titulo { font-size: 13px; font-weight: 700; color: var(--texto); margin-bottom: 12px; }
+  .disp-item { display: flex; justify-content: space-between; font-size: 12px; color: var(--suave); padding: 6px 0; border-bottom: 1px solid var(--borde); }
+  .disp-item:last-child { border-bottom: none; }
+  .disp-libre { color: var(--exito); font-weight: 600; }
+  .disp-ocupado { color: var(--error); font-weight: 600; }
+
+  /* FOOTER */
+  footer { background: var(--azul); padding: 24px 48px; text-align: center; }
+  .footer-copy { font-size: 13px; color: #93B8E0; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(10,25,50,0.65); align-items: center; justify-content: center; }
+  .modal-overlay.abierto { display: flex; }
+  .modal { background: var(--blanco); border-radius: 16px; width: 100%; max-width: 480px; padding: 36px; position: relative; margin: 20px; }
+  .modal-cerrar { position: absolute; top: 16px; right: 16px; background: var(--fondo); border: none; border-radius: 8px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: var(--suave); display: flex; align-items: center; justify-content: center; }
+  .modal-cerrar:hover { background: var(--borde); }
+  .modal-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--tenue); margin-bottom: 22px; }
+  .campo { margin-bottom: 16px; }
+  .campo label { display: block; font-size: 12px; font-weight: 600; color: var(--suave); margin-bottom: 5px; }
+  .campo input, .campo select, .campo textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s; }
+  .campo input:focus, .campo select:focus, .campo textarea:focus { border-color: var(--azul-medio); background: var(--blanco); }
+  .campo textarea { resize: vertical; min-height: 90px; }
+  .campo-ayuda { font-size: 11px; color: var(--tenue); margin-top: 4px; }
+  .msg-error { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+  .msg-error.visible { display: block; }
+  .campo.campo-error input, .campo.campo-error select, .campo.campo-error textarea { border-color: var(--error); background: var(--error-bg); }
+  .btn-submit { width: 100%; padding: 12px; background: var(--naranja); border: none; border-radius: 8px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; }
+  .btn-submit:hover { background: #d96a14; }
+  .alerta-modal { display: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; margin-bottom: 16px; align-items: center; gap: 8px; }
+  .alerta-modal.exito { background: var(--exito-bg); color: var(--exito); border: 1px solid #BBF7D0; display: flex; }
+  .alerta-modal.err { background: var(--error-bg); color: var(--error); border: 1px solid #FECACA; display: flex; }
+
+  /* MODAL AUTH */
+  .tabs { display: flex; border-bottom: 2px solid var(--borde); margin-bottom: 28px; }
+  .tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--tenue); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab.activo { color: var(--azul); border-bottom-color: var(--naranja); }
+  .form-panel { display: none; }
+  .form-panel.activo { display: block; }
+  .form-titulo { font-family: 'Sora', sans-serif; font-size: 20px; color: var(--azul); margin-bottom: 4px; }
+  .form-sub { font-size: 13px; color: var(--tenue); margin-bottom: 22px; }
+  .input-wrap { position: relative; }
+  .input-wrap i.ico-campo { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; }
+  .input-wrap input { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s; }
+  .input-wrap input:focus { border-color: var(--azul-medio); background: var(--blanco); }
+  .input-wrap input.campo-error-input { border-color: var(--error); background: var(--error-bg); }
+  .input-wrap input.campo-ok { border-color: var(--exito); }
+  .ojo { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--tenue); font-size: 13px; cursor: pointer; background: none; border: none; }
+  .campo-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 12px; }
+  .recordar { display: flex; align-items: center; gap: 6px; color: var(--suave); cursor: pointer; }
+  .recordar input { accent-color: var(--azul); }
+  .link-olvide { color: var(--azul-medio); text-decoration: none; font-weight: 600; }
+  .btn-submit-auth { width: 100%; padding: 12px; background: var(--azul); border: none; border-radius: 8px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-bottom: 16px; transition: background 0.2s; }
+  .btn-submit-auth:hover { background: var(--azul-medio); }
+  .cambiar { text-align: center; font-size: 12px; color: var(--tenue); }
+  .cambiar a { color: var(--azul-medio); font-weight: 600; text-decoration: none; cursor: pointer; }
+  .terminos { font-size: 11px; color: var(--tenue); text-align: center; margin-top: 12px; line-height: 1.6; }
+  .terminos a { color: var(--azul-medio); text-decoration: none; }
+  .fortaleza { margin-top: 6px; }
+  .fortaleza-barras { display: flex; gap: 4px; margin-bottom: 3px; }
+  .barra { flex: 1; height: 3px; border-radius: 2px; background: var(--borde); transition: background 0.3s; }
+  .barra.debil { background: var(--error); }
+  .barra.media { background: #F59E0B; }
+  .barra.fuerte { background: var(--exito); }
+  .fortaleza-txt { font-size: 11px; color: var(--tenue); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    nav { padding: 0 12px; height: auto; min-height: 56px; flex-wrap: wrap; align-items: center; }
+    .logo { height: 56px; display: flex; align-items: center; flex: 1; }
+    .nav-acc { gap: 6px; }
+    .btn-ghost { padding: 6px 10px; font-size: 12px; }
+    .btn-naranja { padding: 6px 10px; font-size: 12px; }
+    .nav-links {
+      order: 10; width: 100%; gap: 2px;
+      padding: 4px 0 8px; border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .nav-links a { padding: 7px 10px; font-size: 13px; }
+
+    .contenido { grid-template-columns: 1fr; padding: 16px 16px 40px; gap: 16px; }
+    .sidebar { position: static; }
+    .perfil-top { gap: 16px; }
+    .perfil-nombre { font-size: 20px; }
+    footer { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
+<nav aria-label="Navegación principal">
+  <a href="index.html" class="logo" aria-label="El Maestro — volver al inicio">El <span>Maestro</span></a>
+  <ul class="nav-links" role="list">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="resultados.html" class="activo" aria-current="page">Servicios</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <div class="nav-acc">
+    <button class="btn-ghost" onclick="abrirModalAuth('login')" aria-haspopup="dialog">Iniciar sesión</button>
+    <button class="btn-naranja" onclick="abrirModalAuth('registro')" aria-haspopup="dialog">Registrarme</button>
+  </div>
+</nav>
+
+<main id="contenido-principal">
+  <div class="contenido">
+
+    <!-- COLUMNA PRINCIPAL -->
+    <div>
+      <!-- H3 Control y libertad — volver a resultados sin depender del botón del navegador -->
+      <a href="resultados.html" class="btn-volver" aria-label="Volver a la lista de profesionales">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver a servicios
+      </a>
+      <!-- PERFIL HEADER -->
+      <section class="perfil-header" aria-labelledby="perfil-nombre">
+        <div class="perfil-top">
+          <div class="perfil-avatar" aria-hidden="true">JR</div>
+          <div class="perfil-info">
+            <h1 class="perfil-nombre" id="perfil-nombre">José Ramírez</h1>
+            <p class="perfil-oficio">Electricista certificado</p>
+            <div class="perfil-badges">
+              <span class="badge-verificado" aria-label="Identidad y certificaciones verificadas por El Maestro">✔ Verificado</span>
+              <span class="badge-hoy" aria-label="Disponible para trabajar hoy">● Disponible hoy</span>
+            </div>
+            <div class="perfil-rating" aria-label="Calificación: 4.9 de 5 basada en 87 reseñas">
+              <span class="estrellas" aria-hidden="true">★★★★★</span>
+              <span class="rating-num">4.9</span>
+              <span class="rating-count">· 87 reseñas</span>
+            </div>
+            <div class="perfil-meta">
+              <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Norte</span>
+              <span><i class="fa-solid fa-briefcase" aria-hidden="true"></i> 10 años de experiencia</span>
+              <span><i class="fa-solid fa-check-circle" aria-hidden="true"></i> 143 trabajos completados</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SOBRE MÍ — H2 Lenguaje del usuario: texto en primera persona, cercano -->
+      <section class="card" aria-labelledby="sobre-titulo">
+        <h2 class="card-titulo" id="sobre-titulo">Sobre mí</h2>
+        <p>Soy electricista con más de 10 años de experiencia en instalaciones residenciales y comerciales en Quito. Me especializo en diagnóstico y reparación de tableros eléctricos, instalación de tomacorrientes, iluminación y sistemas de protección contra sobrecargas.</p>
+        <br/>
+        <p>Trabajo con puntualidad, limpieza y garantizo mis servicios. Cada trabajo incluye diagnóstico gratuito y presupuesto sin compromiso antes de iniciar.</p>
+      </section>
+
+      <!-- SERVICIOS — H6 Reconocimiento: precios visibles sin necesidad de preguntar -->
+      <section class="card" aria-labelledby="servicios-titulo">
+        <h2 class="card-titulo" id="servicios-titulo">Servicios y tarifas</h2>
+        <div class="servicios-lista" role="list">
+          <div class="servicio-item" role="listitem">
+            <div class="servicio-nombre">
+              <div class="servicio-ico" aria-hidden="true"><i class="fa-solid fa-bolt"></i></div>
+              Instalación eléctrica residencial
+            </div>
+            <div class="servicio-precio"><strong>desde $25</strong>por hora</div>
+          </div>
+          <div class="servicio-item" role="listitem">
+            <div class="servicio-nombre">
+              <div class="servicio-ico" aria-hidden="true"><i class="fa-solid fa-plug"></i></div>
+              Cambio de tomacorrientes e interruptores
+            </div>
+            <div class="servicio-precio"><strong>desde $15</strong>por punto</div>
+          </div>
+          <div class="servicio-item" role="listitem">
+            <div class="servicio-nombre">
+              <div class="servicio-ico" aria-hidden="true"><i class="fa-solid fa-house-signal"></i></div>
+              Revisión y reparación de tablero eléctrico
+            </div>
+            <div class="servicio-precio"><strong>desde $40</strong>por servicio</div>
+          </div>
+          <div class="servicio-item" role="listitem">
+            <div class="servicio-nombre">
+              <div class="servicio-ico" aria-hidden="true"><i class="fa-solid fa-lightbulb"></i></div>
+              Instalación de iluminación y focos LED
+            </div>
+            <div class="servicio-precio"><strong>desde $20</strong>por ambiente</div>
+          </div>
+          <div class="servicio-item" role="listitem">
+            <div class="servicio-nombre">
+              <div class="servicio-ico" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              Diagnóstico y detección de fallas
+            </div>
+            <div class="servicio-precio"><strong>Gratis</strong>con el servicio</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESEÑAS — H2 Datos reales, lenguaje familiar -->
+      <section class="card" aria-labelledby="resenas-titulo">
+        <h2 class="card-titulo" id="resenas-titulo">Reseñas de clientes (87)</h2>
+        <div class="resenas-lista" role="list">
+
+          <article class="resena" role="listitem" aria-label="Reseña de María G.">
+            <div class="resena-cabecera">
+              <div class="resena-avatar" aria-hidden="true">MG</div>
+              <div>
+                <div class="resena-nombre">María G.</div>
+                <div class="resena-fecha">Hace 3 días</div>
+              </div>
+              <div class="resena-estrellas" aria-label="Calificación: 5 de 5 estrellas">★★★★★</div>
+            </div>
+            <p class="resena-texto">Excelente servicio. José llegó puntual, explicó todo el problema del tablero antes de empezar y terminó en menos tiempo del estimado. El precio fue justo. Totalmente recomendado.</p>
+          </article>
+
+          <article class="resena" role="listitem" aria-label="Reseña de Carlos M.">
+            <div class="resena-cabecera">
+              <div class="resena-avatar" aria-hidden="true">CM</div>
+              <div>
+                <div class="resena-nombre">Carlos M.</div>
+                <div class="resena-fecha">Hace 1 semana</div>
+              </div>
+              <div class="resena-estrellas" aria-label="Calificación: 5 de 5 estrellas">★★★★★</div>
+            </div>
+            <p class="resena-texto">Cambió todas las instalaciones de mi departamento en un día. Trabajo limpio, ordenado y con garantía. Ya le voy a llamar para el siguiente proyecto.</p>
+          </article>
+
+          <article class="resena" role="listitem" aria-label="Reseña de Lucía P.">
+            <div class="resena-cabecera">
+              <div class="resena-avatar" aria-hidden="true">LP</div>
+              <div>
+                <div class="resena-nombre">Lucía P.</div>
+                <div class="resena-fecha">Hace 2 semanas</div>
+              </div>
+              <div class="resena-estrellas" aria-label="Calificación: 4 de 5 estrellas">★★★★☆</div>
+            </div>
+            <p class="resena-texto">Muy buen profesional, resolvió el problema rápido. Solo llegó 15 minutos tarde, pero avisó con anticipación. El trabajo quedó perfecto.</p>
+          </article>
+
+        </div>
+      </section>
+    </div>
+
+    <!-- SIDEBAR — H3 Control: botón de contacto siempre visible y accesible -->
+    <aside aria-label="Contratar a José Ramírez">
+      <div class="contacto-card">
+        <div class="contacto-precio">
+          <div class="precio-lbl">Tarifa desde</div>
+          <div class="precio-valor">$25 <span class="precio-unidad">/ hora</span></div>
+        </div>
+        <!-- H5 Prevención — botón principal claro, sin ambigüedad sobre qué hará -->
+        <button class="btn-contactar" onclick="abrirModalContacto()" aria-label="Abrir formulario para solicitar servicio a José Ramírez">
+          <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+          Solicitar servicio
+        </button>
+        <button class="btn-wsp" aria-label="Contactar a José Ramírez por WhatsApp">
+          <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+          WhatsApp
+        </button>
+        <!-- H10 Ayuda — garantía visible que reduce incertidumbre antes de contactar -->
+        <div class="contacto-garantia" role="note" aria-label="Garantía de El Maestro">
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <span>Presupuesto gratis y sin compromiso. Pago solo cuando el trabajo esté terminado.</span>
+        </div>
+      </div>
+
+      <!-- H1 Visibilidad del estado — disponibilidad de la semana -->
+      <div class="disponibilidad-card" aria-labelledby="disp-titulo">
+        <div class="disp-titulo" id="disp-titulo">Disponibilidad esta semana</div>
+        <div class="disp-item"><span>Lunes 21</span>   <span class="disp-libre">Libre</span></div>
+        <div class="disp-item"><span>Martes 22</span>  <span class="disp-libre">Libre</span></div>
+        <div class="disp-item"><span>Miércoles 23</span><span class="disp-ocupado">Ocupado</span></div>
+        <div class="disp-item"><span>Jueves 24</span>  <span class="disp-libre">Libre</span></div>
+        <div class="disp-item"><span>Viernes 25</span> <span class="disp-libre">Libre</span></div>
+        <div class="disp-item"><span>Sábado 26</span>  <span class="disp-libre">Libre</span></div>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer role="contentinfo">
+  <div class="footer-copy">© 2026 El Maestro · Hecho con esfuerzo, para el hogar ecuatoriano</div>
+</footer>
+
+<!-- MODAL SOLICITAR SERVICIO -->
+<div class="modal-overlay" id="modal-contacto" onclick="cerrarContactoFuera(event)" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-contacto-titulo">
+    <button class="modal-cerrar" onclick="cerrarModalContacto()" aria-label="Cerrar formulario">✕</button>
+    <div class="modal-titulo" id="modal-contacto-titulo">Solicitar servicio</div>
+    <div class="modal-sub">Cuéntale a José qué necesitas y te responderá pronto.</div>
+    <div class="alerta-modal" id="alerta-contacto" role="alert" aria-live="polite"></div>
+    <div class="campo">
+      <label for="c-nombre">Tu nombre</label>
+      <input type="text" id="c-nombre" placeholder="Nombre completo" autocomplete="name" aria-required="true"/>
+      <div class="msg-error" id="err-c-nombre" role="alert">Ingresa tu nombre</div>
+    </div>
+    <div class="campo">
+      <label for="c-telefono">Teléfono de contacto</label>
+      <input type="tel" id="c-telefono" placeholder="09XXXXXXXX" autocomplete="tel" aria-required="true"/>
+      <div class="campo-ayuda">Para que José te pueda llamar o escribir por WhatsApp.</div>
+      <div class="msg-error" id="err-c-telefono" role="alert">Ingresa un número de teléfono válido</div>
+    </div>
+    <div class="campo">
+      <label for="c-servicio">Servicio que necesitas</label>
+      <select id="c-servicio" aria-required="true">
+        <option value="">Selecciona un servicio…</option>
+        <option>Instalación eléctrica residencial</option>
+        <option>Cambio de tomacorrientes e interruptores</option>
+        <option>Revisión y reparación de tablero eléctrico</option>
+        <option>Instalación de iluminación y focos LED</option>
+        <option>Diagnóstico y detección de fallas</option>
+        <option>Otro (especificar en descripción)</option>
+      </select>
+      <div class="msg-error" id="err-c-servicio" role="alert">Selecciona el servicio que necesitas</div>
+    </div>
+    <div class="campo">
+      <label for="c-descripcion">Descripción del problema</label>
+      <textarea id="c-descripcion" placeholder="Ej: Tengo un tomacorriente que no funciona en la sala y necesito revisarlo…" aria-describedby="ayuda-descripcion"></textarea>
+      <p class="campo-ayuda" id="ayuda-descripcion">Mientras más detalle des, más preciso será el presupuesto.</p>
+    </div>
+    <button class="btn-submit" onclick="enviarSolicitud()">Enviar solicitud</button>
+  </div>
+</div>
+
+<!-- MODAL AUTH -->
+<div class="modal-overlay" id="modal-auth" onclick="cerrarAuthFuera(event)" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-titulo-activo" id="modal-auth-contenedor">
+    <button class="modal-cerrar" onclick="cerrarModalAuth()" aria-label="Cerrar ventana">✕</button>
+    <div class="tabs" role="tablist">
+      <div class="tab activo" id="tab-login" role="tab" aria-selected="true" tabindex="0" onclick="cambiarTab('login')" onkeydown="if(event.key==='Enter') cambiarTab('login')">Iniciar sesión</div>
+      <div class="tab" id="tab-registro" role="tab" aria-selected="false" tabindex="0" onclick="cambiarTab('registro')" onkeydown="if(event.key==='Enter') cambiarTab('registro')">Crear cuenta</div>
+    </div>
+    <div class="form-panel activo" id="panel-login" role="tabpanel">
+      <div class="form-titulo" id="auth-titulo-activo">Bienvenido de vuelta</div>
+      <div class="form-sub">Ingresa tus datos para continuar</div>
+      <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
+      <div class="campo">
+        <label for="login-email">Correo electrónico</label>
+        <div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div>
+        <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido</div>
+      </div>
+      <div class="campo">
+        <label for="login-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+          <input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/>
+          <button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+        </div>
+        <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
+      </div>
+      <div class="extras">
+        <label class="recordar"><input type="checkbox"/> Recordarme</label>
+        <a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button class="btn-submit-auth" onclick="submitLogin()">Iniciar sesión</button>
+      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
+    </div>
+    <div class="form-panel" id="panel-registro" role="tabpanel">
+      <div class="form-titulo">Crea tu cuenta</div>
+      <div class="form-sub">Es gratis y solo toma un momento</div>
+      <div class="alerta-modal" id="alerta-registro" role="alert" aria-live="polite"></div>
+      <div class="campo-fila">
+        <div class="campo"><label for="reg-nombre">Nombre</label><div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="given-name" aria-required="true"/></div><div class="msg-error" id="err-reg-nombre" role="alert">Ingresa tu nombre</div></div>
+        <div class="campo"><label for="reg-apellido">Apellido</label><div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-apellido" placeholder="Tu apellido" autocomplete="family-name" aria-required="true"/></div><div class="msg-error" id="err-reg-apellido" role="alert">Ingresa tu apellido</div></div>
+      </div>
+      <div class="campo"><label for="reg-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="reg-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div><div class="msg-error" id="err-reg-email" role="alert">Ingresa un correo válido</div></div>
+      <div class="campo">
+        <label for="reg-pass">Contraseña</label>
+        <div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="reg-pass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" aria-required="true" oninput="checkFortaleza(this.value)"/><button type="button" class="ojo" onclick="togglePass('reg-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div>
+        <div class="fortaleza" id="fortaleza-wrap" style="display:none;" aria-live="polite"><div class="fortaleza-barras" aria-hidden="true"><div class="barra" id="b1"></div><div class="barra" id="b2"></div><div class="barra" id="b3"></div><div class="barra" id="b4"></div></div><div class="fortaleza-txt" id="fortaleza-txt"></div></div>
+        <div class="msg-error" id="err-reg-pass" role="alert">Mínimo 8 caracteres</div>
+      </div>
+      <div class="campo"><label for="reg-pass2">Confirmar contraseña</label><div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="reg-pass2" placeholder="Repite tu contraseña" autocomplete="new-password" aria-required="true"/><button type="button" class="ojo" onclick="togglePass('reg-pass2',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><div class="msg-error" id="err-reg-pass2" role="alert">Las contraseñas no coinciden</div></div>
+      <button class="btn-submit-auth" onclick="submitRegistro()">Crear mi cuenta</button>
+      <div class="terminos">Al registrarte aceptas nuestros <a href="#">Términos de uso</a> y <a href="#">Política de privacidad</a></div>
+      <div class="cambiar" style="margin-top:12px;">¿Ya tienes cuenta? <a onclick="cambiarTab('login')">Inicia sesión</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // MODAL CONTACTO
+  function abrirModalContacto() {
+    document.getElementById('modal-contacto').classList.add('abierto');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('c-nombre').focus(), 50);
+  }
+  function cerrarModalContacto() { document.getElementById('modal-contacto').classList.remove('abierto'); document.body.style.overflow = ''; }
+  function cerrarContactoFuera(e) { if (e.target === document.getElementById('modal-contacto')) cerrarModalContacto(); }
+
+  function enviarSolicitud() {
+    const nombre = document.getElementById('c-nombre').value.trim();
+    const tel    = document.getElementById('c-telefono').value.trim();
+    const serv   = document.getElementById('c-servicio').value;
+    let ok = true;
+    const nOk = nombre.length > 1; document.getElementById('c-nombre').classList.toggle('campo-error-input', !nOk); document.getElementById('err-c-nombre').classList.toggle('visible', !nOk); if (!nOk) ok = false;
+    const tOk = /^0[0-9]{9}$/.test(tel.replace(/\s/g,'')); document.getElementById('c-telefono').classList.toggle('campo-error-input', !tOk); document.getElementById('err-c-telefono').classList.toggle('visible', !tOk); if (!tOk) ok = false;
+    const sOk = serv !== ''; document.getElementById('c-servicio').classList.toggle('campo-error-input', !sOk); document.getElementById('err-c-servicio').classList.toggle('visible', !sOk); if (!sOk) ok = false;
+    const alerta = document.getElementById('alerta-contacto');
+    if (ok) {
+      alerta.className = 'alerta-modal exito';
+      alerta.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Solicitud enviada! José te contactará pronto.';
+      setTimeout(cerrarModalContacto, 2000);
+    } else {
+      alerta.className = 'alerta-modal err';
+      alerta.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Completa los campos marcados para continuar.';
+    }
+  }
+
+  // ESC cierra cualquier modal abierto
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      cerrarModalContacto();
+      cerrarModalAuth();
+    }
+  });
+
+  // MODAL AUTH
+  function abrirModalAuth(tab) { document.getElementById('modal-auth').classList.add('abierto'); cambiarTab(tab||'login'); document.body.style.overflow='hidden'; setTimeout(()=>{const p=document.querySelector('#modal-auth-contenedor input:not([type=checkbox])');if(p)p.focus();},50); }
+  function cerrarModalAuth() { document.getElementById('modal-auth').classList.remove('abierto'); document.body.style.overflow=''; }
+  function cerrarAuthFuera(e) { if(e.target===document.getElementById('modal-auth')) cerrarModalAuth(); }
+  function cambiarTab(tab) {
+    const esLogin=tab==='login';
+    document.getElementById('tab-login').classList.toggle('activo',esLogin); document.getElementById('tab-login').setAttribute('aria-selected',esLogin);
+    document.getElementById('tab-registro').classList.toggle('activo',!esLogin); document.getElementById('tab-registro').setAttribute('aria-selected',!esLogin);
+    document.getElementById('panel-login').classList.toggle('activo',esLogin);
+    document.getElementById('panel-registro').classList.toggle('activo',!esLogin);
+  }
+  function togglePass(id,btn){const input=document.getElementById(id);const visible=input.type==='text';input.type=visible?'password':'text';btn.querySelector('i').className=visible?'fa-solid fa-eye':'fa-solid fa-eye-slash';}
+  function marcar(id,ok){const el=document.getElementById(id);if(!el)return;el.classList.remove('campo-error-input','campo-ok');el.classList.add(ok?'campo-ok':'campo-error-input');}
+  function mostrarErr(id,show){const el=document.getElementById(id);if(el)el.classList.toggle('visible',show);}
+  function alerta(id,tipo,msg){const el=document.getElementById(id);el.className='alerta-modal '+tipo;el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;}
+  function submitLogin(){const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;let ok=true;const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;if(ok){alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModalAuth,1500);}else alerta('alerta-login','err','Corrige los campos marcados.');}
+  function submitRegistro(){const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;let ok=true;const nOk=nombre.length>1;marcar('reg-nombre',nOk);mostrarErr('err-reg-nombre',!nOk);if(!nOk)ok=false;const aOk=apellido.length>1;marcar('reg-apellido',aOk);mostrarErr('err-reg-apellido',!aOk);if(!aOk)ok=false;const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('reg-email',eOk);mostrarErr('err-reg-email',!eOk);if(!eOk)ok=false;const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;if(ok){alerta('alerta-registro','exito','¡Cuenta creada! Redirigiendo…');setTimeout(cerrarModalAuth,1500);}else alerta('alerta-registro','err','Completa correctamente todos los campos.');}
+  function checkFortaleza(val){document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none';let nivel=0;if(val.length>=6)nivel++;if(val.length>=8)nivel++;if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++;if(/[^A-Za-z0-9]/.test(val))nivel++;const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte'];['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');});document.getElementById('fortaleza-txt').textContent=textos[nivel]||'';}
+</script>
+</body>
+</html>
