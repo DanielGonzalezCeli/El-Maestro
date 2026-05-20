@@ -409,6 +409,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script>
   // CONTADOR DE CARACTERES — H5 Prevención
   function actualizarContador() {
@@ -431,11 +433,12 @@
   }
 
   // FORMULARIO DE CONTACTO
-  function enviarFormulario() {
+  async function enviarFormulario() {
     const nombre   = document.getElementById('nombre').value.trim();
     const apellido = document.getElementById('apellido').value.trim();
     const email    = document.getElementById('email').value.trim();
     const asunto   = document.getElementById('asunto').value;
+    const mensaje  = document.getElementById('mensaje').value.trim();
     let ok = true;
 
     function validar(id, errId, condicion) {
@@ -451,7 +454,31 @@
     validar('asunto',   'err-asunto',   asunto !== '');
 
     const alerta = document.getElementById('alerta-principal');
-    if (ok) {
+    if (!ok) {
+      alerta.className = 'alerta-form err';
+      alerta.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Completa los campos marcados antes de enviar.';
+      alerta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
+    const btn = document.querySelector('.btn-enviar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Enviando…';
+
+    const { error } = await Contactos.guardar({
+      nombre: `${nombre} ${apellido}`,
+      correo: email,
+      asunto,
+      mensaje
+    });
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Enviar mensaje';
+
+    if (error) {
+      alerta.className = 'alerta-form err';
+      alerta.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Error al enviar el mensaje. Intenta de nuevo.';
+    } else {
       alerta.className = 'alerta-form exito';
       alerta.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Mensaje enviado! Te responderemos en menos de 24 horas.';
       document.getElementById('nombre').value = '';
@@ -460,9 +487,6 @@
       document.getElementById('asunto').value = '';
       document.getElementById('mensaje').value = '';
       actualizarContador();
-    } else {
-      alerta.className = 'alerta-form err';
-      alerta.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Completa los campos marcados antes de enviar.';
     }
     alerta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -484,8 +508,33 @@
   function marcar(id,ok){const el=document.getElementById(id);if(!el)return;el.classList.remove('campo-error-input','campo-ok');el.classList.add(ok?'campo-ok':'campo-error-input');}
   function mostrarErr(id,show){const el=document.getElementById(id);if(el)el.classList.toggle('visible',show);}
   function alertaModal(id,tipo,msg){const el=document.getElementById(id);el.className='alerta-modal '+tipo;el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;}
-  function submitLogin(){const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;let ok=true;const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;if(ok){alertaModal('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}else alertaModal('alerta-login','err','Corrige los campos marcados.');}
-  function submitRegistro(){const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;let ok=true;const nOk=nombre.length>1;marcar('reg-nombre',nOk);mostrarErr('err-reg-nombre',!nOk);if(!nOk)ok=false;const aOk=apellido.length>1;marcar('reg-apellido',aOk);mostrarErr('err-reg-apellido',!aOk);if(!aOk)ok=false;const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('reg-email',eOk);mostrarErr('err-reg-email',!eOk);if(!eOk)ok=false;const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;if(ok){alertaModal('alerta-registro','exito','¡Cuenta creada! Redirigiendo…');setTimeout(cerrarModal,1500);}else alertaModal('alerta-registro','err','Completa correctamente todos los campos.');}
+  async function submitLogin(){
+    const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;
+    let ok=true;
+    const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;
+    const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;
+    if(!ok){alertaModal('alerta-login','err','Corrige los campos marcados.');return;}
+    const btn=document.querySelector('#panel-login .btn-submit');btn.disabled=true;btn.textContent='Ingresando…';
+    const {error}=await db.auth.signInWithPassword({email,password:pass});
+    btn.disabled=false;btn.textContent='Iniciar sesión';
+    if(error){alertaModal('alerta-login','err',error.message.includes('nvalid')?'Correo o contraseña incorrectos.':error.message.includes('onfirm')?'Debes confirmar tu correo primero.':'Error al iniciar sesión.');}
+    else{alertaModal('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}
+  }
+  async function submitRegistro(){
+    const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;
+    let ok=true;
+    const nOk=nombre.length>1;marcar('reg-nombre',nOk);mostrarErr('err-reg-nombre',!nOk);if(!nOk)ok=false;
+    const aOk=apellido.length>1;marcar('reg-apellido',aOk);mostrarErr('err-reg-apellido',!aOk);if(!aOk)ok=false;
+    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('reg-email',eOk);mostrarErr('err-reg-email',!eOk);if(!eOk)ok=false;
+    const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;
+    const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;
+    if(!ok){alertaModal('alerta-registro','err','Completa correctamente todos los campos.');return;}
+    const btn=document.querySelector('#panel-registro .btn-submit');btn.disabled=true;btn.textContent='Creando cuenta…';
+    const {error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    btn.disabled=false;btn.textContent='Crear mi cuenta';
+    if(error){alertaModal('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}
+    else{alertaModal('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2000);}
+  }
   function checkFortaleza(val){document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none';let nivel=0;if(val.length>=6)nivel++;if(val.length>=8)nivel++;if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++;if(/[^A-Za-z0-9]/.test(val))nivel++;const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte'];['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');});document.getElementById('fortaleza-txt').textContent=textos[nivel]||'';}
 </script>
 </body>

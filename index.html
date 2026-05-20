@@ -449,104 +449,8 @@
     <h2 class="sec-titulo" id="titulo-profesionales">Profesionales mejor calificados</h2>
     <a class="ver-todos" href="resultados.html" aria-label="Ver todos los profesionales disponibles">Ver todos →</a>
   </div>
-  <div class="pros-grid" role="list" aria-label="Lista de profesionales destacados">
-
-    <article class="pro-card" role="listitem" tabindex="0"
-             onclick="window.location.href='perfil.html'"
-             onkeydown="if(event.key==='Enter') window.location.href='perfil.html'"
-             aria-label="Ver perfil de José Ramírez, Electricista, calificación 4.9">
-      <div class="pro-top">
-        <div class="pro-avatar" aria-hidden="true">JR</div>
-        <div>
-          <div class="pro-nombre-row">
-            <span class="pro-nombre">José Ramírez</span>
-            <div class="tooltip-wrap">
-              <span class="pro-verificado" aria-label="Profesional verificado por El Maestro">✔ Verificado</span>
-              <span class="tooltip" role="tooltip">Identidad y certificaciones comprobadas</span>
-            </div>
-          </div>
-          <div class="pro-oficio">Electricista</div>
-        </div>
-      </div>
-      <!-- Disponibilidad con protagonismo visual propio -->
-      <div class="pro-disp-wrap">
-        <span class="badge-hoy" aria-label="Disponible para trabajar hoy">
-          <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Disponible hoy
-        </span>
-      </div>
-      <div class="pro-rating" aria-label="Calificación: 4.9 de 5, basada en 87 reseñas">
-        <span class="estrellas" aria-hidden="true">★★★★★</span>
-        <span class="rating-num">4.9</span>
-        <span class="rating-count">· 87 reseñas</span>
-      </div>
-      <div class="pro-meta">
-        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Norte</span>
-      </div>
-      <button class="btn-ver" aria-label="Ver perfil y contactar a José Ramírez">Ver perfil y contactar</button>
-    </article>
-
-    <article class="pro-card" role="listitem" tabindex="0"
-             onclick="window.location.href='perfil.html'"
-             onkeydown="if(event.key==='Enter') window.location.href='perfil.html'"
-             aria-label="Ver perfil de Mario Pinto, Plomero, calificación 4.6">
-      <div class="pro-top">
-        <div class="pro-avatar" aria-hidden="true">MP</div>
-        <div>
-          <div class="pro-nombre-row">
-            <span class="pro-nombre">Mario Pinto</span>
-            <div class="tooltip-wrap">
-              <span class="pro-verificado" aria-label="Profesional verificado por El Maestro">✔ Verificado</span>
-              <span class="tooltip" role="tooltip">Identidad y certificaciones comprobadas</span>
-            </div>
-          </div>
-          <div class="pro-oficio">Plomero</div>
-        </div>
-      </div>
-      <div class="pro-disp-wrap">
-        <span class="badge-hoy" aria-label="Disponible para trabajar hoy">
-          <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Disponible hoy
-        </span>
-      </div>
-      <div class="pro-rating" aria-label="Calificación: 4.6 de 5, basada en 54 reseñas">
-        <span class="estrellas" aria-hidden="true">★★★★☆</span>
-        <span class="rating-num">4.6</span>
-        <span class="rating-count">· 54 reseñas</span>
-      </div>
-      <div class="pro-meta">
-        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Centro</span>
-      </div>
-      <button class="btn-ver" aria-label="Ver perfil y contactar a Mario Pinto">Ver perfil y contactar</button>
-    </article>
-
-    <article class="pro-card" role="listitem" tabindex="0"
-             onclick="window.location.href='perfil.html'"
-             onkeydown="if(event.key==='Enter') window.location.href='perfil.html'"
-             aria-label="Ver perfil de Luis Cabrera, Cerrajero, calificación 4.3">
-      <div class="pro-top">
-        <div class="pro-avatar" aria-hidden="true">LC</div>
-        <div>
-          <div class="pro-nombre-row">
-            <span class="pro-nombre">Luis Cabrera</span>
-          </div>
-          <div class="pro-oficio">Cerrajero</div>
-        </div>
-      </div>
-      <div class="pro-disp-wrap">
-        <span class="badge-semana" aria-label="Disponible esta semana">
-          <i class="fa-solid fa-clock" aria-hidden="true"></i> Disponible esta semana
-        </span>
-      </div>
-      <div class="pro-rating" aria-label="Calificación: 4.3 de 5, basada en 31 reseñas">
-        <span class="estrellas" aria-hidden="true">★★★★☆</span>
-        <span class="rating-num">4.3</span>
-        <span class="rating-count">· 31 reseñas</span>
-      </div>
-      <div class="pro-meta">
-        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quito Sur</span>
-      </div>
-      <button class="btn-ver" aria-label="Ver perfil y contactar a Luis Cabrera">Ver perfil y contactar</button>
-    </article>
-
+  <div class="pros-grid" id="pros-grid" role="list" aria-label="Lista de profesionales destacados">
+    <p style="color:var(--tenue);font-size:14px;grid-column:1/-1;padding:20px 0;">Cargando profesionales…</p>
   </div>
 </section>
 </main>
@@ -696,6 +600,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script>
   // MODAL
   function abrirModal(tab) {
@@ -766,7 +672,7 @@
     el.innerHTML = `<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;
   }
 
-  function submitLogin() {
+  async function submitLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass  = document.getElementById('login-pass').value;
     let ok = true;
@@ -776,11 +682,23 @@
     const passOk = pass.length > 0;
     marcar('login-pass', passOk); mostrarErr('err-login-pass', !passOk);
     if (!passOk) ok = false;
-    if (ok) { alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…'); setTimeout(cerrarModal, 1500); }
-    else alerta('alerta-login','err','Corrige los campos marcados antes de continuar.');
+    if (!ok) { alerta('alerta-login','err','Corrige los campos marcados antes de continuar.'); return; }
+    const btn = document.querySelector('#panel-login .btn-submit');
+    btn.disabled = true; btn.textContent = 'Ingresando…';
+    const { error } = await db.auth.signInWithPassword({ email, password: pass });
+    btn.disabled = false; btn.textContent = 'Iniciar sesión';
+    if (error) {
+      const msg = error.message.includes('nvalid') ? 'Correo o contraseña incorrectos.'
+        : error.message.includes('onfirm') ? 'Debes confirmar tu correo antes de iniciar sesión.'
+        : 'Error al iniciar sesión. Intenta de nuevo.';
+      alerta('alerta-login', 'err', msg);
+    } else {
+      alerta('alerta-login', 'exito', '¡Bienvenido! Redirigiendo…');
+      setTimeout(cerrarModal, 1500);
+    }
   }
 
-  function submitRegistro() {
+  async function submitRegistro() {
     const nombre   = document.getElementById('reg-nombre').value.trim();
     const apellido = document.getElementById('reg-apellido').value.trim();
     const email    = document.getElementById('reg-email').value.trim();
@@ -792,8 +710,17 @@
     const eOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
     const pOk = pass.length >= 8;    marcar('reg-pass',pOk);     mostrarErr('err-reg-pass',!pOk);     if(!pOk) ok=false;
     const p2Ok = pass===pass2 && pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false;
-    if (ok) { alerta('alerta-registro','exito','¡Cuenta creada! Redirigiendo…'); setTimeout(cerrarModal, 1500); }
-    else alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');
+    if (!ok) { alerta('alerta-registro','err','Completa correctamente todos los campos marcados.'); return; }
+    const btn = document.querySelector('#panel-registro .btn-submit');
+    btn.disabled = true; btn.textContent = 'Creando cuenta…';
+    const { error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido } } });
+    btn.disabled = false; btn.textContent = 'Crear mi cuenta';
+    if (error) {
+      alerta('alerta-registro', 'err', error.message.includes('already') ? 'Este correo ya está registrado.' : 'Error al crear cuenta. Intenta de nuevo.');
+    } else {
+      alerta('alerta-registro', 'exito', '¡Cuenta creada! Revisa tu correo para confirmar.');
+      setTimeout(cerrarModal, 2000);
+    }
   }
 
   // H5 Prevención — fortaleza en tiempo real, antes de que el usuario envíe
@@ -817,6 +744,57 @@
     const q = servicio || document.getElementById('busqueda-hero').value || '';
     window.location.href = 'resultados.html?q=' + encodeURIComponent(q);
   }
+
+  // ── SUPABASE: Profesionales destacados ──
+  async function cargarProfesionalesDestacados() {
+    const grid = document.getElementById('pros-grid');
+    const { data, error } = await Profesionales.listar();
+    if (error || !data || data.length === 0) {
+      grid.innerHTML = '<p style="color:var(--tenue);font-size:14px;grid-column:1/-1;padding:20px 0;">No se pudieron cargar los profesionales.</p>';
+      return;
+    }
+    grid.innerHTML = data.slice(0, 3).map(renderProCard).join('');
+  }
+
+  function renderProCard(p) {
+    const partes = p.nombre.trim().split(/\s+/);
+    const ini = ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
+    const cal = parseFloat(p.calificacion);
+    const est = '★'.repeat(Math.round(cal)) + '☆'.repeat(5 - Math.round(cal));
+    const badge = p.disponibilidad === 'hoy'
+      ? `<span class="badge-hoy"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Disponible hoy</span>`
+      : `<span class="badge-semana"><i class="fa-solid fa-clock" aria-hidden="true"></i> Disponible esta semana</span>`;
+    const verif = p.verificado
+      ? `<div class="tooltip-wrap"><span class="pro-verificado">✔ Verificado</span><span class="tooltip" role="tooltip">Identidad y certificaciones comprobadas</span></div>` : '';
+    const zonaLabel = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
+    return `
+      <article class="pro-card" role="listitem" tabindex="0"
+               onclick="window.location.href='perfil.html'"
+               onkeydown="if(event.key==='Enter') window.location.href='perfil.html'">
+        <div class="pro-top">
+          <div class="pro-avatar" aria-hidden="true">${ini}</div>
+          <div>
+            <div class="pro-nombre-row">
+              <span class="pro-nombre">${p.nombre}</span>
+              ${verif}
+            </div>
+            <div class="pro-oficio">${p.oficio}</div>
+          </div>
+        </div>
+        <div class="pro-disp-wrap">${badge}</div>
+        <div class="pro-rating">
+          <span class="estrellas" aria-hidden="true">${est}</span>
+          <span class="rating-num">${cal.toFixed(1)}</span>
+          <span class="rating-count">· ${p.resenas} reseñas</span>
+        </div>
+        <div class="pro-meta">
+          <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${zonaLabel[p.zona] || p.zona}</span>
+        </div>
+        <button class="btn-ver">Ver perfil y contactar</button>
+      </article>`;
+  }
+
+  window.addEventListener('DOMContentLoaded', cargarProfesionalesDestacados);
 </script>
 </body>
 </html>

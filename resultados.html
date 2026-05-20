@@ -282,6 +282,8 @@
           <label class="filtro-opcion"><input type="radio" name="categoria" value="Pintor" onchange="aplicarFiltros()"/> Pintor</label>
           <label class="filtro-opcion"><input type="radio" name="categoria" value="Carpintero" onchange="aplicarFiltros()"/> Carpintero</label>
           <label class="filtro-opcion"><input type="radio" name="categoria" value="Limpieza" onchange="aplicarFiltros()"/> Limpieza</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Aire acondicionado" onchange="aplicarFiltros()"/> Aire acond.</label>
+          <label class="filtro-opcion"><input type="radio" name="categoria" value="Mudanzas" onchange="aplicarFiltros()"/> Mudanzas</label>
         </div>
 
         <div class="filtro-sep" role="separator"></div>
@@ -454,6 +456,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script>
   function toggleFiltros() {
     const sidebar = document.getElementById('sidebar-filtros');
@@ -462,116 +466,103 @@
     btn.setAttribute('aria-expanded', abierto);
   }
 
-  /* ── DATOS ── */
-  const PROFESIONALES = [
-    { nombre: 'José',     apellido: 'Ramírez', oficio: 'Electricista', zona: 'norte',  calificacion: 4.9, resenas: 87, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Especialista en instalaciones residenciales y comerciales, tableros eléctricos y reparación de cortocircuitos. Más de 10 años de experiencia.', precio: 25, unidad: 'hora',     experiencia: 10, avatarBg: '',        avatarColor: '' },
-    { nombre: 'Mario',    apellido: 'Pinto',   oficio: 'Plomero',      zona: 'centro', calificacion: 4.6, resenas: 54, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Reparación de tuberías, instalación de sanitarios, detección de fugas y mantenimiento de sistemas de agua fría y caliente.',                   precio: 20, unidad: 'hora',     experiencia:  7, avatarBg: '',        avatarColor: '' },
-    { nombre: 'Luis',     apellido: 'Cabrera', oficio: 'Cerrajero',    zona: 'sur',    calificacion: 4.3, resenas: 31, disponibilidad: 'semana', verificado: false, descripcion: 'Apertura de puertas, cambio de chapa, instalación de cerraduras de seguridad y duplicado de llaves. Atención de emergencias 24/7.',              precio: 18, unidad: 'servicio', experiencia:  5, avatarBg: '',        avatarColor: '' },
-    { nombre: 'Ana',      apellido: 'Torres',  oficio: 'Pintor',       zona: 'norte',  calificacion: 4.8, resenas: 62, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Pintura interior y exterior, acabados de primera, preparación de superficies y asesoría en paletas de color. Trabajo limpio y puntual.',          precio: 22, unidad: 'hora',     experiencia:  8, avatarBg: '#FEF3C7', avatarColor: '#92400E' },
-    { nombre: 'Roberto',  apellido: 'Mora',    oficio: 'Carpintero',   zona: 'valles', calificacion: 4.5, resenas: 43, disponibilidad: 'semana', verificado: true,  descripcion: 'Fabricación de muebles a medida, reparación de estructuras de madera, instalación de closets y puertas. Materiales de calidad garantizados.',     precio: 30, unidad: 'hora',     experiencia: 12, avatarBg: '#DCFCE7', avatarColor: '#166534' },
-    { nombre: 'Carmen',   apellido: 'Vega',    oficio: 'Limpieza',     zona: 'norte',  calificacion: 4.7, resenas: 78, disponibilidad: 'hoy',    verificado: true,  descripcion: 'Limpieza profunda de hogares, oficinas y departamentos. Incluye cocina, baños y ventanas. Productos de limpieza incluidos en el servicio.',      precio: 15, unidad: 'hora',     experiencia:  6, avatarBg: '#F3E8FF', avatarColor: '#7E22CE' },
-    { nombre: 'Carlos',   apellido: 'Mendoza', oficio: 'Electricista', zona: 'sur',    calificacion: 4.2, resenas: 19, disponibilidad: 'semana', verificado: false, descripcion: 'Instalación y mantenimiento eléctrico en viviendas. Reparación de tableros y conexiones. Precios accesibles y trabajo garantizado.',              precio: 18, unidad: 'hora',     experiencia:  4, avatarBg: '',        avatarColor: '' },
-    { nombre: 'Patricia', apellido: 'Salazar', oficio: 'Pintor',       zona: 'centro', calificacion: 4.4, resenas: 28, disponibilidad: 'hoy',    verificado: false, descripcion: 'Pintura de interiores y exteriores. Especialidad en acabados texturizados y pintura de fachadas. Presupuesto sin costo adicional.',              precio: 19, unidad: 'hora',     experiencia:  6, avatarBg: '',        avatarColor: '' },
-  ];
-
   const ZONA_LABEL = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
 
-  /* ── HELPERS ── */
   function estrellas(cal) {
     const r = Math.round(cal);
     return '★'.repeat(r) + '☆'.repeat(5 - r);
   }
 
   function renderCard(p) {
-    const ini = (p.nombre[0] + p.apellido[0]).toUpperCase();
-    const avatarStyle = p.avatarBg ? `style="background:${p.avatarBg};color:${p.avatarColor}"` : '';
+    const partes = p.nombre.trim().split(/\s+/);
+    const ini = ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
+    const cal = parseFloat(p.calificacion);
     const verificadoHTML = p.verificado
-      ? `<div class="pro-verificado" aria-label="Profesional verificado por El Maestro">✔ Verificado</div>` : '';
+      ? `<div class="pro-verificado">✔ Verificado</div>` : '';
     const dispBadge = p.disponibilidad === 'hoy'
-      ? `<span class="badge-hoy" aria-label="Disponible para trabajar hoy">● Disponible hoy</span>`
-      : `<span class="badge-semana" aria-label="Disponible esta semana">● Esta semana</span>`;
-
+      ? `<span class="badge-hoy">● Disponible hoy</span>`
+      : `<span class="badge-semana">● Esta semana</span>`;
     return `
       <a href="perfil.html" class="pro-card" role="listitem" tabindex="0"
-         aria-label="Ver perfil de ${p.nombre} ${p.apellido}, ${p.oficio}, calificación ${p.calificacion}">
-        <div class="pro-avatar" ${avatarStyle} aria-hidden="true">${ini}</div>
+         aria-label="Ver perfil de ${p.nombre}, ${p.oficio}, calificación ${cal}">
+        <div class="pro-avatar" aria-hidden="true">${ini}</div>
         <div class="pro-cuerpo">
           <div class="pro-cabecera">
             <div>
-              <div class="pro-nombre">${p.nombre} ${p.apellido}</div>
+              <div class="pro-nombre">${p.nombre}</div>
               <div class="pro-oficio">${p.oficio}</div>
             </div>
             ${verificadoHTML}
           </div>
-          <div class="pro-rating" aria-label="Calificación ${p.calificacion} de 5, ${p.resenas} reseñas">
-            <span class="estrellas" aria-hidden="true">${estrellas(p.calificacion)}</span>
-            <span class="rating-num">${p.calificacion}</span>
+          <div class="pro-rating">
+            <span class="estrellas" aria-hidden="true">${estrellas(cal)}</span>
+            <span class="rating-num">${cal.toFixed(1)}</span>
             <span class="rating-count">· ${p.resenas} reseñas</span>
           </div>
-          <p class="pro-descripcion">${p.descripcion}</p>
+          <p class="pro-descripcion">${p.descripcion || ''}</p>
           <div class="pro-meta">
-            <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${ZONA_LABEL[p.zona]}</span>
+            <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${ZONA_LABEL[p.zona] || p.zona}</span>
             ${dispBadge}
-            <span><i class="fa-solid fa-briefcase" aria-hidden="true"></i> ${p.experiencia} años exp.</span>
           </div>
         </div>
         <div class="pro-accion">
           <div class="pro-precio"><strong>desde $${p.precio}</strong>por ${p.unidad}</div>
           <button class="btn-ver" onclick="event.stopPropagation(); window.location.href='perfil.html'"
-                  aria-label="Ver perfil de ${p.nombre} ${p.apellido}">Ver perfil</button>
+                  aria-label="Ver perfil de ${p.nombre}">Ver perfil</button>
         </div>
       </a>`;
   }
 
-  /* ── FILTRADO PRINCIPAL ── */
-  function aplicarFiltros() {
-    const cat      = document.querySelector('input[name="categoria"]:checked').value;
-    const calMin   = document.querySelector('input[name="calificacion"]:checked').value;
-    const orden    = document.getElementById('select-orden').value;
+  /* ── FILTRADO CON SUPABASE ── */
+  async function aplicarFiltros() {
+    const cat        = document.querySelector('input[name="categoria"]:checked').value;
+    const calMin     = document.querySelector('input[name="calificacion"]:checked').value;
+    const orden      = document.getElementById('select-orden').value;
     const dispHoy    = document.getElementById('filtro-hoy').checked;
     const dispSemana = document.getElementById('filtro-semana').checked;
-
-    // Zonas: checkboxes que NO son filtro-hoy ni filtro-semana
     const zonas = [...document.querySelectorAll('input[type=checkbox]:checked')]
       .filter(c => c.id !== 'filtro-hoy' && c.id !== 'filtro-semana')
       .map(c => c.value);
 
-    let resultado = PROFESIONALES.filter(p => {
-      if (cat !== 'todos' && p.oficio !== cat)              return false;
-      if (zonas.length > 0 && !zonas.includes(p.zona))     return false;
-      if (dispHoy    && p.disponibilidad !== 'hoy')         return false;
-      if (dispSemana && p.disponibilidad !== 'semana')      return false;
-      if (calMin === 'verificado' && !p.verificado)         return false;
-      if (calMin !== 'verificado' && p.calificacion < parseFloat(calMin)) return false;
-      return true;
-    });
+    let query = db.from('profesionales').select('*');
+    if (cat !== 'todos')        query = query.eq('oficio', cat);
+    if (zonas.length > 0)       query = query.in('zona', zonas);
+    if (dispHoy && !dispSemana) query = query.eq('disponibilidad', 'hoy');
+    else if (dispSemana && !dispHoy) query = query.eq('disponibilidad', 'semana');
+    if (calMin === 'verificado')          query = query.eq('verificado', true);
+    else if (parseFloat(calMin) > 0)      query = query.gte('calificacion', parseFloat(calMin));
+    if (orden === 'rating')     query = query.order('calificacion', { ascending: false });
+    else if (orden === 'resenas')   query = query.order('resenas', { ascending: false });
+    else if (orden === 'disponible') query = query.order('disponibilidad', { ascending: true });
 
-    // Ordenar
-    if (orden === 'rating')     resultado.sort((a, b) => b.calificacion - a.calificacion);
-    else if (orden === 'resenas') resultado.sort((a, b) => b.resenas - a.resenas);
-    else if (orden === 'disponible') resultado.sort((a, b) => a.disponibilidad === 'hoy' ? -1 : 1);
+    const lista  = document.getElementById('lista-profesionales');
+    const sinRes = document.getElementById('sin-resultados');
+    lista.innerHTML = '<p style="color:var(--tenue);padding:20px 0;font-size:14px;">Cargando…</p>';
+    sinRes.style.display = 'none';
 
-    // Actualizar título dinámico
-    const n = resultado.length;
-    const encontrados = `${n} encontrado${n !== 1 ? 's' : ''}`;
-    const info = document.getElementById('info-resultados');
-    if (cat !== 'todos') {
-      info.innerHTML = `Resultados para: <strong>${cat}</strong> (${encontrados})`;
-    } else {
-      info.innerHTML = `Todos los profesionales (<strong>${encontrados}</strong>)`;
+    const { data, error } = await query;
+    if (error) {
+      lista.innerHTML = '<p style="color:var(--error);padding:20px 0;font-size:14px;">Error al cargar profesionales.</p>';
+      return;
     }
 
-    // Renderizar tarjetas
-    const lista = document.getElementById('lista-profesionales');
-    const sinRes = document.getElementById('sin-resultados');
-    if (resultado.length === 0) {
+    const resultado = data || [];
+    const n = resultado.length;
+    const info = document.getElementById('info-resultados');
+    if (cat !== 'todos') {
+      info.innerHTML = `Resultados para: <strong>${cat}</strong> (${n} encontrado${n !== 1 ? 's' : ''})`;
+    } else {
+      info.innerHTML = `Todos los profesionales (<strong>${n} encontrado${n !== 1 ? 's' : ''}</strong>)`;
+    }
+    document.getElementById('contador-resultados').textContent = n;
+
+    if (n === 0) {
       lista.innerHTML = '';
       sinRes.style.display = 'block';
     } else {
       lista.innerHTML = resultado.map(renderCard).join('');
       sinRes.style.display = 'none';
     }
-
     actualizarTags(cat, zonas);
   }
 
@@ -599,15 +590,14 @@
   }
 
   /* ── INICIALIZACIÓN ── */
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', async () => {
     const q = (new URLSearchParams(window.location.search).get('q') || '').trim();
     if (q) {
-      // Selecciona el radio que coincide con la búsqueda (case-insensitive)
       const radio = [...document.querySelectorAll('input[name="categoria"]')]
         .find(r => r.value.toLowerCase() === q.toLowerCase());
       if (radio) radio.checked = true;
     }
-    aplicarFiltros();
+    await aplicarFiltros();
   });
 
   /* ── MODAL AUTH ── */
@@ -633,8 +623,35 @@
   function marcar(id, ok) { const el = document.getElementById(id); if (!el) return; el.classList.remove('campo-error-input','campo-ok'); el.classList.add(ok ? 'campo-ok' : 'campo-error-input'); }
   function mostrarErr(id, show) { const el = document.getElementById(id); if (el) el.classList.toggle('visible', show); }
   function alerta(id, tipo, msg) { const el = document.getElementById(id); el.className = 'alerta-modal ' + tipo; el.innerHTML = `<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`; }
-  function submitLogin() { const email=document.getElementById('login-email').value.trim(), pass=document.getElementById('login-pass').value; let ok=true; const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('login-email',emailOk); mostrarErr('err-login-email',!emailOk); if(!emailOk) ok=false; const passOk=pass.length>0; marcar('login-pass',passOk); mostrarErr('err-login-pass',!passOk); if(!passOk) ok=false; if(ok){alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}else alerta('alerta-login','err','Corrige los campos marcados antes de continuar.'); }
-  function submitRegistro() { const nombre=document.getElementById('reg-nombre').value.trim(), apellido=document.getElementById('reg-apellido').value.trim(), email=document.getElementById('reg-email').value.trim(), pass=document.getElementById('reg-pass').value, pass2=document.getElementById('reg-pass2').value; let ok=true; const nOk=nombre.length>1; marcar('reg-nombre',nOk); mostrarErr('err-reg-nombre',!nOk); if(!nOk) ok=false; const aOk=apellido.length>1; marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false; const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false; const pOk=pass.length>=8; marcar('reg-pass',pOk); mostrarErr('err-reg-pass',!pOk); if(!pOk) ok=false; const p2Ok=pass===pass2&&pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false; if(ok){alerta('alerta-registro','exito','¡Cuenta creada! Redirigiendo…');setTimeout(cerrarModal,1500);}else alerta('alerta-registro','err','Completa correctamente todos los campos marcados.'); }
+  async function submitLogin() {
+    const email=document.getElementById('login-email').value.trim(), pass=document.getElementById('login-pass').value;
+    let ok=true;
+    const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('login-email',emailOk); mostrarErr('err-login-email',!emailOk); if(!emailOk) ok=false;
+    const passOk=pass.length>0; marcar('login-pass',passOk); mostrarErr('err-login-pass',!passOk); if(!passOk) ok=false;
+    if(!ok){alerta('alerta-login','err','Corrige los campos marcados antes de continuar.');return;}
+    const btn=document.querySelector('#panel-login .btn-submit');
+    btn.disabled=true; btn.textContent='Ingresando…';
+    const {error}=await db.auth.signInWithPassword({email,password:pass});
+    btn.disabled=false; btn.textContent='Iniciar sesión';
+    if(error){alerta('alerta-login','err',error.message.includes('nvalid')?'Correo o contraseña incorrectos.':error.message.includes('onfirm')?'Debes confirmar tu correo primero.':'Error al iniciar sesión.');}
+    else{alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}
+  }
+  async function submitRegistro() {
+    const nombre=document.getElementById('reg-nombre').value.trim(), apellido=document.getElementById('reg-apellido').value.trim(), email=document.getElementById('reg-email').value.trim(), pass=document.getElementById('reg-pass').value, pass2=document.getElementById('reg-pass2').value;
+    let ok=true;
+    const nOk=nombre.length>1; marcar('reg-nombre',nOk); mostrarErr('err-reg-nombre',!nOk); if(!nOk) ok=false;
+    const aOk=apellido.length>1; marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false;
+    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
+    const pOk=pass.length>=8; marcar('reg-pass',pOk); mostrarErr('err-reg-pass',!pOk); if(!pOk) ok=false;
+    const p2Ok=pass===pass2&&pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false;
+    if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');return;}
+    const btn=document.querySelector('#panel-registro .btn-submit');
+    btn.disabled=true; btn.textContent='Creando cuenta…';
+    const {error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    btn.disabled=false; btn.textContent='Crear mi cuenta';
+    if(error){alerta('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}
+    else{alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2000);}
+  }
   function checkFortaleza(val) { document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none'; let nivel=0; if(val.length>=6)nivel++; if(val.length>=8)nivel++; if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++; if(/[^A-Za-z0-9]/.test(val))nivel++; const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte']; ['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');}); document.getElementById('fortaleza-txt').textContent=textos[nivel]||''; }
 </script>
 </body>
