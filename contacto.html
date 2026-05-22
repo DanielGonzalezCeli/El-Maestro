@@ -286,14 +286,14 @@
           <div class="info-ico" aria-hidden="true"><i class="fa-solid fa-envelope"></i></div>
           <div class="info-texto">
             <strong>Correo electrónico</strong>
-            <span>hola@elmaestro.ec</span>
+            <a href="mailto:hola@elmaestro.ec" style="color:var(--suave);text-decoration:none;" aria-label="Enviar correo a hola@elmaestro.ec">hola@elmaestro.ec</a>
           </div>
         </div>
         <div class="info-item">
           <div class="info-ico" aria-hidden="true"><i class="fa-brands fa-whatsapp"></i></div>
           <div class="info-texto">
             <strong>WhatsApp</strong>
-            <span>+593 99 000 0000</span>
+            <a href="https://wa.me/593990000000?text=Hola%2C%20me%20interesa%20El%20Maestro" target="_blank" rel="noopener noreferrer" style="color:var(--suave);text-decoration:none;" aria-label="Contactar por WhatsApp">+593 99 000 0000</a>
           </div>
         </div>
         <div class="info-item">
@@ -518,7 +518,7 @@
     const {error}=await db.auth.signInWithPassword({email,password:pass});
     btn.disabled=false;btn.textContent='Iniciar sesión';
     if(error){alertaModal('alerta-login','err',error.message.includes('nvalid')?'Correo o contraseña incorrectos.':error.message.includes('onfirm')?'Debes confirmar tu correo primero.':'Error al iniciar sesión.');}
-    else{alertaModal('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}
+    else{alertaModal('alerta-login','exito','¡Bienvenido!');setTimeout(()=>{cerrarModal();verificarSesion();},1500);}
   }
   async function submitRegistro(){
     const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;
@@ -530,11 +530,18 @@
     const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;
     if(!ok){alertaModal('alerta-registro','err','Completa correctamente todos los campos.');return;}
     const btn=document.querySelector('#panel-registro .btn-submit');btn.disabled=true;btn.textContent='Creando cuenta…';
-    const {error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    if(!error&&data.user){await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);}
     btn.disabled=false;btn.textContent='Crear mi cuenta';
     if(error){alertaModal('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}
-    else{alertaModal('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2000);}
+    else{alertaModal('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2500);}
   }
+  async function verificarSesion(){
+    const {data:{session}}=await db.auth.getSession();
+    if(session){const meta=session.user.user_metadata||{};const nombre=meta.nombre||session.user.email.split('@')[0];document.querySelector('.nav-acc').innerHTML=`<span style="color:#fff;font-size:13px;font-weight:600;">Hola, ${nombre}</span><button class="btn-ghost" onclick="cerrarSesion()">Salir</button>`;}
+  }
+  async function cerrarSesion(){await db.auth.signOut();window.location.reload();}
+  window.addEventListener('DOMContentLoaded',verificarSesion);
   function checkFortaleza(val){document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none';let nivel=0;if(val.length>=6)nivel++;if(val.length>=8)nivel++;if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++;if(/[^A-Za-z0-9]/.test(val))nivel++;const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte'];['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');});document.getElementById('fortaleza-txt').textContent=textos[nivel]||'';}
 </script>
 </body>

@@ -111,7 +111,7 @@
   .precio-unidad { font-size: 13px; color: var(--tenue); }
   .btn-contactar { width: 100%; padding: 13px; background: var(--naranja); border: none; border-radius: 10px; color: var(--blanco); font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-bottom: 10px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-contactar:hover { background: #d96a14; }
-  .btn-wsp { width: 100%; padding: 11px; background: #25D366; border: none; border-radius: 10px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-wsp { width: 100%; padding: 11px; background: #25D366; border: none; border-radius: 10px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
   .btn-wsp:hover { background: #1ebe5b; }
   .contacto-garantia { margin-top: 14px; padding: 10px 12px; background: var(--exito-bg); border-radius: 8px; font-size: 12px; color: var(--exito); display: flex; gap: 8px; align-items: flex-start; }
   .disponibilidad-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 20px; }
@@ -120,6 +120,27 @@
   .disp-item:last-child { border-bottom: none; }
   .disp-libre { color: var(--exito); font-weight: 600; }
   .disp-ocupado { color: var(--error); font-weight: 600; }
+
+  /* CALENDARIO */
+  .cal-semana-titulo { font-size: 11px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 8px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+  .cal-dia { border: 1.5px solid var(--borde); border-radius: 9px; padding: 8px 3px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+  .cal-dia-nombre { font-size: 10px; font-weight: 600; color: var(--suave); }
+  .cal-dia-num { font-size: 15px; font-weight: 700; color: var(--texto); }
+  .cal-dia-estado { font-size: 9px; font-weight: 700; }
+  .cal-dia-libre { cursor: pointer; border-color: #BBF7D0; }
+  .cal-dia-libre .cal-dia-estado { color: var(--exito); }
+  .cal-dia-libre:hover, .cal-dia-libre:focus { background: var(--exito-bg); outline: none; border-color: var(--exito); }
+  .cal-dia-ocupado .cal-dia-estado { color: var(--error); }
+  .cal-dia-ocupado .cal-dia-num { color: var(--tenue); }
+  .cal-dia-pasado { opacity: 0.38; }
+  .cal-hoy-num { background: var(--naranja); color: #fff !important; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; }
+  .cal-dia-sel { background: var(--azul-claro); border-color: var(--azul-medio) !important; }
+  .cal-dia-sel .cal-dia-estado { color: var(--azul-medio); }
+  .cal-fecha-elegida { margin-top: 12px; padding: 8px 12px; background: var(--exito-bg); border-radius: 8px; font-size: 12px; color: var(--exito); display: none; align-items: center; gap: 8px; }
+  .cal-fecha-elegida.visible { display: flex; }
+  /* USUARIO EN NAV */
+  .nav-usuario-nombre { color: var(--blanco); font-size: 13px; font-weight: 600; }
 
   /* FOOTER */
   footer { background: var(--azul); padding: 24px 48px; text-align: center; }
@@ -361,10 +382,10 @@
           <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
           Solicitar servicio
         </button>
-        <button class="btn-wsp" aria-label="Contactar a José Ramírez por WhatsApp">
+        <a class="btn-wsp" id="btn-wsp" href="#" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
           <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
           WhatsApp
-        </button>
+        </a>
         <!-- H10 Ayuda — garantía visible que reduce incertidumbre antes de contactar -->
         <div class="contacto-garantia" role="note" aria-label="Garantía de El Maestro">
           <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
@@ -372,15 +393,14 @@
         </div>
       </div>
 
-      <!-- H1 Visibilidad del estado — disponibilidad de la semana -->
-      <div class="disponibilidad-card" aria-labelledby="disp-titulo">
-        <div class="disp-titulo" id="disp-titulo">Disponibilidad esta semana</div>
-        <div class="disp-item"><span>Lunes 21</span>   <span class="disp-libre">Libre</span></div>
-        <div class="disp-item"><span>Martes 22</span>  <span class="disp-libre">Libre</span></div>
-        <div class="disp-item"><span>Miércoles 23</span><span class="disp-ocupado">Ocupado</span></div>
-        <div class="disp-item"><span>Jueves 24</span>  <span class="disp-libre">Libre</span></div>
-        <div class="disp-item"><span>Viernes 25</span> <span class="disp-libre">Libre</span></div>
-        <div class="disp-item"><span>Sábado 26</span>  <span class="disp-libre">Libre</span></div>
+      <!-- Calendario de disponibilidad — 2 semanas seleccionables -->
+      <div class="disponibilidad-card" id="calendario-container" aria-labelledby="cal-titulo">
+        <div class="disp-titulo" id="cal-titulo">Elige una fecha</div>
+        <div id="cal-cuerpo"><p style="font-size:13px;color:var(--tenue);">Cargando…</p></div>
+        <div class="cal-fecha-elegida" id="cal-fecha-elegida">
+          <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+          <span id="cal-fecha-txt"></span>
+        </div>
       </div>
     </aside>
 
@@ -426,6 +446,10 @@
       <label for="c-descripcion">Descripción del problema</label>
       <textarea id="c-descripcion" placeholder="Ej: Tengo un tomacorriente que no funciona en la sala y necesito revisarlo…" aria-describedby="ayuda-descripcion"></textarea>
       <p class="campo-ayuda" id="ayuda-descripcion">Mientras más detalle des, más preciso será el presupuesto.</p>
+    </div>
+    <div class="campo" id="campo-fecha" style="display:none;">
+      <label for="c-fecha">Fecha seleccionada</label>
+      <input type="text" id="c-fecha" readonly style="background:var(--exito-bg);border-color:#BBF7D0;color:var(--exito);cursor:default;"/>
     </div>
     <button class="btn-submit" onclick="enviarSolicitud()">Enviar solicitud</button>
   </div>
@@ -487,8 +511,10 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script>
-  // MODAL CONTACTO
+  // ── MODAL SOLICITAR SERVICIO ──
   function abrirModalContacto() {
     document.getElementById('modal-contacto').classList.add('abierto');
     document.body.style.overflow = 'hidden';
@@ -505,26 +531,152 @@
     const nOk = nombre.length > 1; document.getElementById('c-nombre').classList.toggle('campo-error-input', !nOk); document.getElementById('err-c-nombre').classList.toggle('visible', !nOk); if (!nOk) ok = false;
     const tOk = /^0[0-9]{9}$/.test(tel.replace(/\s/g,'')); document.getElementById('c-telefono').classList.toggle('campo-error-input', !tOk); document.getElementById('err-c-telefono').classList.toggle('visible', !tOk); if (!tOk) ok = false;
     const sOk = serv !== ''; document.getElementById('c-servicio').classList.toggle('campo-error-input', !sOk); document.getElementById('err-c-servicio').classList.toggle('visible', !sOk); if (!sOk) ok = false;
-    const alerta = document.getElementById('alerta-contacto');
+    const al = document.getElementById('alerta-contacto');
     if (ok) {
-      alerta.className = 'alerta-modal exito';
-      alerta.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Solicitud enviada! José te contactará pronto.';
+      al.className = 'alerta-modal exito';
+      al.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Solicitud enviada! Te contactaremos pronto.';
       setTimeout(cerrarModalContacto, 2000);
     } else {
-      alerta.className = 'alerta-modal err';
-      alerta.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Completa los campos marcados para continuar.';
+      al.className = 'alerta-modal err';
+      al.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Completa los campos marcados para continuar.';
     }
   }
 
-  // ESC cierra cualquier modal abierto
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      cerrarModalContacto();
-      cerrarModalAuth();
-    }
+    if (e.key === 'Escape') { cerrarModalContacto(); cerrarModalAuth(); }
   });
 
-  // MODAL AUTH
+  // ── CALENDARIO ──
+  const DIAS_NOMBRE = ['Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MESES_CORTO = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const DIAS_OCUPADOS = new Set([2, 5, 9]); // Wed esta semana, Sat esta semana, Thu próx semana
+
+  function getLunesDeSemana(fecha) {
+    const d = new Date(fecha); d.setHours(0,0,0,0);
+    const dia = d.getDay();
+    d.setDate(d.getDate() - (dia === 0 ? 6 : dia - 1));
+    return d;
+  }
+
+  function generarCalendario(disponibilidad) {
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const lunes = getLunesDeSemana(hoy);
+    let html = '';
+    for (let s = 0; s < 2; s++) {
+      html += `<div class="cal-semana-titulo">${s === 0 ? 'Esta semana' : 'Próxima semana'}</div><div class="cal-grid">`;
+      for (let d = 0; d < 6; d++) {
+        const idx = s * 6 + d;
+        const fecha = new Date(lunes);
+        fecha.setDate(lunes.getDate() + s * 7 + d);
+        const esPasado = fecha < hoy;
+        const esHoy    = fecha.getTime() === hoy.getTime();
+        const esSabado = d === 5;
+        let libre = false;
+        if (!esPasado && !DIAS_OCUPADOS.has(idx)) {
+          libre = (disponibilidad === 'hoy') ? true : !esSabado;
+        }
+        const label = `${DIAS_NOMBRE[d]} ${fecha.getDate()} de ${MESES_CORTO[fecha.getMonth()]}`;
+        const numHTML = esHoy
+          ? `<span class="cal-hoy-num">${fecha.getDate()}</span>`
+          : `<span class="cal-dia-num">${fecha.getDate()}</span>`;
+        if (esPasado) {
+          html += `<div class="cal-dia cal-dia-pasado"><span class="cal-dia-nombre">${DIAS_NOMBRE[d]}</span>${numHTML}<span class="cal-dia-estado"></span></div>`;
+        } else if (libre) {
+          html += `<div class="cal-dia cal-dia-libre" role="button" tabindex="0"
+            onclick="seleccionarDia(this,'${label}')"
+            onkeydown="if(event.key==='Enter')seleccionarDia(this,'${label}')"
+            aria-label="${label} - Disponible">
+            <span class="cal-dia-nombre">${DIAS_NOMBRE[d]}</span>${numHTML}<span class="cal-dia-estado">Libre</span></div>`;
+        } else {
+          html += `<div class="cal-dia cal-dia-ocupado" aria-label="${label} - Ocupado"><span class="cal-dia-nombre">${DIAS_NOMBRE[d]}</span>${numHTML}<span class="cal-dia-estado">Ocupado</span></div>`;
+        }
+      }
+      html += '</div>';
+    }
+    return html;
+  }
+
+  function seleccionarDia(el, label) {
+    document.querySelectorAll('.cal-dia-sel').forEach(d => d.classList.remove('cal-dia-sel'));
+    el.classList.add('cal-dia-sel');
+    const fechaEl = document.getElementById('cal-fecha-elegida');
+    const txtEl   = document.getElementById('cal-fecha-txt');
+    if (fechaEl && txtEl) { txtEl.textContent = `Seleccionado: ${label}`; fechaEl.classList.add('visible'); }
+    const campoFecha = document.getElementById('campo-fecha');
+    const inputFecha = document.getElementById('c-fecha');
+    if (campoFecha && inputFecha) { campoFecha.style.display = 'block'; inputFecha.value = label; }
+    abrirModalContacto();
+  }
+
+  // ── CARGA DE PERFIL DESDE SUPABASE ──
+  const ZONA_LABEL = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
+
+  async function cargarPerfil() {
+    const urlId = new URLSearchParams(window.location.search).get('id');
+    let query = db.from('profesionales').select('*');
+    if (urlId) query = query.eq('id', urlId).single();
+    else        query = query.order('calificacion', { ascending: false }).limit(1).single();
+    const { data, error } = await query;
+    if (error || !data) return;
+
+    const partes = data.nombre.trim().split(/\s+/);
+    const ini    = ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
+    const nombre = partes.slice(0, 2).join(' ');
+    const cal    = parseFloat(data.calificacion);
+    const estrellas = '★'.repeat(Math.round(cal)) + '☆'.repeat(5 - Math.round(cal));
+
+    document.querySelector('.perfil-avatar').textContent = ini;
+    document.querySelector('.perfil-nombre').textContent = nombre;
+    document.querySelector('.perfil-oficio').textContent = `${data.oficio} certificado`;
+    document.querySelector('.estrellas').textContent = estrellas;
+    document.querySelector('.rating-num').textContent = cal.toFixed(1);
+    document.querySelector('.rating-count').textContent = `· ${data.resenas} reseñas`;
+    document.querySelector('.perfil-meta span').innerHTML =
+      `<i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${ZONA_LABEL[data.zona] || data.zona}`;
+    document.querySelector('.precio-valor').innerHTML =
+      `$${data.precio} <span class="precio-unidad">/ ${data.unidad}</span>`;
+
+    const badgeHoy = document.querySelector('.badge-hoy');
+    if (badgeHoy && data.disponibilidad !== 'hoy') {
+      badgeHoy.textContent = '● Disponible esta semana';
+      badgeHoy.className = 'badge-semana';
+    }
+    if (!data.verificado) {
+      const bv = document.querySelector('.badge-verificado');
+      if (bv) bv.remove();
+    }
+
+    const btnWsp = document.getElementById('btn-wsp');
+    if (btnWsp && data.whatsapp) {
+      const num   = data.whatsapp.replace(/\D/g, '');
+      const numEc = num.startsWith('0') ? '593' + num.slice(1) : num;
+      const msg   = encodeURIComponent(`Hola ${nombre}, me interesa tu servicio de ${data.oficio}. ¿Podemos hablar?`);
+      btnWsp.href = `https://wa.me/${numEc}?text=${msg}`;
+    }
+
+    document.getElementById('cal-cuerpo').innerHTML = generarCalendario(data.disponibilidad);
+    document.title = `${nombre} — ${data.oficio} | El Maestro`;
+  }
+
+  // ── SESIÓN / NAV ──
+  async function verificarSesion() {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      const meta   = session.user.user_metadata || {};
+      const nombre = meta.nombre || session.user.email.split('@')[0];
+      document.querySelector('.nav-acc').innerHTML = `
+        <span class="nav-usuario-nombre">Hola, ${nombre}</span>
+        <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>`;
+    }
+  }
+  async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    await verificarSesion();
+    await cargarPerfil();
+  });
+
+  // ── MODAL AUTH ──
   function abrirModalAuth(tab) { document.getElementById('modal-auth').classList.add('abierto'); cambiarTab(tab||'login'); document.body.style.overflow='hidden'; setTimeout(()=>{const p=document.querySelector('#modal-auth-contenedor input:not([type=checkbox])');if(p)p.focus();},50); }
   function cerrarModalAuth() { document.getElementById('modal-auth').classList.remove('abierto'); document.body.style.overflow=''; }
   function cerrarAuthFuera(e) { if(e.target===document.getElementById('modal-auth')) cerrarModalAuth(); }
@@ -539,8 +691,34 @@
   function marcar(id,ok){const el=document.getElementById(id);if(!el)return;el.classList.remove('campo-error-input','campo-ok');el.classList.add(ok?'campo-ok':'campo-error-input');}
   function mostrarErr(id,show){const el=document.getElementById(id);if(el)el.classList.toggle('visible',show);}
   function alerta(id,tipo,msg){const el=document.getElementById(id);el.className='alerta-modal '+tipo;el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;}
-  function submitLogin(){const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;let ok=true;const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;if(ok){alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModalAuth,1500);}else alerta('alerta-login','err','Corrige los campos marcados.');}
-  function submitRegistro(){const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;let ok=true;const nOk=nombre.length>1;marcar('reg-nombre',nOk);mostrarErr('err-reg-nombre',!nOk);if(!nOk)ok=false;const aOk=apellido.length>1;marcar('reg-apellido',aOk);mostrarErr('err-reg-apellido',!aOk);if(!aOk)ok=false;const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('reg-email',eOk);mostrarErr('err-reg-email',!eOk);if(!eOk)ok=false;const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;if(ok){alerta('alerta-registro','exito','¡Cuenta creada! Redirigiendo…');setTimeout(cerrarModalAuth,1500);}else alerta('alerta-registro','err','Completa correctamente todos los campos.');}
+  async function submitLogin(){
+    const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;
+    let ok=true;
+    const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;
+    const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;
+    if(!ok){alerta('alerta-login','err','Corrige los campos marcados.');return;}
+    const btn=document.querySelector('#panel-login .btn-submit-auth');btn.disabled=true;btn.textContent='Ingresando…';
+    const {error}=await db.auth.signInWithPassword({email,password:pass});
+    btn.disabled=false;btn.textContent='Iniciar sesión';
+    if(error){alerta('alerta-login','err',error.message.includes('nvalid')?'Correo o contraseña incorrectos.':error.message.includes('onfirm')?'Debes confirmar tu correo primero.':'Error al iniciar sesión.');}
+    else{alerta('alerta-login','exito','¡Bienvenido!');setTimeout(()=>{cerrarModalAuth();verificarSesion();},1500);}
+  }
+  async function submitRegistro(){
+    const nombre=document.getElementById('reg-nombre').value.trim(),apellido=document.getElementById('reg-apellido').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,pass2=document.getElementById('reg-pass2').value;
+    let ok=true;
+    const nOk=nombre.length>1;marcar('reg-nombre',nOk);mostrarErr('err-reg-nombre',!nOk);if(!nOk)ok=false;
+    const aOk=apellido.length>1;marcar('reg-apellido',aOk);mostrarErr('err-reg-apellido',!aOk);if(!aOk)ok=false;
+    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('reg-email',eOk);mostrarErr('err-reg-email',!eOk);if(!eOk)ok=false;
+    const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;
+    const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;
+    if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos.');return;}
+    const btn=document.querySelector('#panel-registro .btn-submit-auth');btn.disabled=true;btn.textContent='Creando cuenta…';
+    const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    if(!error&&data.user){await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);}
+    btn.disabled=false;btn.textContent='Crear mi cuenta';
+    if(error){alerta('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}
+    else{alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModalAuth,2500);}
+  }
   function checkFortaleza(val){document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none';let nivel=0;if(val.length>=6)nivel++;if(val.length>=8)nivel++;if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++;if(/[^A-Za-z0-9]/.test(val))nivel++;const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte'];['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');});document.getElementById('fortaleza-txt').textContent=textos[nivel]||'';}
 </script>
 </body>

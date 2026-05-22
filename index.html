@@ -693,8 +693,8 @@
         : 'Error al iniciar sesión. Intenta de nuevo.';
       alerta('alerta-login', 'err', msg);
     } else {
-      alerta('alerta-login', 'exito', '¡Bienvenido! Redirigiendo…');
-      setTimeout(cerrarModal, 1500);
+      alerta('alerta-login', 'exito', '¡Bienvenido!');
+      setTimeout(() => { cerrarModal(); verificarSesion(); }, 1500);
     }
   }
 
@@ -713,13 +713,16 @@
     if (!ok) { alerta('alerta-registro','err','Completa correctamente todos los campos marcados.'); return; }
     const btn = document.querySelector('#panel-registro .btn-submit');
     btn.disabled = true; btn.textContent = 'Creando cuenta…';
-    const { error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido } } });
+    const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido } } });
+    if (!error && data.user) {
+      await db.from('usuarios').insert([{ id: data.user.id, nombre, apellido, correo: email, rol: 'usuario' }]);
+    }
     btn.disabled = false; btn.textContent = 'Crear mi cuenta';
     if (error) {
       alerta('alerta-registro', 'err', error.message.includes('already') ? 'Este correo ya está registrado.' : 'Error al crear cuenta. Intenta de nuevo.');
     } else {
       alerta('alerta-registro', 'exito', '¡Cuenta creada! Revisa tu correo para confirmar.');
-      setTimeout(cerrarModal, 2000);
+      setTimeout(cerrarModal, 2500);
     }
   }
 
@@ -739,11 +742,27 @@
     document.getElementById('fortaleza-txt').textContent = textos[nivel] || '';
   }
 
+  // SESIÓN — actualiza el nav si hay usuario activo
+  async function verificarSesion() {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      const meta = session.user.user_metadata || {};
+      const nombre = meta.nombre || session.user.email.split('@')[0];
+      document.querySelector('.nav-acc').innerHTML = `
+        <span style="color:#fff;font-size:13px;font-weight:600;">Hola, ${nombre}</span>
+        <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>`;
+    }
+  }
+  async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
+
   // NAVEGACIÓN A RESULTADOS
   function irAResultados(servicio) {
     const q = servicio || document.getElementById('busqueda-hero').value || '';
     window.location.href = 'resultados.html?q=' + encodeURIComponent(q);
   }
+
+  // INICIALIZACIÓN
+  window.addEventListener('DOMContentLoaded', () => { verificarSesion(); cargarProfesionalesDestacados(); });
 
   // ── SUPABASE: Profesionales destacados ──
   async function cargarProfesionalesDestacados() {
@@ -769,8 +788,8 @@
     const zonaLabel = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
     return `
       <article class="pro-card" role="listitem" tabindex="0"
-               onclick="window.location.href='perfil.html'"
-               onkeydown="if(event.key==='Enter') window.location.href='perfil.html'">
+               onclick="window.location.href='perfil.html?id=${p.id}'"
+               onkeydown="if(event.key==='Enter') window.location.href='perfil.html?id=${p.id}'"
         <div class="pro-top">
           <div class="pro-avatar" aria-hidden="true">${ini}</div>
           <div>
@@ -794,7 +813,6 @@
       </article>`;
   }
 
-  window.addEventListener('DOMContentLoaded', cargarProfesionalesDestacados);
 </script>
 </body>
 </html>

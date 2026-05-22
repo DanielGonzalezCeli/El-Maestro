@@ -97,9 +97,12 @@
   .resultados-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
   .resultados-info { font-size: 14px; color: var(--suave); }
   .resultados-info strong { color: var(--texto); }
-  .orden-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--suave); }
-  .select-orden { padding: 7px 12px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--texto); background: var(--blanco); cursor: pointer; outline: none; }
-  .select-orden:focus { border-color: var(--azul-medio); }
+  .orden-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--suave); flex-wrap: wrap; }
+  .orden-label { white-space: nowrap; }
+  .orden-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .orden-tab { padding: 6px 14px; border: 1.5px solid var(--borde); border-radius: 20px; background: var(--blanco); color: var(--suave); font-size: 12px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 5px; }
+  .orden-tab:hover { border-color: var(--azul-medio); color: var(--azul); }
+  .orden-tab.activo { background: var(--azul); color: var(--blanco); border-color: var(--azul); }
 
   /* TAGS DE FILTROS ACTIVOS — H6 Reconocimiento: qué filtros están aplicados */
   .tags-activos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
@@ -324,13 +327,19 @@
         <p class="resultados-info" id="info-resultados" aria-live="polite">
           Mostrando <strong id="contador-resultados">6</strong> profesionales
         </p>
-        <div class="orden-wrap">
-          <label for="select-orden">Ordenar por:</label>
-          <select class="select-orden" id="select-orden" onchange="aplicarFiltros()" aria-label="Criterio de ordenamiento">
-            <option value="rating">Mejor calificados</option>
-            <option value="resenas">Más reseñas</option>
-            <option value="disponible">Disponibles hoy</option>
-          </select>
+        <div class="orden-wrap" role="group" aria-label="Ordenar resultados por">
+          <span class="orden-label">Ordenar:</span>
+          <div class="orden-tabs" id="orden-tabs">
+            <button class="orden-tab activo" data-orden="rating" onclick="setOrden(this)" aria-pressed="true">
+              <i class="fa-solid fa-star" aria-hidden="true"></i> Mejor valorados
+            </button>
+            <button class="orden-tab" data-orden="resenas" onclick="setOrden(this)" aria-pressed="false">
+              <i class="fa-solid fa-comments" aria-hidden="true"></i> Más reseñas
+            </button>
+            <button class="orden-tab" data-orden="disponible" onclick="setOrden(this)" aria-pressed="false">
+              <i class="fa-solid fa-clock" aria-hidden="true"></i> Disponibles hoy
+            </button>
+          </div>
         </div>
       </div>
 
@@ -466,6 +475,13 @@
     btn.setAttribute('aria-expanded', abierto);
   }
 
+  function setOrden(btn) {
+    document.querySelectorAll('.orden-tab').forEach(b => { b.classList.remove('activo'); b.setAttribute('aria-pressed', 'false'); });
+    btn.classList.add('activo');
+    btn.setAttribute('aria-pressed', 'true');
+    aplicarFiltros();
+  }
+
   const ZONA_LABEL = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
 
   function estrellas(cal) {
@@ -483,7 +499,7 @@
       ? `<span class="badge-hoy">● Disponible hoy</span>`
       : `<span class="badge-semana">● Esta semana</span>`;
     return `
-      <a href="perfil.html" class="pro-card" role="listitem" tabindex="0"
+      <a href="perfil.html?id=${p.id}" class="pro-card" role="listitem" tabindex="0"
          aria-label="Ver perfil de ${p.nombre}, ${p.oficio}, calificación ${cal}">
         <div class="pro-avatar" aria-hidden="true">${ini}</div>
         <div class="pro-cuerpo">
@@ -507,7 +523,7 @@
         </div>
         <div class="pro-accion">
           <div class="pro-precio"><strong>desde $${p.precio}</strong>por ${p.unidad}</div>
-          <button class="btn-ver" onclick="event.stopPropagation(); window.location.href='perfil.html'"
+          <button class="btn-ver" onclick="event.stopPropagation(); window.location.href='perfil.html?id=${p.id}'"
                   aria-label="Ver perfil de ${p.nombre}">Ver perfil</button>
         </div>
       </a>`;
@@ -517,7 +533,7 @@
   async function aplicarFiltros() {
     const cat        = document.querySelector('input[name="categoria"]:checked').value;
     const calMin     = document.querySelector('input[name="calificacion"]:checked').value;
-    const orden      = document.getElementById('select-orden').value;
+    const orden      = (document.querySelector('.orden-tab.activo') || {}).dataset?.orden || 'rating';
     const dispHoy    = document.getElementById('filtro-hoy').checked;
     const dispSemana = document.getElementById('filtro-semana').checked;
     const zonas = [...document.querySelectorAll('input[type=checkbox]:checked')]
@@ -589,8 +605,22 @@
     aplicarFiltros();
   }
 
+  /* ── SESIÓN ── */
+  async function verificarSesion() {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      const meta = session.user.user_metadata || {};
+      const nombre = meta.nombre || session.user.email.split('@')[0];
+      document.querySelector('.nav-acc').innerHTML = `
+        <span style="color:#fff;font-size:13px;font-weight:600;">Hola, ${nombre}</span>
+        <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>`;
+    }
+  }
+  async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
+
   /* ── INICIALIZACIÓN ── */
   window.addEventListener('DOMContentLoaded', async () => {
+    await verificarSesion();
     const q = (new URLSearchParams(window.location.search).get('q') || '').trim();
     if (q) {
       const radio = [...document.querySelectorAll('input[name="categoria"]')]
@@ -634,7 +664,7 @@
     const {error}=await db.auth.signInWithPassword({email,password:pass});
     btn.disabled=false; btn.textContent='Iniciar sesión';
     if(error){alerta('alerta-login','err',error.message.includes('nvalid')?'Correo o contraseña incorrectos.':error.message.includes('onfirm')?'Debes confirmar tu correo primero.':'Error al iniciar sesión.');}
-    else{alerta('alerta-login','exito','¡Bienvenido! Redirigiendo…');setTimeout(cerrarModal,1500);}
+    else{alerta('alerta-login','exito','¡Bienvenido!');setTimeout(()=>{cerrarModal();verificarSesion();},1500);}
   }
   async function submitRegistro() {
     const nombre=document.getElementById('reg-nombre').value.trim(), apellido=document.getElementById('reg-apellido').value.trim(), email=document.getElementById('reg-email').value.trim(), pass=document.getElementById('reg-pass').value, pass2=document.getElementById('reg-pass2').value;
@@ -647,10 +677,11 @@
     if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');return;}
     const btn=document.querySelector('#panel-registro .btn-submit');
     btn.disabled=true; btn.textContent='Creando cuenta…';
-    const {error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    if(!error&&data.user){await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);}
     btn.disabled=false; btn.textContent='Crear mi cuenta';
     if(error){alerta('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}
-    else{alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2000);}
+    else{alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2500);}
   }
   function checkFortaleza(val) { document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none'; let nivel=0; if(val.length>=6)nivel++; if(val.length>=8)nivel++; if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++; if(/[^A-Za-z0-9]/.test(val))nivel++; const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte']; ['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');}); document.getElementById('fortaleza-txt').textContent=textos[nivel]||''; }
 </script>
