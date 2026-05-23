@@ -45,6 +45,30 @@
   .btn-naranja { padding: 8px 18px; border: none; border-radius: 8px; background: var(--naranja); color: var(--blanco); font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
   .btn-naranja:hover { background: #d96a14; }
 
+  /* NAV DROPDOWN */
+  .nav-user-wrap { position: relative; }
+  .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--naranja); color: var(--blanco); font-size: 13px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; transition: opacity 0.2s; flex-shrink: 0; }
+  .nav-avatar:hover { opacity: 0.85; }
+  .nav-dropdown { position: absolute; right: 0; top: calc(100% + 10px); background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 8px; min-width: 220px; box-shadow: 0 8px 24px rgba(27,63,110,0.12); display: none; flex-direction: column; gap: 2px; z-index: 200; animation: fadeDown 0.18s ease; }
+  .nav-dropdown.abierto { display: flex; }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-dd-info { padding: 10px 12px 12px; border-bottom: 1px solid var(--borde); margin-bottom: 4px; }
+  .nav-dd-nombre { font-size: 14px; font-weight: 700; color: var(--texto); }
+  .nav-dd-email { font-size: 12px; color: var(--tenue); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px; color: var(--texto); text-decoration: none; font-weight: 500; background: none; border: none; width: 100%; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; text-align: left; transition: background 0.15s; }
+  .nav-dd-item:hover { background: var(--fondo); }
+  .nav-dd-item i { color: var(--tenue); width: 16px; text-align: center; }
+  .nav-dd-sep { height: 1px; background: var(--borde); margin: 4px 0; }
+  .nav-dd-item.salir { color: var(--error); }
+  .nav-dd-item.salir i { color: var(--error); }
+  /* RESEÑA - botón + estrellas selector */
+  .btn-resena { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--azul-claro); border: 1.5px solid var(--azul-suave); border-radius: 8px; color: var(--azul-medio); font-size: 13px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin-top: 16px; transition: all 0.2s; }
+  .btn-resena:hover { background: var(--azul-suave); border-color: var(--azul-medio); }
+  .estrellas-selector { display: flex; gap: 4px; margin: 8px 0 4px; }
+  .estrella-btn { background: none; border: none; cursor: pointer; font-size: 30px; color: var(--borde); padding: 0 2px; transition: color 0.15s, transform 0.1s; line-height: 1; }
+  .estrella-btn:hover, .estrella-btn.sel { color: var(--naranja); }
+  .estrella-btn:hover { transform: scale(1.15); }
+
   /* BREADCRUMB */
   /* Botón volver — H3 Control y libertad */
   .btn-volver {
@@ -330,6 +354,11 @@
       <!-- RESEÑAS — H2 Datos reales, lenguaje familiar -->
       <section class="card" aria-labelledby="resenas-titulo">
         <h2 class="card-titulo" id="resenas-titulo">Reseñas de clientes (87)</h2>
+        <div id="wrap-btn-resena" style="display:none;margin-bottom:16px;">
+          <button class="btn-resena" onclick="abrirModalResena()">
+            <i class="fa-solid fa-star" aria-hidden="true"></i> Escribir reseña
+          </button>
+        </div>
         <div class="resenas-lista" id="resenas-lista" role="list">
 
           <article class="resena" role="listitem" aria-label="Reseña de María G.">
@@ -453,6 +482,11 @@
       <label for="c-fecha">Fecha seleccionada</label>
       <input type="text" id="c-fecha" readonly style="background:var(--exito-bg);border-color:#BBF7D0;color:var(--exito);cursor:default;"/>
     </div>
+    <div class="campo">
+      <label for="c-hora">Hora de inicio <span style="font-weight:400;color:var(--tenue)">(opcional)</span></label>
+      <input type="time" id="c-hora" aria-label="Hora de inicio del servicio"/>
+      <p class="campo-ayuda">¿A qué hora necesitas que llegue el profesional?</p>
+    </div>
     <button class="btn-submit" onclick="enviarSolicitud()">Enviar solicitud</button>
   </div>
 </div>
@@ -513,6 +547,33 @@
   </div>
 </div>
 
+<!-- MODAL RESEÑA -->
+<div class="modal-overlay" id="modal-resena" onclick="cerrarResenaFuera(event)" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resena-titulo">
+    <button class="modal-cerrar" onclick="cerrarModalResena()" aria-label="Cerrar">✕</button>
+    <div class="modal-titulo" id="resena-titulo">Escribe tu reseña</div>
+    <div class="modal-sub">Comparte tu experiencia con este profesional.</div>
+    <div class="alerta-modal" id="alerta-resena" role="alert" aria-live="polite"></div>
+    <div class="campo">
+      <label>Calificación</label>
+      <div class="estrellas-selector" id="estrellas-selector" role="group" aria-label="Selecciona calificación de 1 a 5 estrellas">
+        <button class="estrella-btn" data-val="1" onclick="seleccionarEstrella(1)" aria-label="1 estrella">★</button>
+        <button class="estrella-btn" data-val="2" onclick="seleccionarEstrella(2)" aria-label="2 estrellas">★</button>
+        <button class="estrella-btn" data-val="3" onclick="seleccionarEstrella(3)" aria-label="3 estrellas">★</button>
+        <button class="estrella-btn" data-val="4" onclick="seleccionarEstrella(4)" aria-label="4 estrellas">★</button>
+        <button class="estrella-btn" data-val="5" onclick="seleccionarEstrella(5)" aria-label="5 estrellas">★</button>
+      </div>
+      <div class="msg-error" id="err-resena-cal" role="alert">Selecciona una calificación</div>
+    </div>
+    <div class="campo">
+      <label for="resena-comentario">Comentario</label>
+      <textarea id="resena-comentario" placeholder="Cuéntanos sobre tu experiencia…" aria-required="true"></textarea>
+      <div class="msg-error" id="err-resena-com" role="alert">Escribe un comentario (mínimo 10 caracteres)</div>
+    </div>
+    <button class="btn-submit" onclick="enviarResena()">Publicar reseña</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script>
@@ -529,14 +590,16 @@
     const nombre = document.getElementById('c-nombre').value.trim();
     const tel    = document.getElementById('c-telefono').value.trim();
     const serv   = document.getElementById('c-servicio').value;
+    const hora   = document.getElementById('c-hora').value;
     let ok = true;
     const nOk = nombre.length > 1; document.getElementById('c-nombre').classList.toggle('campo-error-input', !nOk); document.getElementById('err-c-nombre').classList.toggle('visible', !nOk); if (!nOk) ok = false;
     const tOk = /^0[0-9]{9}$/.test(tel.replace(/\s/g,'')); document.getElementById('c-telefono').classList.toggle('campo-error-input', !tOk); document.getElementById('err-c-telefono').classList.toggle('visible', !tOk); if (!tOk) ok = false;
     const sOk = serv !== ''; document.getElementById('c-servicio').classList.toggle('campo-error-input', !sOk); document.getElementById('err-c-servicio').classList.toggle('visible', !sOk); if (!sOk) ok = false;
     const al = document.getElementById('alerta-contacto');
     if (ok) {
+      const horaTexto = hora ? ` a las ${hora}` : '';
       al.className = 'alerta-modal exito';
-      al.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Solicitud enviada! Te contactaremos pronto.';
+      al.innerHTML = `<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Solicitud enviada${horaTexto}! Te contactaremos pronto.`;
       setTimeout(cerrarModalContacto, 2000);
     } else {
       al.className = 'alerta-modal err';
@@ -545,7 +608,7 @@
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { cerrarModalContacto(); cerrarModalAuth(); }
+    if (e.key === 'Escape') { cerrarModalContacto(); cerrarModalAuth(); cerrarModalResena(); }
   });
 
   // ── CALENDARIO ──
@@ -665,6 +728,7 @@
   }
 
   // ── CARGA DE PERFIL DESDE SUPABASE ──
+  let perfilId = null;
 
   async function cargarPerfil() {
     const urlId = new URLSearchParams(window.location.search).get('id');
@@ -673,6 +737,7 @@
     else        query = query.order('calificacion', { ascending: false }).limit(1).single();
     const { data, error } = await query;
     if (error || !data) return;
+    perfilId = data.id;
 
     const partes = data.nombre.trim().split(/\s+/);
     const ini    = ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
@@ -738,14 +803,48 @@
   // ── SESIÓN / NAV ──
   async function verificarSesion() {
     const { data: { session } } = await db.auth.getSession();
-    if (session) {
-      const meta   = session.user.user_metadata || {};
-      const nombre = meta.nombre || session.user.email.split('@')[0];
-      document.querySelector('.nav-acc').innerHTML = `
-        <span class="nav-usuario-nombre">Hola, ${nombre}</span>
-        <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>`;
-    }
+    const navAcc = document.querySelector('.nav-acc');
+    if (!navAcc) return;
+    if (!session) return;
+    const meta = session.user.user_metadata || {};
+    const nombre = meta.nombre || session.user.email.split('@')[0];
+    const apellido = meta.apellido || '';
+    const iniciales = (nombre.charAt(0) + (apellido.charAt(0) || nombre.charAt(1) || '')).toUpperCase();
+    const { data: ud } = await db.from('usuarios').select('rol').eq('correo', session.user.email).single();
+    const adminLink = ud?.rol === 'admin'
+      ? `<a href="admin.html" class="nav-dd-item"><i class="fa-solid fa-gauge" aria-hidden="true"></i> Panel de administración</a>` : '';
+    navAcc.innerHTML = `
+      <div class="nav-user-wrap" id="nav-user-wrap">
+        <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)"
+                aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario">${iniciales}</button>
+        <div class="nav-dropdown" id="nav-dropdown" role="menu">
+          <div class="nav-dd-info">
+            <div class="nav-dd-nombre">${nombre} ${apellido}</div>
+            <div class="nav-dd-email">${session.user.email}</div>
+          </div>
+          ${adminLink}
+          <div class="nav-dd-sep"></div>
+          <button class="nav-dd-item salir" onclick="cerrarSesion()" role="menuitem">
+            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
+          </button>
+        </div>
+      </div>`;
+    const btnResena = document.getElementById('wrap-btn-resena');
+    if (btnResena) btnResena.style.display = 'block';
   }
+  function toggleNavDropdown(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('nav-dropdown');
+    const btn = document.getElementById('nav-avatar-btn');
+    const abierto = dd.classList.toggle('abierto');
+    if (btn) btn.setAttribute('aria-expanded', abierto);
+  }
+  document.addEventListener('click', () => {
+    const dd = document.getElementById('nav-dropdown');
+    const btn = document.getElementById('nav-avatar-btn');
+    if (dd) dd.classList.remove('abierto');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
   async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
 
   window.addEventListener('DOMContentLoaded', async () => {
@@ -797,6 +896,71 @@
     else{alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModalAuth,2500);}
   }
   function checkFortaleza(val){document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none';let nivel=0;if(val.length>=6)nivel++;if(val.length>=8)nivel++;if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++;if(/[^A-Za-z0-9]/.test(val))nivel++;const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte'];['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');});document.getElementById('fortaleza-txt').textContent=textos[nivel]||'';}
+
+  // ── MODAL RESEÑA ──
+  let resenaEstrellas = 0;
+
+  function seleccionarEstrella(val) {
+    resenaEstrellas = val;
+    document.querySelectorAll('.estrella-btn').forEach((btn, i) => btn.classList.toggle('sel', i < val));
+  }
+
+  function abrirModalResena() {
+    resenaEstrellas = 0;
+    document.querySelectorAll('.estrella-btn').forEach(b => b.classList.remove('sel'));
+    document.getElementById('resena-comentario').value = '';
+    document.getElementById('alerta-resena').className = 'alerta-modal';
+    document.getElementById('err-resena-cal').classList.remove('visible');
+    document.getElementById('err-resena-com').classList.remove('visible');
+    document.getElementById('modal-resena').classList.add('abierto');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('resena-comentario').focus(), 50);
+  }
+
+  function cerrarModalResena() {
+    const m = document.getElementById('modal-resena');
+    if (m) { m.classList.remove('abierto'); document.body.style.overflow = ''; }
+  }
+  function cerrarResenaFuera(e) { if (e.target === document.getElementById('modal-resena')) cerrarModalResena(); }
+
+  async function enviarResena() {
+    const comentario = document.getElementById('resena-comentario').value.trim();
+    let ok = true;
+    const calOk = resenaEstrellas > 0;
+    document.getElementById('err-resena-cal').classList.toggle('visible', !calOk);
+    if (!calOk) ok = false;
+    const comOk = comentario.length >= 10;
+    document.getElementById('err-resena-com').classList.toggle('visible', !comOk);
+    if (!comOk) ok = false;
+    if (!ok) { alerta('alerta-resena','err','Completa los campos marcados.'); return; }
+
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { cerrarModalResena(); abrirModalAuth('login'); return; }
+
+    const meta = session.user.user_metadata || {};
+    const nombre = meta.nombre || session.user.email.split('@')[0];
+    const apellido = meta.apellido || '';
+    const nombreMostrado = apellido ? `${nombre} ${apellido.charAt(0)}.` : nombre;
+
+    const btn = document.querySelector('#modal-resena .btn-submit');
+    btn.disabled = true; btn.textContent = 'Publicando…';
+
+    const { error } = await db.from('resenas').insert([{
+      profesional_id: perfilId,
+      usuario_id: session.user.id,
+      usuario_nombre: nombreMostrado,
+      calificacion: resenaEstrellas,
+      comentario
+    }]);
+
+    btn.disabled = false; btn.textContent = 'Publicar reseña';
+    if (error) {
+      alerta('alerta-resena', 'err', 'Error al publicar la reseña. Intenta de nuevo.');
+    } else {
+      alerta('alerta-resena', 'exito', '¡Reseña publicada! Gracias por tu opinión.');
+      setTimeout(cerrarModalResena, 2000);
+    }
+  }
 </script>
 </body>
 </html>

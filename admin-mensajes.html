@@ -50,7 +50,13 @@
   .btn-icono:hover { border-color:var(--azul-medio); color:var(--azul); }
   .btn-icono.eliminar:hover { border-color:var(--error); color:var(--error); background:var(--error-bg); }
   .estado-tabla { padding:32px; text-align:center; color:var(--tenue); font-size:13px; }
-  .msg-preview { max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--suave); }
+  .msg-preview { max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--suave); }
+  .badge-pendiente { background:#FEF9C3; color:#854D0E; font-size:10px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap; }
+  .badge-respondido { background:var(--exito-bg); color:var(--exito); font-size:10px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap; }
+  .btn-responder { font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; border:1.5px solid #16A34A; background:var(--exito-bg); color:var(--exito); cursor:pointer; white-space:nowrap; font-family:'Plus Jakarta Sans',sans-serif; transition:all 0.15s; }
+  .btn-responder:hover { background:#16A34A; color:#fff; }
+  .notif { position:fixed; top:80px; right:24px; background:var(--exito); color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:600; z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+  .notif.visible { opacity:1; }
 
   /* MODAL VER MENSAJE */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
@@ -69,6 +75,8 @@
 </style>
 </head>
 <body>
+
+<div class="notif" id="notif-global"></div>
 
 <nav aria-label="Panel de administración">
   <a href="admin.html" class="logo">El <span>Maestro</span><span class="nav-badge">ADMIN</span></a>
@@ -95,7 +103,7 @@
   </div>
   <div class="tabla-wrap">
     <table>
-      <thead><tr><th>Nombre</th><th>Correo</th><th>Asunto</th><th>Mensaje</th><th>Fecha</th><th>Acciones</th></tr></thead>
+      <thead><tr><th>Nombre</th><th>Correo</th><th>Asunto</th><th>Mensaje</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
       <tbody id="tabla-msgs"><tr><td colspan="6" class="estado-tabla">Cargando…</td></tr></tbody>
     </table>
   </div>
@@ -132,7 +140,7 @@
   async function init() {
     const { data: { session } } = await db.auth.getSession();
     if (!session) { window.location.href = 'index.html'; return; }
-    const { data: usuario } = await db.from('usuarios').select('rol,nombre,apellido').eq('id', session.user.id).single();
+    const { data: usuario } = await db.from('usuarios').select('rol,nombre,apellido').eq('correo', session.user.email).single();
     if (!usuario || usuario.rol !== 'admin') { alert('Acceso denegado.'); window.location.href = 'index.html'; return; }
     document.getElementById('nav-nombre-admin').textContent = `${usuario.nombre} ${usuario.apellido}`;
     await cargarMsgs();
@@ -143,20 +151,47 @@
   async function cargarMsgs() {
     const { data, error } = await db.from('contactos').select('*').order('created_at', { ascending:false });
     const tb = document.getElementById('tabla-msgs');
-    if (error || !data) { tb.innerHTML = `<tr><td colspan="6" class="estado-tabla">Error al cargar.</td></tr>`; return; }
+    if (error || !data) { tb.innerHTML = `<tr><td colspan="7" class="estado-tabla">Error al cargar.</td></tr>`; return; }
     document.getElementById('count-msgs').textContent = data.length;
-    if (data.length === 0) { tb.innerHTML = `<tr><td colspan="6" class="estado-tabla"><i class="fa-solid fa-inbox"></i> Sin mensajes aún.</td></tr>`; return; }
-    tb.innerHTML = data.map(m => `<tr>
-      <td><strong>${m.nombre || '—'}</strong></td>
-      <td><a href="mailto:${m.correo}" style="color:var(--azul-medio);text-decoration:none;">${m.correo || '—'}</a></td>
-      <td>${m.asunto || '—'}</td>
-      <td class="msg-preview">${m.mensaje || '—'}</td>
-      <td style="white-space:nowrap;color:var(--tenue);">${m.created_at ? new Date(m.created_at).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
-      <td><div class="td-acciones">
-        <button class="btn-icono" onclick='verMensaje(${JSON.stringify(m)})' title="Ver completo"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn-icono eliminar" onclick="confirmarEliminar('${m.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-      </div></td>
-    </tr>`).join('');
+    if (data.length === 0) { tb.innerHTML = `<tr><td colspan="7" class="estado-tabla"><i class="fa-solid fa-inbox"></i> Sin mensajes aún.</td></tr>`; return; }
+    tb.innerHTML = data.map(m => {
+      const estado = m.estado || 'pendiente';
+      const badgeClass = estado === 'respondido' ? 'badge-respondido' : 'badge-pendiente';
+      const badgeLabel = estado === 'respondido' ? '✔ Respondido' : '⏳ Pendiente';
+      return `<tr>
+        <td><strong>${m.nombre || '—'}</strong></td>
+        <td><a href="mailto:${m.correo}" style="color:var(--azul-medio);text-decoration:none;">${m.correo || '—'}</a></td>
+        <td>${m.asunto || '—'}</td>
+        <td class="msg-preview">${m.mensaje || '—'}</td>
+        <td><span class="${badgeClass}">${badgeLabel}</span></td>
+        <td style="white-space:nowrap;color:var(--tenue);">${m.created_at ? new Date(m.created_at).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+        <td><div class="td-acciones">
+          <button class="btn-icono" onclick='verMensaje(${JSON.stringify(m)})' title="Ver completo"><i class="fa-solid fa-eye"></i></button>
+          ${estado !== 'respondido' ? `<button class="btn-responder" onclick="responderMensaje('${m.id}','${(m.correo||'').replace(/'/g,"\\'")}','${(m.nombre||'').replace(/'/g,"\\'")}','${(m.asunto||'').replace(/'/g,"\\'")}')"><i class="fa-solid fa-reply"></i> Responder</button>` : ''}
+          <button class="btn-icono eliminar" onclick="confirmarEliminar('${m.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function responderMensaje(id, correo, nombre, asunto) {
+    const asuntoResp = encodeURIComponent(`RE: ${asunto}`);
+    const cuerpo = encodeURIComponent(`Hola ${nombre},\n\nGracias por contactarnos. En respuesta a tu mensaje sobre "${asunto}":\n\n\n\nSaludos,\nEl equipo de El Maestro`);
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(correo)}&su=${asuntoResp}&body=${cuerpo}`;
+    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    marcarRespondido(id);
+  }
+
+  async function marcarRespondido(id) {
+    await db.from('contactos').update({ estado: 'respondido' }).eq('id', id);
+    mostrarNotif('Mensaje marcado como respondido.');
+    cargarMsgs();
+  }
+
+  function mostrarNotif(msg) {
+    const el = document.getElementById('notif-global');
+    el.textContent = msg; el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 3000);
   }
 
   function verMensaje(m) {

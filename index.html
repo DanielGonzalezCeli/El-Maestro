@@ -73,6 +73,23 @@
   }
   .btn-naranja:hover { background: #d96a14; }
 
+  /* NAV DROPDOWN */
+  .nav-user-wrap { position: relative; }
+  .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--naranja); color: var(--blanco); font-size: 13px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; transition: opacity 0.2s; flex-shrink: 0; }
+  .nav-avatar:hover { opacity: 0.85; }
+  .nav-dropdown { position: absolute; right: 0; top: calc(100% + 10px); background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 8px; min-width: 220px; box-shadow: 0 8px 24px rgba(27,63,110,0.12); display: none; flex-direction: column; gap: 2px; z-index: 200; animation: fadeDown 0.18s ease; }
+  .nav-dropdown.abierto { display: flex; }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-dd-info { padding: 10px 12px 12px; border-bottom: 1px solid var(--borde); margin-bottom: 4px; }
+  .nav-dd-nombre { font-size: 14px; font-weight: 700; color: var(--texto); }
+  .nav-dd-email { font-size: 12px; color: var(--tenue); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px; color: var(--texto); text-decoration: none; font-weight: 500; background: none; border: none; width: 100%; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; text-align: left; transition: background 0.15s; }
+  .nav-dd-item:hover { background: var(--fondo); }
+  .nav-dd-item i { color: var(--tenue); width: 16px; text-align: center; }
+  .nav-dd-sep { height: 1px; background: var(--borde); margin: 4px 0; }
+  .nav-dd-item.salir { color: var(--error); }
+  .nav-dd-item.salir i { color: var(--error); }
+
   /* HERO */
   .hero { background: var(--azul); display: flex; align-items: stretch; min-height: 420px; overflow: hidden; }
   .hero-left-panel { flex: 1; padding: 64px 48px; display: flex; align-items: center; }
@@ -751,17 +768,48 @@
     document.getElementById('fortaleza-txt').textContent = textos[nivel] || '';
   }
 
-  // SESIÓN — actualiza el nav si hay usuario activo
+  // SESIÓN — dropdown de usuario en nav
   async function verificarSesion() {
     const { data: { session } } = await db.auth.getSession();
-    if (session) {
-      const meta = session.user.user_metadata || {};
-      const nombre = meta.nombre || session.user.email.split('@')[0];
-      document.querySelector('.nav-acc').innerHTML = `
-        <span style="color:#fff;font-size:13px;font-weight:600;">Hola, ${nombre}</span>
-        <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>`;
-    }
+    const navAcc = document.querySelector('.nav-acc');
+    if (!session || !navAcc) return;
+    const meta = session.user.user_metadata || {};
+    const nombre = meta.nombre || session.user.email.split('@')[0];
+    const apellido = meta.apellido || '';
+    const iniciales = (nombre.charAt(0) + (apellido.charAt(0) || nombre.charAt(1) || '')).toUpperCase();
+    const { data: ud } = await db.from('usuarios').select('rol').eq('correo', session.user.email).single();
+    const adminLink = ud?.rol === 'admin'
+      ? `<a href="admin.html" class="nav-dd-item"><i class="fa-solid fa-gauge" aria-hidden="true"></i> Panel de administración</a>` : '';
+    navAcc.innerHTML = `
+      <div class="nav-user-wrap" id="nav-user-wrap">
+        <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)"
+                aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario">${iniciales}</button>
+        <div class="nav-dropdown" id="nav-dropdown" role="menu">
+          <div class="nav-dd-info">
+            <div class="nav-dd-nombre">${nombre} ${apellido}</div>
+            <div class="nav-dd-email">${session.user.email}</div>
+          </div>
+          ${adminLink}
+          <div class="nav-dd-sep"></div>
+          <button class="nav-dd-item salir" onclick="cerrarSesion()" role="menuitem">
+            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
+          </button>
+        </div>
+      </div>`;
   }
+  function toggleNavDropdown(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('nav-dropdown');
+    const btn = document.getElementById('nav-avatar-btn');
+    const abierto = dd.classList.toggle('abierto');
+    if (btn) btn.setAttribute('aria-expanded', abierto);
+  }
+  document.addEventListener('click', () => {
+    const dd = document.getElementById('nav-dropdown');
+    const btn = document.getElementById('nav-avatar-btn');
+    if (dd) dd.classList.remove('abierto');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
   async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
 
   // NAVEGACIÓN A RESULTADOS

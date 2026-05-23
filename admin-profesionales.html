@@ -35,7 +35,6 @@
   .hero-admin p { font-size:13px; color:#93B8E0; margin-top:6px; }
 
   .contenido { padding:32px 48px 60px; max-width:1200px; margin:0 auto; }
-
   .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
   .panel-titulo { font-family:'Sora',sans-serif; font-size:18px; color:var(--azul); }
   .btn-primario { padding:9px 20px; background:var(--naranja); border:none; border-radius:8px; color:var(--blanco); font-size:13px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
@@ -60,18 +59,22 @@
   /* MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.abierto { display:flex; }
-  .modal { background:var(--blanco); border-radius:18px; padding:32px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; position:relative; }
+  .modal { background:var(--blanco); border-radius:18px; padding:32px; width:100%; max-width:600px; max-height:92vh; overflow-y:auto; position:relative; }
   .modal-titulo { font-family:'Sora',sans-serif; font-size:18px; color:var(--azul); margin-bottom:20px; }
   .modal-cerrar { position:absolute; top:16px; right:16px; background:none; border:none; font-size:18px; cursor:pointer; color:var(--tenue); }
   .modal-cerrar:hover { color:var(--texto); }
   .campo { margin-bottom:14px; }
   .campo label { display:block; font-size:12px; font-weight:700; color:var(--suave); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.04em; }
-  .campo input, .campo select, .campo textarea { width:100%; padding:10px 12px; border:1.5px solid var(--borde); border-radius:8px; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--texto); background:var(--fondo); }
+  .campo input, .campo select, .campo textarea { width:100%; padding:10px 12px; border:1.5px solid var(--borde); border-radius:8px; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--texto); background:var(--fondo); transition:border-color 0.2s; }
   .campo input:focus, .campo select:focus, .campo textarea:focus { border-color:var(--azul-medio); background:var(--blanco); outline:none; }
+  .campo input.err, .campo select.err, .campo textarea.err { border-color:var(--error); background:var(--error-bg); }
   .campo textarea { resize:vertical; min-height:80px; }
   .campo-fila { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .campo-check { display:flex; align-items:center; gap:8px; }
   .campo-check input[type=checkbox] { width:18px; height:18px; accent-color:var(--naranja); }
+  .campo-err { font-size:11px; color:var(--error); margin-top:4px; display:none; }
+  .campo-err.visible { display:block; }
+  .campo-hint { font-size:11px; color:var(--tenue); margin-top:4px; }
   .modal-acciones { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
   .btn-guardar { padding:10px 22px; background:var(--naranja); border:none; border-radius:8px; color:var(--blanco); font-size:13px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; }
   .btn-guardar:hover { background:#d96a14; }
@@ -80,6 +83,7 @@
   .alerta-admin { padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none; }
   .alerta-admin.err { display:block; background:var(--error-bg); color:var(--error); }
   .alerta-admin.exito { display:block; background:var(--exito-bg); color:var(--exito); }
+  .seccion-sub { font-size:11px; font-weight:700; color:var(--azul-medio); text-transform:uppercase; letter-spacing:0.06em; margin:16px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--borde); }
 
   @media(max-width:900px) { nav { padding:0 16px; } .contenido { padding:20px 16px 40px; } .hero-admin { padding:20px 16px; } }
 </style>
@@ -118,46 +122,102 @@
   </div>
 </div>
 
-<!-- MODAL EDITAR/AGREGAR PROFESIONAL -->
+<!-- MODAL EDITAR/AGREGAR -->
 <div class="modal-overlay" id="modal-pro" onclick="cerrarModalFuera(event,'modal-pro')" role="presentation">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-pro-titulo">
     <button class="modal-cerrar" onclick="cerrarModal('modal-pro')" aria-label="Cerrar">✕</button>
     <div class="modal-titulo" id="modal-pro-titulo">Agregar profesional</div>
     <div class="alerta-admin" id="alerta-pro" role="alert"></div>
     <input type="hidden" id="pro-id"/>
+
+    <div class="seccion-sub">Datos personales</div>
     <div class="campo-fila">
-      <div class="campo"><label for="pro-nombre">Nombre completo</label><input type="text" id="pro-nombre" placeholder="Nombre y apellido"/></div>
-      <div class="campo"><label for="pro-oficio">Oficio</label>
+      <div class="campo">
+        <label for="pro-nombre">Nombre completo *</label>
+        <input type="text" id="pro-nombre" placeholder="Nombre y apellido"/>
+        <div class="campo-err" id="err-nombre">Solo letras y espacios (mínimo 3 caracteres)</div>
+      </div>
+      <div class="campo">
+        <label for="pro-cedula">Cédula ecuatoriana *</label>
+        <input type="text" id="pro-cedula" placeholder="1234567890" maxlength="10"/>
+        <div class="campo-err" id="err-cedula">Cédula ecuatoriana inválida (10 dígitos)</div>
+      </div>
+    </div>
+    <div class="campo-fila">
+      <div class="campo">
+        <label for="pro-whatsapp">WhatsApp Ecuador *</label>
+        <input type="text" id="pro-whatsapp" placeholder="09XXXXXXXX" maxlength="10"/>
+        <div class="campo-err" id="err-wp">Formato: 09XXXXXXXX (10 dígitos)</div>
+      </div>
+      <div class="campo">
+        <label for="pro-oficio">Oficio *</label>
         <select id="pro-oficio">
           <option value="">Seleccionar…</option>
           <option>Electricista</option><option>Plomero</option><option>Cerrajero</option>
           <option>Pintor</option><option>Carpintero</option><option>Limpieza</option>
           <option>Aire acondicionado</option><option>Mudanzas</option>
         </select>
+        <div class="campo-err" id="err-oficio">Selecciona un oficio</div>
       </div>
     </div>
+
+    <div class="seccion-sub">Zona y disponibilidad</div>
     <div class="campo-fila">
-      <div class="campo"><label for="pro-zona">Zona</label>
-        <select id="pro-zona"><option value="">Seleccionar…</option><option value="norte">Quito Norte</option><option value="centro">Quito Centro</option><option value="sur">Quito Sur</option><option value="valles">Valles</option></select>
+      <div class="campo">
+        <label for="pro-zona">Zona *</label>
+        <select id="pro-zona">
+          <option value="">Seleccionar…</option>
+          <option value="norte">Quito Norte</option>
+          <option value="centro">Quito Centro</option>
+          <option value="sur">Quito Sur</option>
+          <option value="valles">Valles</option>
+        </select>
+        <div class="campo-err" id="err-zona">Selecciona una zona</div>
       </div>
-      <div class="campo"><label for="pro-disponibilidad">Disponibilidad</label>
-        <select id="pro-disponibilidad"><option value="hoy">Disponible hoy</option><option value="semana">Esta semana</option></select>
+      <div class="campo">
+        <label for="pro-disp-inicio">Disponible desde *</label>
+        <input type="date" id="pro-disp-inicio"/>
+        <div class="campo-err" id="err-disp">Ingresa la fecha de inicio de disponibilidad</div>
       </div>
     </div>
+
+    <div class="seccion-sub">Tarifa</div>
     <div class="campo-fila">
-      <div class="campo"><label for="pro-precio">Precio base ($)</label><input type="number" id="pro-precio" placeholder="25" min="0"/></div>
-      <div class="campo"><label for="pro-unidad">Unidad</label><input type="text" id="pro-unidad" placeholder="hora / servicio / m²"/></div>
+      <div class="campo">
+        <label for="pro-precio">Precio base ($) *</label>
+        <input type="number" id="pro-precio" placeholder="25" min="0"/>
+        <div class="campo-err" id="err-precio">Ingresa un precio válido</div>
+      </div>
+      <div class="campo">
+        <label for="pro-unidad">Unidad *</label>
+        <input type="text" id="pro-unidad" placeholder="hora / servicio / m²"/>
+        <div class="campo-err" id="err-unidad">Ingresa la unidad de cobro</div>
+      </div>
     </div>
+
+    <div class="seccion-sub">Estadísticas (automáticas para nuevos)</div>
     <div class="campo-fila">
-      <div class="campo"><label for="pro-calificacion">Calificación (0-5)</label><input type="number" id="pro-calificacion" placeholder="4.8" min="0" max="5" step="0.1"/></div>
-      <div class="campo"><label for="pro-resenas">N° reseñas</label><input type="number" id="pro-resenas" placeholder="42" min="0"/></div>
+      <div class="campo">
+        <label for="pro-calificacion">Calificación (0–5)</label>
+        <input type="number" id="pro-calificacion" placeholder="0" min="0" max="5" step="0.1"/>
+        <div class="campo-hint">Se calcula automáticamente con las reseñas</div>
+      </div>
+      <div class="campo">
+        <label for="pro-resenas">N° de reseñas</label>
+        <input type="number" id="pro-resenas" placeholder="0" min="0"/>
+        <div class="campo-hint">Se actualiza automáticamente</div>
+      </div>
     </div>
-    <div class="campo-fila">
-      <div class="campo"><label for="pro-whatsapp">WhatsApp (09XXXXXXXX)</label><input type="text" id="pro-whatsapp" placeholder="0991234567"/></div>
-      <div class="campo"><label for="pro-cedula">Cédula</label><input type="text" id="pro-cedula" placeholder="17XXXXXXXX" maxlength="10"/></div>
+
+    <div class="seccion-sub">Descripción y verificación</div>
+    <div class="campo">
+      <label for="pro-descripcion">Descripción</label>
+      <textarea id="pro-descripcion" placeholder="Experiencia, especialidades y forma de trabajo…"></textarea>
     </div>
-    <div class="campo"><label for="pro-descripcion">Descripción</label><textarea id="pro-descripcion" placeholder="Experiencia, especialidades y forma de trabajo…"></textarea></div>
-    <div class="campo"><label class="campo-check"><input type="checkbox" id="pro-verificado"/> Profesional verificado</label></div>
+    <div class="campo">
+      <label class="campo-check"><input type="checkbox" id="pro-verificado"/> <span>Profesional verificado (identidad y certificaciones revisadas)</span></label>
+    </div>
+
     <div class="modal-acciones">
       <button class="btn-secundario" onclick="cerrarModal('modal-pro')">Cancelar</button>
       <button class="btn-guardar" onclick="guardarPro()">Guardar profesional</button>
@@ -183,10 +243,49 @@
 <script>
   const ZONA_LABEL = { norte:'Quito Norte', centro:'Quito Centro', sur:'Quito Sur', valles:'Valles' };
 
+  // ── VALIDACIONES ECUADOR ──
+  function validarNombre(v) {
+    return v.trim().length >= 3 && /^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s\-]+$/.test(v.trim());
+  }
+  function validarWP(v) {
+    return /^09\d{8}$/.test(v.replace(/\s/g, ''));
+  }
+  function validarCedula(ced) {
+    if (!/^\d{10}$/.test(ced)) return false;
+    const prov = parseInt(ced.substring(0, 2));
+    if (prov < 1 || prov > 24) return false;
+    const tipo = parseInt(ced[2]);
+    if (tipo > 6) return false;
+    if (tipo < 6) {
+      const coef = [2,1,2,1,2,1,2,1,2];
+      let suma = 0;
+      for (let i = 0; i < 9; i++) {
+        let r = parseInt(ced[i]) * coef[i];
+        if (r >= 10) r -= 9;
+        suma += r;
+      }
+      return ((10 - (suma % 10)) % 10) === parseInt(ced[9]);
+    }
+    return true;
+  }
+
+  function marcarErr(campo, errId, valido) {
+    const el = document.getElementById(campo);
+    const er = document.getElementById(errId);
+    if (el) el.classList.toggle('err', !valido);
+    if (er) er.classList.toggle('visible', !valido);
+    return valido;
+  }
+  function limpiarErr(campo, errId) {
+    const el = document.getElementById(campo); if (el) el.classList.remove('err');
+    const er = document.getElementById(errId); if (er) er.classList.remove('visible');
+  }
+
+  // ── INICIALIZACIÓN ──
   async function init() {
     const { data: { session } } = await db.auth.getSession();
     if (!session) { window.location.href = 'index.html'; return; }
-    const { data: usuario } = await db.from('usuarios').select('rol,nombre,apellido').eq('id', session.user.id).single();
+    const { data: usuario } = await db.from('usuarios').select('rol,nombre,apellido').eq('correo', session.user.email).single();
     if (!usuario || usuario.rol !== 'admin') { alert('Acceso denegado.'); window.location.href = 'index.html'; return; }
     document.getElementById('nav-nombre-admin').textContent = `${usuario.nombre} ${usuario.apellido}`;
     await cargarPros();
@@ -204,8 +303,8 @@
       <td><strong>${p.nombre}</strong></td>
       <td>${p.oficio}</td>
       <td>${ZONA_LABEL[p.zona] || p.zona}</td>
-      <td><span class="estrella">★</span> ${parseFloat(p.calificacion).toFixed(1)}</td>
-      <td>${p.resenas}</td>
+      <td><span class="estrella">★</span> ${parseFloat(p.calificacion || 0).toFixed(1)}</td>
+      <td>${p.resenas || 0}</td>
       <td>$${p.precio}/${p.unidad}</td>
       <td>${p.verificado ? '<span class="badge-verif">✔ Verificado</span>' : '<span class="badge-no">Sin verificar</span>'}</td>
       <td><div class="td-acciones">
@@ -219,47 +318,85 @@
     limpiarAlerta('alerta-pro');
     document.getElementById('pro-id').value = id || '';
     document.getElementById('modal-pro-titulo').textContent = id ? 'Editar profesional' : 'Agregar profesional';
-    const campos = ['nombre','oficio','zona','disponibilidad','precio','unidad','calificacion','resenas','whatsapp','cedula','descripcion'];
-    campos.forEach(c => { const el = document.getElementById('pro-'+c); if (el) el.value = ''; });
+    ['nombre','cedula','whatsapp','oficio','zona','precio','unidad','descripcion'].forEach(c => {
+      const el = document.getElementById('pro-' + c); if (el) { el.value = ''; el.classList.remove('err'); }
+    });
+    ['err-nombre','err-cedula','err-wp','err-oficio','err-zona','err-disp','err-precio','err-unidad'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.classList.remove('visible');
+    });
+    document.getElementById('pro-calificacion').value = '0';
+    document.getElementById('pro-resenas').value = '0';
+    document.getElementById('pro-disp-inicio').value = '';
     document.getElementById('pro-verificado').checked = false;
     if (id) {
       const { data } = await db.from('profesionales').select('*').eq('id', id).single();
       if (data) {
-        campos.forEach(c => { const el = document.getElementById('pro-'+c); if (el) el.value = data[c] ?? ''; });
+        ['nombre','oficio','zona','precio','unidad','descripcion'].forEach(c => {
+          const el = document.getElementById('pro-' + c); if (el) el.value = data[c] ?? '';
+        });
+        document.getElementById('pro-cedula').value = data.cedula || '';
+        document.getElementById('pro-whatsapp').value = data.whatsapp || '';
+        document.getElementById('pro-calificacion').value = data.calificacion ?? '0';
+        document.getElementById('pro-resenas').value = data.resenas ?? '0';
         document.getElementById('pro-verificado').checked = !!data.verificado;
+        if (data.disponibilidad && data.disponibilidad.match(/^\d{4}-\d{2}-\d{2}/)) {
+          document.getElementById('pro-disp-inicio').value = data.disponibilidad.split('/')[0];
+        }
       }
+    } else {
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('pro-disp-inicio').value = hoy;
     }
     abrirModal('modal-pro');
   }
 
   async function guardarPro() {
     const id = document.getElementById('pro-id').value;
+    const nombre = document.getElementById('pro-nombre').value.trim();
+    const cedula = document.getElementById('pro-cedula').value.trim();
+    const wp = document.getElementById('pro-whatsapp').value.trim();
+    const oficio = document.getElementById('pro-oficio').value;
+    const zona = document.getElementById('pro-zona').value;
+    const dispInicio = document.getElementById('pro-disp-inicio').value;
+    const precio = document.getElementById('pro-precio').value;
+    const unidad = document.getElementById('pro-unidad').value.trim();
+
+    let ok = true;
+    if (!marcarErr('pro-nombre', 'err-nombre', validarNombre(nombre))) ok = false;
+    if (!marcarErr('pro-cedula', 'err-cedula', validarCedula(cedula))) ok = false;
+    if (!marcarErr('pro-whatsapp', 'err-wp', validarWP(wp))) ok = false;
+    if (!marcarErr('pro-oficio', 'err-oficio', oficio !== '')) ok = false;
+    if (!marcarErr('pro-zona', 'err-zona', zona !== '')) ok = false;
+    if (!marcarErr('pro-disp-inicio', 'err-disp', dispInicio !== '')) ok = false;
+    if (!marcarErr('pro-precio', 'err-precio', precio !== '' && parseFloat(precio) >= 0)) ok = false;
+    if (!marcarErr('pro-unidad', 'err-unidad', unidad.length > 0)) ok = false;
+
+    if (!ok) { mostrarAlerta('alerta-pro','err','Corrige los campos marcados en rojo.'); return; }
+
     const payload = {
-      nombre:         document.getElementById('pro-nombre').value.trim(),
-      oficio:         document.getElementById('pro-oficio').value,
-      zona:           document.getElementById('pro-zona').value,
-      disponibilidad: document.getElementById('pro-disponibilidad').value,
-      precio:         parseInt(document.getElementById('pro-precio').value) || 0,
-      unidad:         document.getElementById('pro-unidad').value.trim(),
-      calificacion:   parseFloat(document.getElementById('pro-calificacion').value) || 0,
-      resenas:        parseInt(document.getElementById('pro-resenas').value) || 0,
-      whatsapp:       document.getElementById('pro-whatsapp').value.trim(),
-      cedula:         document.getElementById('pro-cedula').value.trim(),
-      descripcion:    document.getElementById('pro-descripcion').value.trim(),
-      verificado:     document.getElementById('pro-verificado').checked,
+      nombre,
+      cedula,
+      whatsapp: wp,
+      oficio,
+      zona,
+      disponibilidad: dispInicio,
+      precio: parseFloat(precio) || 0,
+      unidad,
+      calificacion: parseFloat(document.getElementById('pro-calificacion').value) || 0,
+      resenas: parseInt(document.getElementById('pro-resenas').value) || 0,
+      descripcion: document.getElementById('pro-descripcion').value.trim(),
+      verificado: document.getElementById('pro-verificado').checked,
     };
-    if (!payload.nombre || !payload.oficio || !payload.zona) {
-      mostrarAlerta('alerta-pro','err','Completa: nombre, oficio y zona.'); return;
-    }
+
     const btn = document.querySelector('#modal-pro .btn-guardar');
     btn.disabled = true; btn.textContent = 'Guardando…';
     const { error } = id
       ? await db.from('profesionales').update(payload).eq('id', id)
       : await db.from('profesionales').insert([payload]);
     btn.disabled = false; btn.textContent = 'Guardar profesional';
-    if (error) { mostrarAlerta('alerta-pro','err','Error: '+error.message); return; }
-    mostrarAlerta('alerta-pro','exito', id ? 'Profesional actualizado.' : 'Profesional creado.');
-    setTimeout(() => { cerrarModal('modal-pro'); cargarPros(); }, 1200);
+    if (error) { mostrarAlerta('alerta-pro','err','Error al guardar: ' + error.message); return; }
+    mostrarAlerta('alerta-pro','exito', id ? 'Profesional actualizado correctamente.' : 'Profesional agregado correctamente.');
+    setTimeout(() => { cerrarModal('modal-pro'); cargarPros(); }, 1400);
   }
 
   function confirmarEliminar(id, label, callback) {
@@ -270,7 +407,7 @@
       await db.from('profesionales').delete().eq('id', id);
       btn.disabled = false; btn.textContent = 'Sí, eliminar';
       cerrarModal('modal-confirm');
-      callback();
+      if (typeof callback === 'function') callback();
     };
     abrirModal('modal-confirm');
   }
@@ -278,9 +415,9 @@
   function abrirModal(id) { document.getElementById(id).classList.add('abierto'); document.body.style.overflow='hidden'; }
   function cerrarModal(id) { document.getElementById(id).classList.remove('abierto'); document.body.style.overflow=''; }
   function cerrarModalFuera(e, id) { if (e.target === document.getElementById(id)) cerrarModal(id); }
-  document.addEventListener('keydown', e => { if (e.key==='Escape') ['modal-pro','modal-confirm'].forEach(id => { if (document.getElementById(id).classList.contains('abierto')) cerrarModal(id); }); });
+  document.addEventListener('keydown', e => { if (e.key==='Escape') ['modal-pro','modal-confirm'].forEach(id => { if (document.getElementById(id)?.classList.contains('abierto')) cerrarModal(id); }); });
   function mostrarAlerta(id, tipo, msg) { const el=document.getElementById(id); el.className='alerta-admin '+tipo; el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}"></i> ${msg}`; }
-  function limpiarAlerta(id) { const el=document.getElementById(id); el.className='alerta-admin'; el.innerHTML=''; }
+  function limpiarAlerta(id) { const el=document.getElementById(id); if (el) { el.className='alerta-admin'; el.innerHTML=''; } }
 
   init();
 </script>
