@@ -432,6 +432,10 @@
           <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
           <span id="cal-fecha-txt"></span>
         </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--borde);">
+          <div class="cal-semana-titulo" style="margin-top:0;">Otra fecha</div>
+          <input type="date" id="cal-otra-fecha" min="" style="width:100%;padding:8px 10px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--texto);background:var(--fondo);cursor:pointer;margin-top:6px;" onchange="seleccionarOtraFecha(this.value)" aria-label="Seleccionar otra fecha de disponibilidad"/>
+        </div>
       </div>
     </aside>
 
@@ -608,7 +612,7 @@
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { cerrarModalContacto(); cerrarModalAuth(); cerrarModalResena(); }
+    if (e.key === 'Escape') { cerrarModalContacto(); cerrarModalAuth(); cerrarModalResena(); cerrarMiCuenta(); }
   });
 
   // ── CALENDARIO ──
@@ -659,6 +663,25 @@
       html += '</div>';
     }
     return html;
+  }
+
+  function seleccionarOtraFecha(val) {
+    if (!val) return;
+    const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const DIAS_NOMBRE_LARGO = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const d = new Date(val + 'T00:00:00');
+    const label = `${DIAS_NOMBRE_LARGO[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+    document.querySelectorAll('.cal-dia-sel').forEach(x => x.classList.remove('cal-dia-sel'));
+    const fechaEl = document.getElementById('cal-fecha-elegida');
+    const txtEl = document.getElementById('cal-fecha-txt');
+    if (fechaEl && txtEl) { txtEl.textContent = `Seleccionado: ${label}`; fechaEl.classList.add('visible'); }
+    const campoFecha = document.getElementById('campo-fecha');
+    const inputFecha = document.getElementById('c-fecha');
+    if (campoFecha && inputFecha) { campoFecha.style.display = 'block'; inputFecha.value = label; }
+    db.auth.getSession().then(({data:{session}}) => {
+      if (!session) { abrirModalAuth('login'); return; }
+      abrirModalContacto();
+    });
   }
 
   async function seleccionarDia(el, label) {
@@ -773,6 +796,8 @@
     }
 
     document.getElementById('cal-cuerpo').innerHTML = generarCalendario(data.disponibilidad);
+    const otraFechaInput = document.getElementById('cal-otra-fecha');
+    if (otraFechaInput) otraFechaInput.min = new Date().toISOString().split('T')[0];
     document.title = `${nombre} — ${data.oficio} | El Maestro`;
 
     // Contenido dinámico por profesional
@@ -804,15 +829,19 @@
   async function verificarSesion() {
     const { data: { session } } = await db.auth.getSession();
     const navAcc = document.querySelector('.nav-acc');
-    if (!navAcc) return;
-    if (!session) return;
+    if (!session || !navAcc) return;
     const meta = session.user.user_metadata || {};
     const nombre = meta.nombre || session.user.email.split('@')[0];
     const apellido = meta.apellido || '';
     const iniciales = (nombre.charAt(0) + (apellido.charAt(0) || nombre.charAt(1) || '')).toUpperCase();
     const { data: ud } = await db.from('usuarios').select('rol').eq('correo', session.user.email).single();
-    const adminLink = ud?.rol === 'admin'
-      ? `<a href="admin.html" class="nav-dd-item"><i class="fa-solid fa-gauge" aria-hidden="true"></i> Panel de administración</a>` : '';
+    const esAdmin = ud?.rol === 'admin';
+    if (esAdmin) {
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks && !navLinks.querySelector('[data-admin-link]')) {
+        navLinks.insertAdjacentHTML('beforeend', '<li><a href="admin.html" data-admin-link style="background:rgba(244,123,32,0.25);"><i class="fa-solid fa-gauge" aria-hidden="true"></i> Admin</a></li>');
+      }
+    }
     navAcc.innerHTML = `
       <div class="nav-user-wrap" id="nav-user-wrap">
         <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)"
@@ -822,7 +851,7 @@
             <div class="nav-dd-nombre">${nombre} ${apellido}</div>
             <div class="nav-dd-email">${session.user.email}</div>
           </div>
-          ${adminLink}
+          <button class="nav-dd-item" onclick="abrirMiCuenta()"><i class="fa-solid fa-user-gear" aria-hidden="true"></i> Mi cuenta</button>
           <div class="nav-dd-sep"></div>
           <button class="nav-dd-item salir" onclick="cerrarSesion()" role="menuitem">
             <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
@@ -846,6 +875,49 @@
     if (btn) btn.setAttribute('aria-expanded', 'false');
   });
   async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
+
+  let _mcSession = null;
+  async function abrirMiCuenta() {
+    document.getElementById('nav-dropdown')?.classList.remove('abierto');
+    const { data: { session } } = await db.auth.getSession();
+    _mcSession = session;
+    if (!session) return;
+    const { data: ud } = await db.from('usuarios').select('nombre,apellido').eq('correo', session.user.email).single();
+    document.getElementById('mc-nombre').value = ud?.nombre || '';
+    document.getElementById('mc-apellido').value = ud?.apellido || '';
+    document.getElementById('mc-pass').value = '';
+    document.getElementById('mc-pass2').value = '';
+    const al = document.getElementById('alerta-mi-cuenta'); al.className = 'alerta-modal'; al.innerHTML = '';
+    document.getElementById('modal-mi-cuenta').classList.add('abierto');
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrarMiCuenta() {
+    const m = document.getElementById('modal-mi-cuenta');
+    if (m) { m.classList.remove('abierto'); document.body.style.overflow = ''; }
+  }
+  async function guardarMiCuenta() {
+    const nombre = document.getElementById('mc-nombre').value.trim();
+    const apellido = document.getElementById('mc-apellido').value.trim();
+    const pass = document.getElementById('mc-pass').value;
+    const pass2 = document.getElementById('mc-pass2').value;
+    const al = document.getElementById('alerta-mi-cuenta');
+    if (pass && pass.length < 8) { al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Contraseña mínimo 8 caracteres.'; return; }
+    if (pass && pass !== pass2) { al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Las contraseñas no coinciden.'; return; }
+    const btn = document.getElementById('btn-mc-guardar'); btn.disabled = true; btn.textContent = 'Guardando…';
+    let errMsg = null;
+    if (nombre && apellido) {
+      const { error } = await db.from('usuarios').update({ nombre, apellido }).eq('correo', _mcSession.user.email);
+      if (error) errMsg = error.message;
+      else {
+        const avatarBtn = document.getElementById('nav-avatar-btn');
+        if (avatarBtn) avatarBtn.textContent = (nombre.charAt(0) + (apellido.charAt(0)||'')).toUpperCase();
+      }
+    }
+    if (pass && !errMsg) { const { error } = await db.auth.updateUser({ password: pass }); if (error) errMsg = error.message; }
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+    if (errMsg) { al.className='alerta-modal err'; al.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${errMsg}`; }
+    else { al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Cambios guardados correctamente.'; setTimeout(cerrarMiCuenta, 1500); }
+  }
 
   window.addEventListener('DOMContentLoaded', async () => {
     await verificarSesion();
@@ -962,5 +1034,24 @@
     }
   }
 </script>
+
+<!-- MODAL MI CUENTA -->
+<div class="modal-overlay" id="modal-mi-cuenta" onclick="if(event.target===this)cerrarMiCuenta()" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:420px;">
+    <button class="modal-cerrar" onclick="cerrarMiCuenta()">✕</button>
+    <div style="font-family:'Sora',sans-serif;font-size:20px;color:var(--azul);margin-bottom:4px;">Mi cuenta</div>
+    <div style="font-size:13px;color:var(--tenue);margin-bottom:20px;">Actualiza tu nombre o contraseña</div>
+    <div class="alerta-modal" id="alerta-mi-cuenta" role="alert" aria-live="polite"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--azul-medio);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Nombre y apellido</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Nombre</label><input type="text" id="mc-nombre" placeholder="Nombre" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;transition:border-color 0.2s;"/></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Apellido</label><input type="text" id="mc-apellido" placeholder="Apellido" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;transition:border-color 0.2s;"/></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--azul-medio);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Cambiar contraseña</div>
+    <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Nueva contraseña</label><input type="password" id="mc-pass" placeholder="Mínimo 8 caracteres" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    <div style="margin-bottom:20px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Confirmar contraseña</label><input type="password" id="mc-pass2" placeholder="Repite la contraseña" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    <button style="width:100%;padding:12px;background:var(--azul);border:none;border-radius:8px;color:var(--blanco);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background 0.2s;" id="btn-mc-guardar" onclick="guardarMiCuenta()" onmouseover="this.style.background='var(--azul-medio)'" onmouseout="this.style.background='var(--azul)'">Guardar cambios</button>
+  </div>
+</div>
 </body>
 </html>

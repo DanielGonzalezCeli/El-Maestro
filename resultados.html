@@ -638,8 +638,13 @@
     const apellido = meta.apellido || '';
     const iniciales = (nombre.charAt(0) + (apellido.charAt(0) || nombre.charAt(1) || '')).toUpperCase();
     const { data: ud } = await db.from('usuarios').select('rol').eq('correo', session.user.email).single();
-    const adminLink = ud?.rol === 'admin'
-      ? `<a href="admin.html" class="nav-dd-item"><i class="fa-solid fa-gauge" aria-hidden="true"></i> Panel de administración</a>` : '';
+    const esAdmin = ud?.rol === 'admin';
+    if (esAdmin) {
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks && !navLinks.querySelector('[data-admin-link]')) {
+        navLinks.insertAdjacentHTML('beforeend', '<li><a href="admin.html" data-admin-link style="background:rgba(244,123,32,0.25);"><i class="fa-solid fa-gauge" aria-hidden="true"></i> Admin</a></li>');
+      }
+    }
     navAcc.innerHTML = `
       <div class="nav-user-wrap" id="nav-user-wrap">
         <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)"
@@ -649,7 +654,7 @@
             <div class="nav-dd-nombre">${nombre} ${apellido}</div>
             <div class="nav-dd-email">${session.user.email}</div>
           </div>
-          ${adminLink}
+          <button class="nav-dd-item" onclick="abrirMiCuenta()"><i class="fa-solid fa-user-gear" aria-hidden="true"></i> Mi cuenta</button>
           <div class="nav-dd-sep"></div>
           <button class="nav-dd-item salir" onclick="cerrarSesion()" role="menuitem">
             <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
@@ -672,6 +677,49 @@
   });
   async function cerrarSesion() { await db.auth.signOut(); window.location.reload(); }
 
+  let _mcSession = null;
+  async function abrirMiCuenta() {
+    document.getElementById('nav-dropdown')?.classList.remove('abierto');
+    const { data: { session } } = await db.auth.getSession();
+    _mcSession = session;
+    if (!session) return;
+    const { data: ud } = await db.from('usuarios').select('nombre,apellido').eq('correo', session.user.email).single();
+    document.getElementById('mc-nombre').value = ud?.nombre || '';
+    document.getElementById('mc-apellido').value = ud?.apellido || '';
+    document.getElementById('mc-pass').value = '';
+    document.getElementById('mc-pass2').value = '';
+    const al = document.getElementById('alerta-mi-cuenta'); al.className = 'alerta-modal'; al.innerHTML = '';
+    document.getElementById('modal-mi-cuenta').classList.add('abierto');
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrarMiCuenta() {
+    const m = document.getElementById('modal-mi-cuenta');
+    if (m) { m.classList.remove('abierto'); document.body.style.overflow = ''; }
+  }
+  async function guardarMiCuenta() {
+    const nombre = document.getElementById('mc-nombre').value.trim();
+    const apellido = document.getElementById('mc-apellido').value.trim();
+    const pass = document.getElementById('mc-pass').value;
+    const pass2 = document.getElementById('mc-pass2').value;
+    const al = document.getElementById('alerta-mi-cuenta');
+    if (pass && pass.length < 8) { al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Contraseña mínimo 8 caracteres.'; return; }
+    if (pass && pass !== pass2) { al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Las contraseñas no coinciden.'; return; }
+    const btn = document.getElementById('btn-mc-guardar'); btn.disabled = true; btn.textContent = 'Guardando…';
+    let errMsg = null;
+    if (nombre && apellido) {
+      const { error } = await db.from('usuarios').update({ nombre, apellido }).eq('correo', _mcSession.user.email);
+      if (error) errMsg = error.message;
+      else {
+        const avatarBtn = document.getElementById('nav-avatar-btn');
+        if (avatarBtn) avatarBtn.textContent = (nombre.charAt(0) + (apellido.charAt(0)||'')).toUpperCase();
+      }
+    }
+    if (pass && !errMsg) { const { error } = await db.auth.updateUser({ password: pass }); if (error) errMsg = error.message; }
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+    if (errMsg) { al.className='alerta-modal err'; al.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${errMsg}`; }
+    else { al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Cambios guardados correctamente.'; setTimeout(cerrarMiCuenta, 1500); }
+  }
+
   /* ── INICIALIZACIÓN ── */
   window.addEventListener('DOMContentLoaded', async () => {
     await verificarSesion();
@@ -693,7 +741,12 @@
   }
   function cerrarModal() { document.getElementById('modal-overlay').classList.remove('abierto'); document.body.style.overflow = ''; }
   function cerrarModalFuera(e) { if (e.target === document.getElementById('modal-overlay')) cerrarModal(); }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('abierto')) cerrarModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('modal-overlay').classList.contains('abierto')) cerrarModal();
+      if (document.getElementById('modal-mi-cuenta')?.classList.contains('abierto')) cerrarMiCuenta();
+    }
+  });
   function cambiarTab(tab) {
     const esLogin = tab === 'login';
     document.getElementById('tab-login').classList.toggle('activo', esLogin);
@@ -739,5 +792,24 @@
   }
   function checkFortaleza(val) { document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none'; let nivel=0; if(val.length>=6)nivel++; if(val.length>=8)nivel++; if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++; if(/[^A-Za-z0-9]/.test(val))nivel++; const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte']; ['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');}); document.getElementById('fortaleza-txt').textContent=textos[nivel]||''; }
 </script>
+
+<!-- MODAL MI CUENTA -->
+<div class="modal-overlay" id="modal-mi-cuenta" onclick="if(event.target===this)cerrarMiCuenta()" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:420px;">
+    <button class="modal-cerrar" onclick="cerrarMiCuenta()">✕</button>
+    <div style="font-family:'Sora',sans-serif;font-size:20px;color:var(--azul);margin-bottom:4px;">Mi cuenta</div>
+    <div style="font-size:13px;color:var(--tenue);margin-bottom:20px;">Actualiza tu nombre o contraseña</div>
+    <div class="alerta-modal" id="alerta-mi-cuenta" role="alert" aria-live="polite"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--azul-medio);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Nombre y apellido</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Nombre</label><input type="text" id="mc-nombre" placeholder="Nombre" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;transition:border-color 0.2s;"/></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Apellido</label><input type="text" id="mc-apellido" placeholder="Apellido" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;transition:border-color 0.2s;"/></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--azul-medio);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Cambiar contraseña</div>
+    <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Nueva contraseña</label><input type="password" id="mc-pass" placeholder="Mínimo 8 caracteres" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    <div style="margin-bottom:20px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px;">Confirmar contraseña</label><input type="password" id="mc-pass2" placeholder="Repite la contraseña" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    <button style="width:100%;padding:12px;background:var(--azul);border:none;border-radius:8px;color:var(--blanco);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background 0.2s;" id="btn-mc-guardar" onclick="guardarMiCuenta()" onmouseover="this.style.background='var(--azul-medio)'" onmouseout="this.style.background='var(--azul)'">Guardar cambios</button>
+  </div>
+</div>
 </body>
 </html>

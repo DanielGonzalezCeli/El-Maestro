@@ -29,6 +29,7 @@
   .nav-usuario { color:var(--blanco); font-size:13px; font-weight:600; }
   .btn-ghost { padding:8px 18px; border:1.5px solid rgba(255,255,255,0.5); border-radius:8px; background:transparent; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--blanco); font-weight:600; cursor:pointer; }
   .btn-ghost:hover { background:rgba(255,255,255,0.1); }
+  .nav-user-wrap{position:relative;} .nav-avatar{width:36px;height:36px;border-radius:50%;background:var(--naranja);color:var(--blanco);font-size:13px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;transition:opacity 0.2s;flex-shrink:0;} .nav-avatar:hover{opacity:0.85;} .nav-dropdown{position:absolute;right:0;top:calc(100% + 10px);background:var(--blanco);border:1px solid var(--borde);border-radius:12px;padding:8px;min-width:220px;box-shadow:0 8px 24px rgba(27,63,110,0.12);display:none;flex-direction:column;gap:2px;z-index:200;animation:fadeDown 0.18s ease;} .nav-dropdown.abierto{display:flex;} @keyframes fadeDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}} .nav-dd-info{padding:10px 12px 12px;border-bottom:1px solid var(--borde);margin-bottom:4px;} .nav-dd-nombre{font-size:14px;font-weight:700;color:var(--texto);} .nav-dd-email{font-size:12px;color:var(--tenue);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .nav-dd-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--texto);text-decoration:none;font-weight:500;background:none;border:none;width:100%;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-align:left;transition:background 0.15s;} .nav-dd-item:hover{background:var(--fondo);} .nav-dd-item i{color:var(--tenue);width:16px;text-align:center;} .nav-dd-sep{height:1px;background:var(--borde);margin:4px 0;} .nav-dd-item.salir{color:var(--error);} .nav-dd-item.salir i{color:var(--error);}
 
   .hero-admin { background:var(--azul); padding:32px 48px 28px; border-bottom:1px solid rgba(255,255,255,0.1); }
   .hero-admin h1 { font-family:'Sora',sans-serif; font-size:24px; color:var(--blanco); }
@@ -99,8 +100,18 @@
     <li><a href="admin-usuarios.html">Usuarios</a></li>
   </ul>
   <div class="nav-acc">
-    <span class="nav-usuario" id="nav-nombre-admin">—</span>
-    <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>
+    <div class="nav-user-wrap">
+      <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)" aria-haspopup="true" aria-expanded="false">—</button>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="nav-dd-info">
+          <div class="nav-dd-nombre" id="nav-dd-nombre">—</div>
+          <div class="nav-dd-email" id="nav-dd-email">—</div>
+        </div>
+        <button class="nav-dd-item" onclick="abrirMiCuenta()"><i class="fa-solid fa-user-gear" aria-hidden="true"></i> Mi cuenta</button>
+        <div class="nav-dd-sep"></div>
+        <button class="nav-dd-item salir" onclick="cerrarSesion()"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Cerrar sesión</button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -195,20 +206,6 @@
       </div>
     </div>
 
-    <div class="seccion-sub">Estadísticas (automáticas para nuevos)</div>
-    <div class="campo-fila">
-      <div class="campo">
-        <label for="pro-calificacion">Calificación (0–5)</label>
-        <input type="number" id="pro-calificacion" placeholder="0" min="0" max="5" step="0.1"/>
-        <div class="campo-hint">Se calcula automáticamente con las reseñas</div>
-      </div>
-      <div class="campo">
-        <label for="pro-resenas">N° de reseñas</label>
-        <input type="number" id="pro-resenas" placeholder="0" min="0"/>
-        <div class="campo-hint">Se actualiza automáticamente</div>
-      </div>
-    </div>
-
     <div class="seccion-sub">Descripción y verificación</div>
     <div class="campo">
       <label for="pro-descripcion">Descripción</label>
@@ -234,6 +231,27 @@
     <div class="modal-acciones">
       <button class="btn-secundario" onclick="cerrarModal('modal-confirm')">Cancelar</button>
       <button class="btn-eliminar-confirmar" id="btn-confirmar-eliminar">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MI CUENTA -->
+<div class="modal-overlay" id="modal-mi-cuenta" onclick="if(event.target===this)cerrarModal('modal-mi-cuenta')" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:440px;">
+    <button class="modal-cerrar" onclick="cerrarModal('modal-mi-cuenta')">✕</button>
+    <h3 style="font-family:'Sora',sans-serif;font-size:18px;color:var(--azul);margin-bottom:20px;">Mi cuenta</h3>
+    <div class="alerta-admin" id="alerta-mi-cuenta"></div>
+    <p style="font-size:11px;font-weight:700;color:var(--azul-medio);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Nombre y apellido</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><label style="display:block;font-size:12px;font-weight:700;color:var(--suave);margin-bottom:5px;">Nombre</label><input type="text" id="mc-nombre" placeholder="Nombre" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+      <div><label style="display:block;font-size:12px;font-weight:700;color:var(--suave);margin-bottom:5px;">Apellido</label><input type="text" id="mc-apellido" placeholder="Apellido" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    </div>
+    <p style="font-size:11px;font-weight:700;color:var(--azul-medio);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Cambiar contraseña</p>
+    <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:700;color:var(--suave);margin-bottom:5px;">Nueva contraseña</label><input type="password" id="mc-pass" placeholder="Mínimo 8 caracteres" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    <div style="margin-bottom:20px;"><label style="display:block;font-size:12px;font-weight:700;color:var(--suave);margin-bottom:5px;">Confirmar contraseña</label><input type="password" id="mc-pass2" placeholder="Repite la contraseña" style="width:100%;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:13px;font-family:inherit;color:var(--texto);background:var(--fondo);outline:none;"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn-secundario" onclick="cerrarModal('modal-mi-cuenta')">Cancelar</button>
+      <button class="btn-guardar" onclick="guardarMiCuenta()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -287,7 +305,10 @@
     if (!session) { window.location.href = 'index.html'; return; }
     const { data: usuario } = await db.from('usuarios').select('rol,nombre,apellido').eq('correo', session.user.email).single();
     if (!usuario || usuario.rol !== 'admin') { alert('Acceso denegado.'); window.location.href = 'index.html'; return; }
-    document.getElementById('nav-nombre-admin').textContent = `${usuario.nombre} ${usuario.apellido}`;
+    const iniciales = (usuario.nombre.charAt(0) + (usuario.apellido?.charAt(0)||'')).toUpperCase();
+    document.getElementById('nav-avatar-btn').textContent = iniciales;
+    document.getElementById('nav-dd-nombre').textContent = `${usuario.nombre} ${usuario.apellido}`;
+    document.getElementById('nav-dd-email').textContent = session.user.email;
     await cargarPros();
   }
 
@@ -324,8 +345,6 @@
     ['err-nombre','err-cedula','err-wp','err-oficio','err-zona','err-disp','err-precio','err-unidad'].forEach(id => {
       const el = document.getElementById(id); if (el) el.classList.remove('visible');
     });
-    document.getElementById('pro-calificacion').value = '0';
-    document.getElementById('pro-resenas').value = '0';
     document.getElementById('pro-disp-inicio').value = '';
     document.getElementById('pro-verificado').checked = false;
     if (id) {
@@ -336,8 +355,6 @@
         });
         document.getElementById('pro-cedula').value = data.cedula || '';
         document.getElementById('pro-whatsapp').value = data.whatsapp || '';
-        document.getElementById('pro-calificacion').value = data.calificacion ?? '0';
-        document.getElementById('pro-resenas').value = data.resenas ?? '0';
         document.getElementById('pro-verificado').checked = !!data.verificado;
         if (data.disponibilidad && data.disponibilidad.match(/^\d{4}-\d{2}-\d{2}/)) {
           document.getElementById('pro-disp-inicio').value = data.disponibilidad.split('/')[0];
@@ -382,11 +399,10 @@
       disponibilidad: dispInicio,
       precio: parseFloat(precio) || 0,
       unidad,
-      calificacion: parseFloat(document.getElementById('pro-calificacion').value) || 0,
-      resenas: parseInt(document.getElementById('pro-resenas').value) || 0,
       descripcion: document.getElementById('pro-descripcion').value.trim(),
       verificado: document.getElementById('pro-verificado').checked,
     };
+    if (!id) { payload.calificacion = 0; payload.resenas = 0; }
 
     const btn = document.querySelector('#modal-pro .btn-guardar');
     btn.disabled = true; btn.textContent = 'Guardando…';
@@ -415,9 +431,41 @@
   function abrirModal(id) { document.getElementById(id).classList.add('abierto'); document.body.style.overflow='hidden'; }
   function cerrarModal(id) { document.getElementById(id).classList.remove('abierto'); document.body.style.overflow=''; }
   function cerrarModalFuera(e, id) { if (e.target === document.getElementById(id)) cerrarModal(id); }
-  document.addEventListener('keydown', e => { if (e.key==='Escape') ['modal-pro','modal-confirm'].forEach(id => { if (document.getElementById(id)?.classList.contains('abierto')) cerrarModal(id); }); });
+  document.addEventListener('keydown', e => { if (e.key==='Escape') ['modal-pro','modal-confirm','modal-mi-cuenta'].forEach(id => { if (document.getElementById(id)?.classList.contains('abierto')) cerrarModal(id); }); });
   function mostrarAlerta(id, tipo, msg) { const el=document.getElementById(id); el.className='alerta-admin '+tipo; el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}"></i> ${msg}`; }
   function limpiarAlerta(id) { const el=document.getElementById(id); if (el) { el.className='alerta-admin'; el.innerHTML=''; } }
+
+  function toggleNavDropdown(e){e.stopPropagation();const dd=document.getElementById('nav-dropdown');const btn=document.getElementById('nav-avatar-btn');const a=dd.classList.toggle('abierto');if(btn)btn.setAttribute('aria-expanded',a);}
+  document.addEventListener('click',()=>{const dd=document.getElementById('nav-dropdown');if(dd)dd.classList.remove('abierto');const b=document.getElementById('nav-avatar-btn');if(b)b.setAttribute('aria-expanded','false');});
+
+  let _mcSession=null;
+  async function abrirMiCuenta(){
+    document.getElementById('nav-dropdown')?.classList.remove('abierto');
+    const {data:{session}}=await db.auth.getSession();_mcSession=session;
+    if(!session)return;
+    const {data:ud}=await db.from('usuarios').select('nombre,apellido').eq('correo',session.user.email).single();
+    document.getElementById('mc-nombre').value=ud?.nombre||'';
+    document.getElementById('mc-apellido').value=ud?.apellido||'';
+    document.getElementById('mc-pass').value='';document.getElementById('mc-pass2').value='';
+    const al=document.getElementById('alerta-mi-cuenta');al.className='alerta-admin';al.innerHTML='';
+    abrirModal('modal-mi-cuenta');
+  }
+  async function guardarMiCuenta(){
+    const nombre=document.getElementById('mc-nombre').value.trim();
+    const apellido=document.getElementById('mc-apellido').value.trim();
+    const pass=document.getElementById('mc-pass').value;
+    const pass2=document.getElementById('mc-pass2').value;
+    const al=document.getElementById('alerta-mi-cuenta');
+    if(pass&&pass.length<8){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Contraseña mínimo 8 caracteres.';return;}
+    if(pass&&pass!==pass2){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Las contraseñas no coinciden.';return;}
+    const btn=document.querySelector('#modal-mi-cuenta .btn-guardar');btn.disabled=true;btn.textContent='Guardando…';
+    let errMsg=null;
+    if(nombre&&apellido){const {error}=await db.from('usuarios').update({nombre,apellido}).eq('correo',_mcSession.user.email);if(error)errMsg=error.message;else{document.getElementById('nav-avatar-btn').textContent=(nombre.charAt(0)+(apellido.charAt(0)||'')).toUpperCase();document.getElementById('nav-dd-nombre').textContent=nombre+' '+apellido;}}
+    if(pass&&!errMsg){const {error}=await db.auth.updateUser({password:pass});if(error)errMsg=error.message;}
+    btn.disabled=false;btn.textContent='Guardar cambios';
+    if(errMsg){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> '+errMsg;}
+    else{al.className='alerta-admin exito';al.innerHTML='<i class="fa-solid fa-circle-check"></i> Cambios guardados.';setTimeout(()=>cerrarModal('modal-mi-cuenta'),1500);}
+  }
 
   init();
 </script>
