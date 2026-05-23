@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://danielgonzalezc.github.io/El-Maestro/sitemap.xml
+Sitemap: https://danielgonzalezceli.github.io/El-Maestro/sitemap.xml
