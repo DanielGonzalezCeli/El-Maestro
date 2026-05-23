@@ -570,8 +570,6 @@
     } else {
       info.innerHTML = `Todos los profesionales (<strong>${n} encontrado${n !== 1 ? 's' : ''}</strong>)`;
     }
-    document.getElementById('contador-resultados').textContent = n;
-
     if (n === 0) {
       lista.innerHTML = '';
       sinRes.style.display = 'block';
