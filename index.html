@@ -172,7 +172,7 @@
 
   /* H6 — verificado inline junto al nombre, sin ocupar protagonismo */
   .pro-top { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
-  .pro-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+  .pro-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
   .pro-nombre-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .pro-nombre { font-size: 15px; font-weight: 600; }
   /* Verificado: sutil, acompañando el nombre */
@@ -498,42 +498,55 @@
     <!-- LOGIN -->
     <div class="form-panel activo" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
       <div class="form-titulo" id="modal-titulo-activo">Bienvenido de vuelta</div>
-      <!-- H2 Lenguaje del usuario — mensaje cercano y directo -->
       <div class="form-sub">Ingresa tus datos para continuar</div>
-      <!-- aria-live="polite" — el lector anuncia errores/éxitos sin interrumpir (WCAG Robustez) -->
       <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
-      <div class="campo">
-        <label for="login-email">Correo electrónico</label>
-        <div class="input-wrap">
-          <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
-          <!-- H5 Prevención — autocomplete evita errores de tipeo en email -->
-          <input type="email" id="login-email" placeholder="tucorreo@email.com"
-                 autocomplete="email" aria-required="true" aria-describedby="err-login-email"/>
+      <div id="login-fields">
+        <div class="campo">
+          <label for="login-email">Correo electrónico</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+            <input type="email" id="login-email" placeholder="tucorreo@email.com"
+                   autocomplete="email" aria-required="true" aria-describedby="err-login-email"/>
+          </div>
+          <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido (ej: nombre@dominio.com)</div>
         </div>
-        <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido (ej: nombre@dominio.com)</div>
-      </div>
-      <div class="campo">
-        <label for="login-pass">Contraseña</label>
-        <div class="input-wrap">
-          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
-          <input type="password" id="login-pass" placeholder="Tu contraseña"
-                 autocomplete="current-password" aria-required="true" aria-describedby="err-login-pass"/>
-          <button type="button" class="ojo" onclick="togglePass('login-pass',this)"
-                  aria-label="Mostrar u ocultar contraseña">
-            <i class="fa-solid fa-eye" aria-hidden="true"></i>
-          </button>
+        <div class="campo">
+          <label for="login-pass">Contraseña</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+            <input type="password" id="login-pass" placeholder="Tu contraseña"
+                   autocomplete="current-password" aria-required="true" aria-describedby="err-login-pass"/>
+            <button type="button" class="ojo" onclick="togglePass('login-pass',this)"
+                    aria-label="Mostrar u ocultar contraseña">
+              <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
         </div>
-        <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
+        <div class="extras">
+          <label class="recordar">
+            <input type="checkbox" aria-label="Recordar sesión en este dispositivo"/> Recordarme
+          </label>
+          <a href="#" class="link-olvide" onclick="mostrarResetPass(); return false;">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
+        <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')" tabindex="0">Regístrate aquí</a></div>
       </div>
-      <div class="extras">
-        <label class="recordar">
-          <input type="checkbox" aria-label="Recordar sesión en este dispositivo"/> Recordarme
-        </label>
-        <!-- H3 Control y libertad — salida clara ante olvido de contraseña -->
-        <a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a>
+      <!-- PANEL RESET CONTRASEÑA -->
+      <div id="panel-reset-pass" style="display:none;">
+        <div style="font-family:'Sora',sans-serif;font-size:17px;color:var(--azul);margin-bottom:4px;">Restablecer contraseña</div>
+        <div class="form-sub">Ingresa tu correo y te enviaremos un enlace para crear una nueva contraseña.</div>
+        <div class="alerta-modal" id="alerta-reset" role="alert" aria-live="polite"></div>
+        <div class="campo">
+          <label for="reset-email">Correo electrónico</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+            <input type="email" id="reset-email" placeholder="tucorreo@email.com" autocomplete="email"/>
+          </div>
+        </div>
+        <button class="btn-submit" id="btn-reset-submit" onclick="enviarEnlaceReset()" style="margin-bottom:10px;">Enviar enlace</button>
+        <div style="text-align:center;"><a href="#" class="link-olvide" style="font-size:12px;" onclick="ocultarResetPass(); return false;">← Volver al inicio de sesión</a></div>
       </div>
-      <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
-      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')" tabindex="0">Regístrate aquí</a></div>
     </div>
 
     <!-- REGISTRO -->
@@ -659,8 +672,41 @@
     document.getElementById('tab-registro').setAttribute('aria-selected', !esLogin);
     document.getElementById('panel-login').classList.toggle('activo', esLogin);
     document.getElementById('panel-registro').classList.toggle('activo', !esLogin);
-    // H6 Reconocimiento — el título del modal se actualiza para que el contexto sea siempre claro
     document.getElementById('modal-titulo-activo').textContent = esLogin ? 'Bienvenido de vuelta' : 'Crea tu cuenta';
+    if (esLogin) ocultarResetPass();
+  }
+
+  // RESET CONTRASEÑA
+  function mostrarResetPass() {
+    document.getElementById('login-fields').style.display = 'none';
+    document.getElementById('panel-reset-pass').style.display = 'block';
+    const emailVal = document.getElementById('login-email').value;
+    document.getElementById('reset-email').value = emailVal;
+    const al = document.getElementById('alerta-reset'); al.className='alerta-modal'; al.innerHTML='';
+    document.getElementById('reset-email').focus();
+  }
+  function ocultarResetPass() {
+    const rp = document.getElementById('panel-reset-pass');
+    const lf = document.getElementById('login-fields');
+    if (rp) rp.style.display = 'none';
+    if (lf) lf.style.display = 'block';
+  }
+  async function enviarEnlaceReset() {
+    const email = document.getElementById('reset-email').value.trim();
+    const al = document.getElementById('alerta-reset');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Ingresa un correo válido.'; return;
+    }
+    const btn = document.getElementById('btn-reset-submit');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    const resetUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html';
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: resetUrl });
+    btn.disabled = false; btn.textContent = 'Enviar enlace';
+    if (error) {
+      al.className='alerta-modal err'; al.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${error.message}`;
+    } else {
+      al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Enlace enviado. Revisa tu correo.';
+    }
   }
 
   // OJO CONTRASEÑA
@@ -881,9 +927,16 @@
     grid.innerHTML = data.slice(0, 3).map(renderProCard).join('');
   }
 
+  // ── FOTOS DE PROFESIONALES ──
+  const NOMBRES_F = new Set(['Ana','Maria','Laura','Sofia','Lucia','Carmen','Rosa','Gloria','Patricia','Andrea','Carolina','Claudia','Diana','Elena','Isabel','Julia','Marta','Monica','Sara','Teresa','Valentina','Alejandra','Amanda','Beatriz','Cecilia','Daniela','Gabriela','Ivana','Jessica','Karla','Liliana','Marcela','Natalia','Olga','Paula','Raquel','Sandra','Tatiana','Ximena','Zoila','Adriana','Fernanda','Verónica','Veronica','Priscila','Evelyn','Lorena','Vanessa','Miriam','Silvia']);
+  function hashId(id) { let h=0; for(const c of (id||'').replace(/-/g,'')) h=(h*31+c.charCodeAt(0))&0x7fffffff; return (h%90)+1; }
+  function esFemenino(nombre) { const p=nombre.trim().split(/\s+/)[0]; if(NOMBRES_F.has(p)) return true; const l=p.toLowerCase(); return l.endsWith('a')&&!['elías','elias','josua','lua','lua'].includes(l)&&!l.endsWith('ua'); }
+  function getFotoUrl(p) { const n=hashId(p.id); return `https://randomuser.me/api/portraits/${esFemenino(p.nombre)?'women':'men'}/${n}.jpg`; }
+
   function renderProCard(p) {
     const partes = p.nombre.trim().split(/\s+/);
     const ini = ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
+    const fotoUrl = getFotoUrl(p);
     const cal = parseFloat(p.calificacion);
     const est = '★'.repeat(Math.round(cal)) + '☆'.repeat(5 - Math.round(cal));
     const badge = p.disponibilidad === 'hoy'
@@ -897,7 +950,7 @@
                onclick="window.location.href='perfil.html?id=${p.id}'"
                onkeydown="if(event.key==='Enter') window.location.href='perfil.html?id=${p.id}'">
         <div class="pro-top">
-          <div class="pro-avatar" aria-hidden="true">${ini}</div>
+          <div class="pro-avatar" aria-hidden="true"><img src="${fotoUrl}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();this.parentElement.style.fontSize='16px';this.parentElement.textContent='${ini}'"/></div>
           <div>
             <div class="pro-nombre-row">
               <span class="pro-nombre">${p.nombre}</span>

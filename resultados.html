@@ -140,7 +140,8 @@
   }
   .pro-card:hover, .pro-card:focus { border-color: var(--azul-suave); box-shadow: 0 4px 16px rgba(27,63,110,0.08); outline: none; }
   .pro-card:focus-visible { outline: 3px solid var(--naranja); outline-offset: 2px; }
-  .pro-avatar { width: 58px; height: 58px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+  .pro-avatar { width: 58px; height: 58px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+  .paginacion-wrap { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 28px; flex-wrap: wrap; }
   .pro-cuerpo { flex: 1; min-width: 0; }
   .pro-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
   .pro-nombre { font-size: 15px; font-weight: 700; }
@@ -382,18 +383,7 @@
         <a href="resultados.html">Ver todos los profesionales</a>
       </div>
 
-      <!-- H3 Control y libertad — paginación clara con página actual marcada -->
-      <nav class="paginacion" aria-label="Paginación de resultados">
-        <button class="pag-btn" disabled aria-label="Página anterior" aria-disabled="true">
-          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
-        </button>
-        <button class="pag-btn activo" aria-current="page" aria-label="Página 1, página actual">1</button>
-        <button class="pag-btn" aria-label="Ir a página 2">2</button>
-        <button class="pag-btn" aria-label="Ir a página 3">3</button>
-        <button class="pag-btn" aria-label="Página siguiente">
-          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-        </button>
-      </nav>
+      <nav class="paginacion-wrap" id="paginacion-wrap" aria-label="Paginación de resultados"></nav>
 
     </section>
   </div>
@@ -415,29 +405,45 @@
       <div class="form-titulo" id="modal-titulo-activo">Bienvenido de vuelta</div>
       <div class="form-sub">Ingresa tus datos para continuar</div>
       <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
-      <div class="campo">
-        <label for="login-email">Correo electrónico</label>
-        <div class="input-wrap">
-          <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
-          <input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/>
+      <div id="login-fields">
+        <div class="campo">
+          <label for="login-email">Correo electrónico</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+            <input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/>
+          </div>
+          <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido</div>
         </div>
-        <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido</div>
-      </div>
-      <div class="campo">
-        <label for="login-pass">Contraseña</label>
-        <div class="input-wrap">
-          <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
-          <input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/>
-          <button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+        <div class="campo">
+          <label for="login-pass">Contraseña</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i>
+            <input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/>
+            <button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+          </div>
+          <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
         </div>
-        <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
+        <div class="extras">
+          <label class="recordar"><input type="checkbox"/> Recordarme</label>
+          <a href="#" class="link-olvide" onclick="mostrarResetPass(); return false;">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
+        <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
       </div>
-      <div class="extras">
-        <label class="recordar"><input type="checkbox"/> Recordarme</label>
-        <a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a>
+      <div id="panel-reset-pass" style="display:none;">
+        <div style="font-family:'Sora',sans-serif;font-size:17px;color:var(--azul);margin-bottom:4px;">Restablecer contraseña</div>
+        <div class="form-sub">Ingresa tu correo y te enviaremos un enlace para crear una nueva contraseña.</div>
+        <div class="alerta-modal" id="alerta-reset" role="alert" aria-live="polite"></div>
+        <div class="campo">
+          <label for="reset-email">Correo electrónico</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
+            <input type="email" id="reset-email" placeholder="tucorreo@email.com" autocomplete="email"/>
+          </div>
+        </div>
+        <button class="btn-submit" id="btn-reset-submit" onclick="enviarEnlaceReset()" style="margin-bottom:10px;">Enviar enlace</button>
+        <div style="text-align:center;"><a href="#" class="link-olvide" style="font-size:12px;" onclick="ocultarResetPass(); return false;">← Volver al inicio de sesión</a></div>
       </div>
-      <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
-      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
     </div>
     <div class="form-panel" id="panel-registro" role="tabpanel">
       <div class="form-titulo">Crea tu cuenta</div>
@@ -499,6 +505,11 @@
     btn.setAttribute('aria-expanded', abierto);
   }
 
+  // ── PAGINACIÓN ──
+  const POR_PAGINA = 10;
+  let paginaActual = 1;
+  let resultadosFiltrados = [];
+
   function setOrden(btn) {
     document.querySelectorAll('.orden-tab').forEach(b => { b.classList.remove('activo'); b.setAttribute('aria-pressed', 'false'); });
     btn.classList.add('activo');
@@ -513,9 +524,16 @@
     return '★'.repeat(r) + '☆'.repeat(5 - r);
   }
 
+  // ── FOTOS DE PROFESIONALES ──
+  const NOMBRES_F = new Set(['Ana','Maria','Laura','Sofia','Lucia','Carmen','Rosa','Gloria','Patricia','Andrea','Carolina','Claudia','Diana','Elena','Isabel','Julia','Marta','Monica','Sara','Teresa','Valentina','Alejandra','Amanda','Beatriz','Cecilia','Daniela','Gabriela','Ivana','Jessica','Karla','Liliana','Marcela','Natalia','Olga','Paula','Raquel','Sandra','Tatiana','Ximena','Zoila','Adriana','Fernanda','Verónica','Veronica','Priscila','Evelyn','Lorena','Vanessa','Miriam','Silvia']);
+  function hashId(id) { let h=0; for(const c of (id||'').replace(/-/g,'')) h=(h*31+c.charCodeAt(0))&0x7fffffff; return (h%90)+1; }
+  function esFemenino(nombre) { const p=nombre.trim().split(/\s+/)[0]; if(NOMBRES_F.has(p)) return true; const l=p.toLowerCase(); return l.endsWith('a')&&!l.endsWith('ua'); }
+  function getFotoUrl(p) { const n=hashId(p.id); return `https://randomuser.me/api/portraits/${esFemenino(p.nombre)?'women':'men'}/${n}.jpg`; }
+
   function renderCard(p) {
     const partes = p.nombre.trim().split(/\s+/);
     const ini = ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
+    const fotoUrl = getFotoUrl(p);
     const cal = parseFloat(p.calificacion);
     const verificadoHTML = p.verificado
       ? `<div class="pro-verificado">✔ Verificado</div>` : '';
@@ -525,7 +543,7 @@
     return `
       <a href="perfil.html?id=${p.id}" class="pro-card" role="listitem" tabindex="0"
          aria-label="Ver perfil de ${p.nombre}, ${p.oficio}, calificación ${cal}">
-        <div class="pro-avatar" aria-hidden="true">${ini}</div>
+        <div class="pro-avatar" aria-hidden="true"><img src="${fotoUrl}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();this.parentElement.style.fontSize='18px';this.parentElement.textContent='${ini}'"/></div>
         <div class="pro-cuerpo">
           <div class="pro-cabecera">
             <div>
@@ -575,6 +593,7 @@
     const sinRes = document.getElementById('sin-resultados');
     lista.innerHTML = '<p style="color:var(--tenue);padding:20px 0;font-size:14px;">Cargando…</p>';
     sinRes.style.display = 'none';
+    document.getElementById('paginacion-wrap').innerHTML = '';
 
     const { data, error } = await query;
     if (error) {
@@ -582,22 +601,58 @@
       return;
     }
 
-    const resultado = data || [];
-    const n = resultado.length;
+    resultadosFiltrados = data || [];
+    paginaActual = 1;
+    const n = resultadosFiltrados.length;
     const info = document.getElementById('info-resultados');
     if (cat !== 'todos') {
       info.innerHTML = `Resultados para: <strong>${cat}</strong> (${n} encontrado${n !== 1 ? 's' : ''})`;
     } else {
       info.innerHTML = `Todos los profesionales (<strong>${n} encontrado${n !== 1 ? 's' : ''}</strong>)`;
     }
+    mostrarPagina();
+    actualizarTags(cat, zonas);
+  }
+
+  function mostrarPagina() {
+    const n = resultadosFiltrados.length;
+    const totalPags = Math.ceil(n / POR_PAGINA);
+    const inicio = (paginaActual - 1) * POR_PAGINA;
+    const pagina = resultadosFiltrados.slice(inicio, inicio + POR_PAGINA);
+    const lista = document.getElementById('lista-profesionales');
+    const sinRes = document.getElementById('sin-resultados');
     if (n === 0) {
       lista.innerHTML = '';
       sinRes.style.display = 'block';
+      document.getElementById('paginacion-wrap').innerHTML = '';
     } else {
-      lista.innerHTML = resultado.map(renderCard).join('');
+      lista.innerHTML = pagina.map(renderCard).join('');
       sinRes.style.display = 'none';
+      renderPaginacion(totalPags, paginaActual);
     }
-    actualizarTags(cat, zonas);
+  }
+
+  function renderPaginacion(total, actual) {
+    const wrap = document.getElementById('paginacion-wrap');
+    if (total <= 1) { wrap.innerHTML = ''; return; }
+    let html = `<button class="pag-btn" onclick="irPagina(${actual-1})" ${actual===1?'disabled':''} aria-label="Página anterior"><i class="fa-solid fa-chevron-left"></i></button>`;
+    for (let i = 1; i <= total; i++) {
+      if (i===1 || i===total || (i>=actual-1 && i<=actual+1)) {
+        html += `<button class="pag-btn ${i===actual?'activo':''}" onclick="irPagina(${i})" ${i===actual?'aria-current="page"':''} aria-label="Página ${i}">${i}</button>`;
+      } else if (i===actual-2 || i===actual+2) {
+        html += `<span class="pag-btn" style="cursor:default;pointer-events:none;border:none;">…</span>`;
+      }
+    }
+    html += `<button class="pag-btn" onclick="irPagina(${actual+1})" ${actual===total?'disabled':''} aria-label="Página siguiente"><i class="fa-solid fa-chevron-right"></i></button>`;
+    wrap.innerHTML = html;
+  }
+
+  function irPagina(n) {
+    const total = Math.ceil(resultadosFiltrados.length / POR_PAGINA);
+    if (n < 1 || n > total) return;
+    paginaActual = n;
+    mostrarPagina();
+    document.getElementById('lista-profesionales').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function actualizarTags(cat, zonas) {
@@ -755,6 +810,38 @@
     document.getElementById('tab-registro').setAttribute('aria-selected', !esLogin);
     document.getElementById('panel-login').classList.toggle('activo', esLogin);
     document.getElementById('panel-registro').classList.toggle('activo', !esLogin);
+    if (esLogin) ocultarResetPass();
+  }
+  function mostrarResetPass() {
+    document.getElementById('login-fields').style.display = 'none';
+    document.getElementById('panel-reset-pass').style.display = 'block';
+    const emailVal = document.getElementById('login-email').value;
+    document.getElementById('reset-email').value = emailVal;
+    const al = document.getElementById('alerta-reset'); al.className='alerta-modal'; al.innerHTML='';
+    document.getElementById('reset-email').focus();
+  }
+  function ocultarResetPass() {
+    const rp = document.getElementById('panel-reset-pass');
+    const lf = document.getElementById('login-fields');
+    if (rp) rp.style.display = 'none';
+    if (lf) lf.style.display = 'block';
+  }
+  async function enviarEnlaceReset() {
+    const email = document.getElementById('reset-email').value.trim();
+    const al = document.getElementById('alerta-reset');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Ingresa un correo válido.'; return;
+    }
+    const btn = document.getElementById('btn-reset-submit');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    const resetUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html';
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: resetUrl });
+    btn.disabled = false; btn.textContent = 'Enviar enlace';
+    if (error) {
+      al.className='alerta-modal err'; al.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${error.message}`;
+    } else {
+      al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Enlace enviado. Revisa tu correo.';
+    }
   }
   function togglePass(id, btn) { const input = document.getElementById(id); const visible = input.type === 'text'; input.type = visible ? 'password' : 'text'; btn.querySelector('i').className = visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'; }
   function marcar(id, ok) { const el = document.getElementById(id); if (!el) return; el.classList.remove('campo-error-input','campo-ok'); el.classList.add(ok ? 'campo-ok' : 'campo-error-input'); }

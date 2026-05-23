@@ -88,7 +88,7 @@
   /* PERFIL PRINCIPAL */
   .perfil-header { background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
   .perfil-top { display: flex; gap: 22px; align-items: flex-start; }
-  .perfil-avatar { width: 88px; height: 88px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; border: 3px solid var(--azul-suave); }
+  .perfil-avatar { width: 88px; height: 88px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; border: 3px solid var(--azul-suave); overflow: hidden; }
   .perfil-info { flex: 1; }
   .perfil-nombre { font-family: 'Sora', sans-serif; font-size: 24px; color: var(--azul); margin-bottom: 4px; }
   .perfil-oficio { font-size: 15px; color: var(--suave); margin-bottom: 10px; }
@@ -521,12 +521,22 @@
         </div>
         <div class="msg-error" id="err-login-pass" role="alert">Ingresa tu contraseña</div>
       </div>
-      <div class="extras">
-        <label class="recordar"><input type="checkbox"/> Recordarme</label>
-        <a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a>
+      <div id="login-fields">
+        <div class="extras">
+          <label class="recordar"><input type="checkbox"/> Recordarme</label>
+          <a href="#" class="link-olvide" onclick="mostrarResetPass(); return false;">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="btn-submit-auth" onclick="submitLogin()">Iniciar sesión</button>
+        <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
       </div>
-      <button class="btn-submit-auth" onclick="submitLogin()">Iniciar sesión</button>
-      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
+      <div id="panel-reset-pass" style="display:none;">
+        <div style="font-family:'Sora',sans-serif;font-size:17px;color:var(--azul);margin-bottom:4px;">Restablecer contraseña</div>
+        <div style="font-size:13px;color:var(--tenue);margin-bottom:16px;">Ingresa tu correo y te enviaremos un enlace para crear una nueva contraseña.</div>
+        <div class="alerta-modal" id="alerta-reset" role="alert" aria-live="polite"></div>
+        <div class="campo"><label for="reset-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="reset-email" placeholder="tucorreo@email.com" autocomplete="email"/></div></div>
+        <button class="btn-submit-auth" id="btn-reset-submit" onclick="enviarEnlaceReset()" style="margin-bottom:10px;">Enviar enlace</button>
+        <div style="text-align:center;"><a href="#" class="link-olvide" style="font-size:12px;" onclick="ocultarResetPass(); return false;">← Volver al inicio de sesión</a></div>
+      </div>
     </div>
     <div class="form-panel" id="panel-registro" role="tabpanel">
       <div class="form-titulo">Crea tu cuenta</div>
@@ -753,6 +763,11 @@
   // ── CARGA DE PERFIL DESDE SUPABASE ──
   let perfilId = null;
 
+  const NOMBRES_F = new Set(['Ana','Maria','Laura','Sofia','Lucia','Carmen','Rosa','Gloria','Patricia','Andrea','Carolina','Claudia','Diana','Elena','Isabel','Julia','Marta','Monica','Sara','Teresa','Valentina','Alejandra','Amanda','Beatriz','Cecilia','Daniela','Gabriela','Ivana','Jessica','Karla','Liliana','Marcela','Natalia','Olga','Paula','Raquel','Sandra','Tatiana','Ximena','Zoila','Adriana','Fernanda','Verónica','Veronica','Priscila','Evelyn','Lorena','Vanessa','Miriam','Silvia']);
+  function hashId(id) { let h=0; for(const c of (id||'').replace(/-/g,'')) h=(h*31+c.charCodeAt(0))&0x7fffffff; return (h%90)+1; }
+  function esFemenino(nombre) { const p=nombre.trim().split(/\s+/)[0]; if(NOMBRES_F.has(p)) return true; const l=p.toLowerCase(); return l.endsWith('a')&&!l.endsWith('ua'); }
+  function getFotoUrl(p) { const n=hashId(p.id); return `https://randomuser.me/api/portraits/${esFemenino(p.nombre)?'women':'men'}/${n}.jpg`; }
+
   async function cargarPerfil() {
     const urlId = new URLSearchParams(window.location.search).get('id');
     let query = db.from('profesionales').select('*');
@@ -768,7 +783,10 @@
     const cal    = parseFloat(data.calificacion);
     const estrellas = '★'.repeat(Math.round(cal)) + '☆'.repeat(5 - Math.round(cal));
 
-    document.querySelector('.perfil-avatar').textContent = ini;
+    const fotoUrl = getFotoUrl(data);
+    const avatarEl = document.querySelector('.perfil-avatar');
+    avatarEl.innerHTML = `<img src="${fotoUrl}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();this.parentElement.style.fontSize='28px';this.parentElement.textContent='${ini}'"/>`;
+
     document.querySelector('.perfil-nombre').textContent = nombre;
     document.querySelector('.perfil-oficio').textContent = `${data.oficio} certificado`;
     document.querySelector('.estrellas').textContent = estrellas;
@@ -934,6 +952,38 @@
     document.getElementById('tab-registro').classList.toggle('activo',!esLogin); document.getElementById('tab-registro').setAttribute('aria-selected',!esLogin);
     document.getElementById('panel-login').classList.toggle('activo',esLogin);
     document.getElementById('panel-registro').classList.toggle('activo',!esLogin);
+    if (esLogin) ocultarResetPass();
+  }
+  function mostrarResetPass() {
+    document.getElementById('login-fields').style.display = 'none';
+    document.getElementById('panel-reset-pass').style.display = 'block';
+    const emailVal = document.getElementById('login-email').value;
+    document.getElementById('reset-email').value = emailVal;
+    const al = document.getElementById('alerta-reset'); al.className='alerta-modal'; al.innerHTML='';
+    document.getElementById('reset-email').focus();
+  }
+  function ocultarResetPass() {
+    const rp = document.getElementById('panel-reset-pass');
+    const lf = document.getElementById('login-fields');
+    if (rp) rp.style.display = 'none';
+    if (lf) lf.style.display = 'block';
+  }
+  async function enviarEnlaceReset() {
+    const email = document.getElementById('reset-email').value.trim();
+    const al = document.getElementById('alerta-reset');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Ingresa un correo válido.'; return;
+    }
+    const btn = document.getElementById('btn-reset-submit');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    const resetUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html';
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: resetUrl });
+    btn.disabled = false; btn.textContent = 'Enviar enlace';
+    if (error) {
+      al.className='alerta-modal err'; al.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${error.message}`;
+    } else {
+      al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Enlace enviado. Revisa tu correo.';
+    }
   }
   function togglePass(id,btn){const input=document.getElementById(id);const visible=input.type==='text';input.type=visible?'password':'text';btn.querySelector('i').className=visible?'fa-solid fa-eye':'fa-solid fa-eye-slash';}
   function marcar(id,ok){const el=document.getElementById(id);if(!el)return;el.classList.remove('campo-error-input','campo-ok');el.classList.add(ok?'campo-ok':'campo-error-input');}

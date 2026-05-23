@@ -18,14 +18,16 @@
   :focus-visible { outline:3px solid var(--naranja); outline-offset:3px; border-radius:4px; }
 
   nav { background:var(--azul); padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-  .logo { font-family:'Sora',sans-serif; font-size:20px; color:var(--blanco); text-decoration:none; }
+  .logo { font-family:'Sora',sans-serif; font-size:20px; color:var(--blanco); text-decoration:none; flex:1; }
   .logo span { color:var(--naranja); }
   .nav-badge { background:var(--naranja); color:var(--blanco); font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; margin-left:10px; vertical-align:middle; }
   .nav-links { list-style:none; display:flex; gap:6px; font-size:14px; }
   .nav-links a { text-decoration:none; color:var(--blanco); font-weight:600; padding:8px 16px; border-radius:8px; display:block; }
   .nav-links a:hover { background:rgba(255,255,255,0.15); }
   .nav-links a.activo { background:var(--naranja); }
-  .nav-acc { display:flex; gap:10px; align-items:center; }
+  .nav-acc { display:flex; gap:10px; align-items:center; flex:1; justify-content:flex-end; }
+  .btn-volver-sitio { color:var(--blanco); font-size:13px; font-weight:600; text-decoration:none; padding:7px 14px; border:1.5px solid rgba(255,255,255,0.4); border-radius:8px; transition:background 0.15s; white-space:nowrap; }
+  .btn-volver-sitio:hover { background:rgba(255,255,255,0.12); }
   .nav-usuario { color:var(--blanco); font-size:13px; font-weight:600; }
   .btn-ghost { padding:8px 18px; border:1.5px solid rgba(255,255,255,0.5); border-radius:8px; background:transparent; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--blanco); font-weight:600; cursor:pointer; }
   .btn-ghost:hover { background:rgba(255,255,255,0.1); }
@@ -91,6 +93,7 @@
     <li><a href="admin-usuarios.html">Usuarios</a></li>
   </ul>
   <div class="nav-acc">
+    <a href="index.html" class="btn-volver-sitio"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Página principal</a>
     <div class="nav-user-wrap">
       <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)" aria-haspopup="true" aria-expanded="false">—</button>
       <div class="nav-dropdown" id="nav-dropdown">

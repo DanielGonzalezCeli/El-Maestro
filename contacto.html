@@ -405,11 +405,21 @@
       <div class="form-titulo" id="modal-titulo-activo">Bienvenido de vuelta</div>
       <div class="form-sub">Ingresa tus datos para continuar</div>
       <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
-      <div class="campo-modal"><label for="login-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div><div class="msg-error-modal" id="err-login-email" role="alert">Ingresa un correo válido</div></div>
-      <div class="campo-modal"><label for="login-pass">Contraseña</label><div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/><button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><div class="msg-error-modal" id="err-login-pass" role="alert">Ingresa tu contraseña</div></div>
-      <div class="extras"><label class="recordar"><input type="checkbox"/> Recordarme</label><a href="#" class="link-olvide">¿Olvidaste tu contraseña?</a></div>
-      <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
-      <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
+      <div id="login-fields">
+        <div class="campo-modal"><label for="login-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div><div class="msg-error-modal" id="err-login-email" role="alert">Ingresa un correo válido</div></div>
+        <div class="campo-modal"><label for="login-pass">Contraseña</label><div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/><button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><div class="msg-error-modal" id="err-login-pass" role="alert">Ingresa tu contraseña</div></div>
+        <div class="extras"><label class="recordar"><input type="checkbox"/> Recordarme</label><a href="#" class="link-olvide" onclick="mostrarResetPass(); return false;">¿Olvidaste tu contraseña?</a></div>
+        <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
+        <div class="cambiar">¿No tienes cuenta? <a onclick="cambiarTab('registro')">Regístrate aquí</a></div>
+      </div>
+      <div id="panel-reset-pass" style="display:none;">
+        <div style="font-family:'Sora',sans-serif;font-size:17px;color:var(--azul);margin-bottom:4px;">Restablecer contraseña</div>
+        <div class="form-sub">Ingresa tu correo y te enviaremos un enlace para crear una nueva contraseña.</div>
+        <div class="alerta-modal" id="alerta-reset" role="alert" aria-live="polite"></div>
+        <div class="campo-modal"><label for="reset-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="reset-email" placeholder="tucorreo@email.com" autocomplete="email"/></div></div>
+        <button class="btn-submit" id="btn-reset-submit" onclick="enviarEnlaceReset()" style="margin-bottom:10px;">Enviar enlace</button>
+        <div style="text-align:center;"><a href="#" class="link-olvide" style="font-size:12px;" onclick="ocultarResetPass(); return false;">← Volver al inicio de sesión</a></div>
+      </div>
     </div>
     <div class="form-panel" id="panel-registro" role="tabpanel">
       <div class="form-titulo">Crea tu cuenta</div>
@@ -533,6 +543,38 @@
     document.getElementById('panel-login').classList.toggle('activo',esLogin);
     document.getElementById('panel-registro').classList.toggle('activo',!esLogin);
     document.getElementById('modal-titulo-activo').textContent=esLogin?'Bienvenido de vuelta':'Crea tu cuenta';
+    if (esLogin) ocultarResetPass();
+  }
+  function mostrarResetPass() {
+    document.getElementById('login-fields').style.display = 'none';
+    document.getElementById('panel-reset-pass').style.display = 'block';
+    const emailVal = document.getElementById('login-email').value;
+    document.getElementById('reset-email').value = emailVal;
+    const al = document.getElementById('alerta-reset'); al.className='alerta-modal'; al.innerHTML='';
+    document.getElementById('reset-email').focus();
+  }
+  function ocultarResetPass() {
+    const rp = document.getElementById('panel-reset-pass');
+    const lf = document.getElementById('login-fields');
+    if (rp) rp.style.display = 'none';
+    if (lf) lf.style.display = 'block';
+  }
+  async function enviarEnlaceReset() {
+    const email = document.getElementById('reset-email').value.trim();
+    const al = document.getElementById('alerta-reset');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Ingresa un correo válido.'; return;
+    }
+    const btn = document.getElementById('btn-reset-submit');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    const resetUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html';
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: resetUrl });
+    btn.disabled = false; btn.textContent = 'Enviar enlace';
+    if (error) {
+      al.className='alerta-modal err'; al.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${error.message}`;
+    } else {
+      al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Enlace enviado. Revisa tu correo.';
+    }
   }
   function togglePass(id,btn){const input=document.getElementById(id);const visible=input.type==='text';input.type=visible?'password':'text';btn.querySelector('i').className=visible?'fa-solid fa-eye':'fa-solid fa-eye-slash';}
   function marcar(id,ok){const el=document.getElementById(id);if(!el)return;el.classList.remove('campo-error-input','campo-ok');el.classList.add(ok?'campo-ok':'campo-error-input');}
