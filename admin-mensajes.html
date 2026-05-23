@@ -61,8 +61,9 @@
   .badge-respondido { background:var(--exito-bg); color:var(--exito); font-size:10px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap; }
   .btn-responder { font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; border:1.5px solid #16A34A; background:var(--exito-bg); color:var(--exito); cursor:pointer; white-space:nowrap; font-family:'Plus Jakarta Sans',sans-serif; transition:all 0.15s; }
   .btn-responder:hover { background:#16A34A; color:#fff; }
-  .notif { position:fixed; top:80px; right:24px; background:var(--exito); color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:600; z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+  .notif { position:fixed; top:80px; right:24px; background:var(--exito); color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:600; z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none; max-width:340px; }
   .notif.visible { opacity:1; }
+  .notif.err { background:var(--error); }
 
   /* MODAL VER MENSAJE */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
@@ -189,6 +190,15 @@
 
   async function cerrarSesion() { await db.auth.signOut(); window.location.href = 'index.html'; }
 
+  const ASUNTO_LABELS = {
+    'profesional': 'Registro como profesional',
+    'problema':    'Problema con profesional',
+    'cuenta':      'Consulta sobre cuenta',
+    'tecnico':     'Problema técnico',
+    'sugerencia':  'Sugerencia o mejora',
+    'otro':        'Otro'
+  };
+
   async function cargarMsgs() {
     const { data, error } = await db.from('contactos').select('*').order('created_at', { ascending:false });
     const tb = document.getElementById('tabla-msgs');
@@ -199,10 +209,11 @@
       const estado = m.estado || 'pendiente';
       const badgeClass = estado === 'respondido' ? 'badge-respondido' : 'badge-pendiente';
       const badgeLabel = estado === 'respondido' ? '✔ Respondido' : '⏳ Pendiente';
+      const asuntoLabel = ASUNTO_LABELS[m.asunto] || m.asunto || '—';
       return `<tr>
         <td><strong>${m.nombre || '—'}</strong></td>
         <td><a href="mailto:${m.correo}" style="color:var(--azul-medio);text-decoration:none;">${m.correo || '—'}</a></td>
-        <td>${m.asunto || '—'}</td>
+        <td>${asuntoLabel}</td>
         <td class="msg-preview">${m.mensaje || '—'}</td>
         <td><span class="${badgeClass}">${badgeLabel}</span></td>
         <td style="white-space:nowrap;color:var(--tenue);">${m.created_at ? new Date(m.created_at).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
@@ -224,19 +235,23 @@
   }
 
   async function marcarRespondido(id) {
-    const { error } = await db.from('contactos').update({ estado: 'respondido' }).eq('id', id);
+    const { data, error } = await db.from('contactos').update({ estado: 'respondido' }).eq('id', id).select();
     if (error) {
-      mostrarNotif('Error al actualizar: ' + error.message);
+      mostrarNotif('Error: ' + (error.message.includes('column') ? 'Falta columna "estado". Ejecuta el SQL en Supabase.' : error.message), true);
+    } else if (!data || data.length === 0) {
+      mostrarNotif('Sin permisos. Agrega política UPDATE en Supabase (contactos).', true);
     } else {
-      mostrarNotif('Mensaje marcado como respondido.');
+      mostrarNotif('Marcado como respondido.');
       cargarMsgs();
     }
   }
 
-  function mostrarNotif(msg) {
+  function mostrarNotif(msg, esError=false) {
     const el = document.getElementById('notif-global');
-    el.textContent = msg; el.classList.add('visible');
-    setTimeout(() => el.classList.remove('visible'), 3000);
+    el.textContent = msg;
+    el.classList.toggle('err', esError);
+    el.classList.add('visible');
+    setTimeout(() => { el.classList.remove('visible'); el.classList.remove('err'); }, 4000);
   }
 
   function verMensaje(m) {
@@ -254,10 +269,17 @@
     const btn = document.getElementById('btn-confirmar-eliminar');
     btn.onclick = async () => {
       btn.disabled = true; btn.textContent = 'Eliminando…';
-      await db.from('contactos').delete().eq('id', id);
+      const { data, error } = await db.from('contactos').delete().eq('id', id).select();
       btn.disabled = false; btn.textContent = 'Sí, eliminar';
       cerrarModal('modal-confirm');
-      cargarMsgs();
+      if (error) {
+        mostrarNotif('Error al eliminar: ' + error.message, true);
+      } else if (!data || data.length === 0) {
+        mostrarNotif('Sin permisos. Agrega política DELETE en Supabase (contactos).', true);
+      } else {
+        mostrarNotif('Mensaje eliminado.');
+        cargarMsgs();
+      }
     };
     abrirModal('modal-confirm');
   }

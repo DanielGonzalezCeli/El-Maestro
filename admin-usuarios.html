@@ -143,6 +143,7 @@
       <div class="campo"><label for="crear-nombre">Nombre *</label><input type="text" id="crear-nombre" placeholder="Nombre"/></div>
       <div class="campo"><label for="crear-apellido">Apellido *</label><input type="text" id="crear-apellido" placeholder="Apellido"/></div>
     </div>
+    <div class="campo"><label for="crear-username">Nombre de usuario *</label><input type="text" id="crear-username" placeholder="ej: juanperez123" autocomplete="username"/></div>
     <div class="campo"><label for="crear-correo">Correo electrónico *</label><input type="email" id="crear-correo" placeholder="correo@ejemplo.com"/></div>
     <div class="campo"><label for="crear-pass">Contraseña temporal *</label><input type="password" id="crear-pass" placeholder="Mínimo 8 caracteres"/></div>
     <div class="campo">
@@ -297,10 +298,17 @@
     const btn = document.getElementById('btn-confirmar-eliminar');
     btn.onclick = async () => {
       btn.disabled = true; btn.textContent = 'Eliminando…';
-      await db.from('usuarios').delete().eq('id', id);
+      const { data, error } = await db.from('usuarios').delete().eq('id', id).select();
       btn.disabled = false; btn.textContent = 'Sí, eliminar';
       cerrarModal('modal-confirm');
-      cargarUsers();
+      if (error) {
+        mostrarNotif('Error al eliminar: ' + error.message);
+      } else if (!data || data.length === 0) {
+        mostrarNotif('Sin permisos. Agrega política DELETE en Supabase (usuarios).');
+      } else {
+        mostrarNotif('Usuario eliminado.');
+        cargarUsers();
+      }
     };
     abrirModal('modal-confirm');
   }
@@ -319,6 +327,7 @@
   function abrirCrearUsuario() {
     document.getElementById('crear-nombre').value='';
     document.getElementById('crear-apellido').value='';
+    document.getElementById('crear-username').value='';
     document.getElementById('crear-correo').value='';
     document.getElementById('crear-pass').value='';
     document.getElementById('crear-rol').value='usuario';
@@ -329,18 +338,22 @@
   async function crearUsuario() {
     const nombre=document.getElementById('crear-nombre').value.trim();
     const apellido=document.getElementById('crear-apellido').value.trim();
+    const username=document.getElementById('crear-username').value.trim().toLowerCase();
     const correo=document.getElementById('crear-correo').value.trim();
     const pass=document.getElementById('crear-pass').value;
     const rol=document.getElementById('crear-rol').value;
     const al=document.getElementById('alerta-crear-user');
     if(!nombre||!apellido){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Ingresa nombre y apellido.';return;}
+    if(!username||username.length<3||!/^[a-z0-9_-]+$/.test(username)){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Nombre de usuario: mínimo 3 caracteres, solo letras, números, _ y -.';return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Correo inválido.';return;}
     if(pass.length<8){al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> La contraseña debe tener mínimo 8 caracteres.';return;}
     const btn=document.getElementById('btn-crear-guardar');btn.disabled=true;btn.textContent='Creando…';
+    const {data:uExist}=await db.from('usuarios').select('id').eq('username',username).maybeSingle();
+    if(uExist){btn.disabled=false;btn.textContent='Crear usuario';al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Ese nombre de usuario ya está en uso.';return;}
     const {data,error}=await db.auth.signUp({email:correo,password:pass,options:{data:{nombre,apellido}}});
     if(error){btn.disabled=false;btn.textContent='Crear usuario';al.className='alerta-admin err';al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> '+error.message;return;}
     if(data.user){
-      await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo,rol}]);
+      await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo,rol,username}]);
     }
     btn.disabled=false;btn.textContent='Crear usuario';
     al.className='alerta-admin exito';al.innerHTML='<i class="fa-solid fa-circle-check"></i> Usuario creado. Se envió confirmación a '+correo;

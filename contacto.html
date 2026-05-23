@@ -406,7 +406,7 @@
       <div class="form-sub">Ingresa tus datos para continuar</div>
       <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
       <div id="login-fields">
-        <div class="campo-modal"><label for="login-email">Correo electrónico</label><div class="input-wrap"><i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i><input type="email" id="login-email" placeholder="tucorreo@email.com" autocomplete="email" aria-required="true"/></div><div class="msg-error-modal" id="err-login-email" role="alert">Ingresa un correo válido</div></div>
+        <div class="campo-modal"><label for="login-email">Correo o nombre de usuario</label><div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="login-email" placeholder="tucorreo@email.com o usuario" autocomplete="username" aria-required="true"/></div><div class="msg-error-modal" id="err-login-email" role="alert">Ingresa tu correo o nombre de usuario</div></div>
         <div class="campo-modal"><label for="login-pass">Contraseña</label><div class="input-wrap"><i class="fa-solid fa-lock ico-campo" aria-hidden="true"></i><input type="password" id="login-pass" placeholder="Tu contraseña" autocomplete="current-password" aria-required="true"/><button type="button" class="ojo" onclick="togglePass('login-pass',this)" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><div class="msg-error-modal" id="err-login-pass" role="alert">Ingresa tu contraseña</div></div>
         <div class="extras"><label class="recordar"><input type="checkbox"/> Recordarme</label><a href="#" class="link-olvide" onclick="mostrarResetPass(); return false;">¿Olvidaste tu contraseña?</a></div>
         <button class="btn-submit" onclick="submitLogin()">Iniciar sesión</button>
@@ -581,12 +581,14 @@
   function mostrarErr(id,show){const el=document.getElementById(id);if(el)el.classList.toggle('visible',show);}
   function alertaModal(id,tipo,msg){const el=document.getElementById(id);el.className='alerta-modal '+tipo;el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}" aria-hidden="true"></i> ${msg}`;}
   async function submitLogin(){
-    const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;
+    const raw=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;
     let ok=true;
-    const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;
+    const isEmail=raw.includes('@');
+    const emailOk=isEmail?/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw):raw.length>=3;marcar('login-email',emailOk);mostrarErr('err-login-email',!emailOk);if(!emailOk)ok=false;
     const passOk=pass.length>0;marcar('login-pass',passOk);mostrarErr('err-login-pass',!passOk);if(!passOk)ok=false;
     if(!ok){alertaModal('alerta-login','err','Corrige los campos marcados.');return;}
     const btn=document.querySelector('#panel-login .btn-submit');btn.disabled=true;btn.textContent='Ingresando…';
+    let email=raw;if(!isEmail){const {data:ud}=await db.from('usuarios').select('correo').eq('username',raw.toLowerCase()).maybeSingle();if(!ud){btn.disabled=false;btn.textContent='Iniciar sesión';alertaModal('alerta-login','err','Usuario o contraseña incorrectos.');return;}email=ud.correo;}
     const {error}=await db.auth.signInWithPassword({email,password:pass});
     btn.disabled=false;btn.textContent='Iniciar sesión';
     if(error){alertaModal('alerta-login','err',error.message.includes('nvalid')?'Correo o contraseña incorrectos.':error.message.includes('onfirm')?'Debes confirmar tu correo primero.':'Error al iniciar sesión.');}
@@ -602,7 +604,8 @@
     const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;
     if(!ok){alertaModal('alerta-registro','err','Completa correctamente todos los campos.');return;}
     const btn=document.querySelector('#panel-registro .btn-submit');btn.disabled=true;btn.textContent='Creando cuenta…';
-    const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido}}});
+    const confirmUrl=window.location.origin+window.location.pathname.replace(/[^/]*$/,'')+`confirm-email.html`;
+    const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido},emailRedirectTo:confirmUrl}});
     if(!error&&data.user){await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);}
     btn.disabled=false;btn.textContent='Crear mi cuenta';
     if(error){alertaModal('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}

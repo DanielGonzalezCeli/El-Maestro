@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Confirmar correo — El Maestro</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --azul:#1B3F6E; --azul-medio:#2A5FA5; --azul-claro:#EAF1FB;
+    --naranja:#F47B20; --blanco:#FFFFFF; --fondo:#F5F7FA; --texto:#111827;
+    --suave:#4B5563; --tenue:#9CA3AF; --borde:#E5E9F0;
+    --exito:#16A34A; --exito-bg:#F0FDF4; --error:#DC2626; --error-bg:#FEF2F2;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--fondo); color:var(--texto); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .logo-link { display:flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:32px; }
+  .logo-icon { width:40px; height:40px; background:var(--azul); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; }
+  .logo-txt { font-family:'Sora',sans-serif; font-size:20px; color:var(--azul); font-weight:700; }
+  .card { background:var(--blanco); border:1px solid var(--borde); border-radius:20px; padding:40px 32px; width:100%; max-width:420px; box-shadow:0 4px 24px rgba(27,63,110,.07); text-align:center; }
+  .icono { font-size:52px; margin-bottom:20px; }
+  .card-titulo { font-family:'Sora',sans-serif; font-size:22px; color:var(--azul); margin-bottom:8px; }
+  .card-sub { font-size:14px; color:var(--suave); margin-bottom:28px; line-height:1.6; }
+  .btn-ir { display:inline-flex; align-items:center; gap:8px; background:var(--azul); color:#fff; border:none; border-radius:12px; padding:12px 24px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; text-decoration:none; transition:background .2s; }
+  .btn-ir:hover { background:var(--azul-medio); }
+  .btn-cerrar { display:inline-flex; align-items:center; gap:8px; background:var(--azul-claro); color:var(--azul); border:none; border-radius:12px; padding:12px 24px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; margin-left:10px; transition:background .2s; }
+  .btn-cerrar:hover { background:#C4D9F2; }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="logo-link">
+  <div class="logo-icon"><i class="fa-solid fa-hammer" aria-hidden="true"></i></div>
+  <span class="logo-txt">El Maestro</span>
+</a>
+
+<!-- Estado: cargando -->
+<div class="card" id="card-cargando">
+  <div class="icono">⏳</div>
+  <div class="card-titulo">Confirmando correo…</div>
+  <div class="card-sub">Un momento, estamos verificando tu cuenta.</div>
+</div>
+
+<!-- Estado: confirmado -->
+<div class="card" id="card-ok" style="display:none;">
+  <div class="icono">✅</div>
+  <div class="card-titulo">¡Correo confirmado!</div>
+  <div class="card-sub">Tu cuenta está activa. Ya puedes iniciar sesión en la plataforma.</div>
+  <div>
+    <a href="index.html" class="btn-ir"><i class="fa-solid fa-house" aria-hidden="true"></i> Ir al inicio</a>
+    <button class="btn-cerrar" onclick="window.close()"><i class="fa-solid fa-xmark" aria-hidden="true"></i> Cerrar pestaña</button>
+  </div>
+</div>
+
+<!-- Estado: ya confirmado / sesión existente -->
+<div class="card" id="card-ya" style="display:none;">
+  <div class="icono">👋</div>
+  <div class="card-titulo">Cuenta verificada</div>
+  <div class="card-sub">Tu correo ya estaba confirmado o tu sesión se inició automáticamente. ¡Bienvenido/a!</div>
+  <a href="index.html" class="btn-ir"><i class="fa-solid fa-house" aria-hidden="true"></i> Ir al inicio</a>
+</div>
+
+<!-- Estado: enlace inválido / expirado -->
+<div class="card" id="card-error" style="display:none;">
+  <div class="icono">❌</div>
+  <div class="card-titulo">Enlace inválido o expirado</div>
+  <div class="card-sub">Este enlace de confirmación ya fue usado o caducó. Puedes registrarte de nuevo o solicitar otro correo.</div>
+  <a href="index.html" class="btn-ir"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver al inicio</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+  function mostrar(id) {
+    ['card-cargando','card-ok','card-ya','card-error'].forEach(c => {
+      document.getElementById(c).style.display = c === id ? 'block' : 'none';
+    });
+  }
+
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      mostrar('card-ok');
+    } else if (event === 'USER_UPDATED') {
+      mostrar('card-ok');
+    }
+  });
+
+  // Check if already signed in (e.g. token processed before listener fires)
+  db.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      const hashHasToken = window.location.hash.includes('access_token') || window.location.search.includes('token_hash');
+      mostrar(hashHasToken ? 'card-ok' : 'card-ya');
+    }
+  });
+
+  // Fallback: if nothing fires within 4s, the link is invalid/expired
+  setTimeout(() => {
+    if (document.getElementById('card-cargando').style.display !== 'none') {
+      mostrar('card-error');
+    }
+  }, 4000);
+</script>
+</body>
+</html>

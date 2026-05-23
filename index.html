@@ -367,6 +367,7 @@
           placeholder="Ej: electricista, plomero, pintor…"
           aria-label="Ingresa el servicio que necesitas"
           autocomplete="off"
+          oninput="filtrarServicios(this.value)"
           onkeydown="if(event.key==='Enter') irAResultados()"
         />
         <button onclick="irAResultados()" aria-label="Buscar profesional">Buscar</button>
@@ -457,6 +458,13 @@
       <i class="fa-solid fa-truck-moving serv-ico" aria-hidden="true"></i>
       <div class="serv-lbl">Mudanzas</div>
     </div>
+    <div class="serv-card" id="card-contactanos" role="listitem" tabindex="0" style="display:none;grid-column:1/-1;background:#FFF7ED;border-color:#F47B20;"
+         onclick="window.location.href='contacto.html'"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='contacto.html'}"
+         aria-label="Contáctanos para ayuda">
+      <i class="fa-solid fa-headset serv-ico" style="color:var(--naranja);" aria-hidden="true"></i>
+      <div class="serv-lbl" style="color:var(--naranja);">¿Necesitas ayuda? Contáctanos</div>
+    </div>
   </div>
 </section>
 
@@ -502,13 +510,13 @@
       <div class="alerta-modal" id="alerta-login" role="alert" aria-live="polite"></div>
       <div id="login-fields">
         <div class="campo">
-          <label for="login-email">Correo electrónico</label>
+          <label for="login-email">Correo o nombre de usuario</label>
           <div class="input-wrap">
-            <i class="fa-solid fa-envelope ico-campo" aria-hidden="true"></i>
-            <input type="email" id="login-email" placeholder="tucorreo@email.com"
-                   autocomplete="email" aria-required="true" aria-describedby="err-login-email"/>
+            <i class="fa-solid fa-user ico-campo" aria-hidden="true"></i>
+            <input type="text" id="login-email" placeholder="tucorreo@email.com o usuario"
+                   autocomplete="username" aria-required="true" aria-describedby="err-login-email"/>
           </div>
-          <div class="msg-error" id="err-login-email" role="alert">Ingresa un correo válido (ej: nombre@dominio.com)</div>
+          <div class="msg-error" id="err-login-email" role="alert">Ingresa tu correo o nombre de usuario</div>
         </div>
         <div class="campo">
           <label for="login-pass">Contraseña</label>
@@ -573,6 +581,15 @@
           </div>
           <div class="msg-error" id="err-reg-apellido" role="alert">Ingresa tu apellido (mínimo 2 caracteres)</div>
         </div>
+      </div>
+      <div class="campo">
+        <label for="reg-username">Nombre de usuario</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-at ico-campo" aria-hidden="true"></i>
+          <input type="text" id="reg-username" placeholder="ej: juanperez123"
+                 autocomplete="username" aria-required="true" aria-describedby="err-reg-username"/>
+        </div>
+        <div class="msg-error" id="err-reg-username" role="alert">Mínimo 3 caracteres, solo letras, números, _ y -</div>
       </div>
       <div class="campo">
         <label for="reg-email">Correo electrónico</label>
@@ -737,22 +754,32 @@
   }
 
   async function submitLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass  = document.getElementById('login-pass').value;
+    const raw  = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
     let ok = true;
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    marcar('login-email', emailOk); mostrarErr('err-login-email', !emailOk);
-    if (!emailOk) ok = false;
+    const isEmail = raw.includes('@');
+    const inputOk = isEmail ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw) : raw.length >= 3;
+    marcar('login-email', inputOk); mostrarErr('err-login-email', !inputOk);
+    if (!inputOk) ok = false;
     const passOk = pass.length > 0;
     marcar('login-pass', passOk); mostrarErr('err-login-pass', !passOk);
     if (!passOk) ok = false;
     if (!ok) { alerta('alerta-login','err','Corrige los campos marcados antes de continuar.'); return; }
     const btn = document.querySelector('#panel-login .btn-submit');
     btn.disabled = true; btn.textContent = 'Ingresando…';
+    let email = raw;
+    if (!isEmail) {
+      const { data: ud } = await db.from('usuarios').select('correo').eq('username', raw.toLowerCase()).maybeSingle();
+      if (!ud) {
+        btn.disabled = false; btn.textContent = 'Iniciar sesión';
+        alerta('alerta-login', 'err', 'Usuario o contraseña incorrectos.'); return;
+      }
+      email = ud.correo;
+    }
     const { error } = await db.auth.signInWithPassword({ email, password: pass });
     btn.disabled = false; btn.textContent = 'Iniciar sesión';
     if (error) {
-      const msg = error.message.includes('nvalid') ? 'Correo o contraseña incorrectos.'
+      const msg = error.message.includes('nvalid') ? 'Correo/usuario o contraseña incorrectos.'
         : error.message.includes('onfirm') ? 'Debes confirmar tu correo antes de iniciar sesión.'
         : 'Error al iniciar sesión. Intenta de nuevo.';
       alerta('alerta-login', 'err', msg);
@@ -774,21 +801,33 @@
   async function submitRegistro() {
     const nombre   = document.getElementById('reg-nombre').value.trim();
     const apellido = document.getElementById('reg-apellido').value.trim();
+    const username = document.getElementById('reg-username').value.trim().toLowerCase();
     const email    = document.getElementById('reg-email').value.trim();
     const pass     = document.getElementById('reg-pass').value;
     const pass2    = document.getElementById('reg-pass2').value;
     let ok = true;
     const nOk = nombre.length > 1;   marcar('reg-nombre',nOk);   mostrarErr('err-reg-nombre',!nOk);   if(!nOk) ok=false;
     const aOk = apellido.length > 1; marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false;
+    const uOk = username.length >= 3 && /^[a-z0-9_-]+$/.test(username);
+    marcar('reg-username',uOk); mostrarErr('err-reg-username',!uOk); if(!uOk) ok=false;
     const eOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
     const pOk = pass.length >= 8;    marcar('reg-pass',pOk);     mostrarErr('err-reg-pass',!pOk);     if(!pOk) ok=false;
     const p2Ok = pass===pass2 && pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false;
     if (!ok) { alerta('alerta-registro','err','Completa correctamente todos los campos marcados.'); return; }
     const btn = document.querySelector('#panel-registro .btn-submit');
-    btn.disabled = true; btn.textContent = 'Creando cuenta…';
-    const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido } } });
+    btn.disabled = true; btn.textContent = 'Verificando…';
+    const { data: uExist } = await db.from('usuarios').select('id').eq('username', username).maybeSingle();
+    if (uExist) {
+      btn.disabled = false; btn.textContent = 'Crear mi cuenta';
+      marcar('reg-username', false); mostrarErr('err-reg-username', true);
+      document.getElementById('err-reg-username').textContent = 'Este nombre de usuario ya está en uso.';
+      alerta('alerta-registro','err','Ese nombre de usuario ya está registrado.'); return;
+    }
+    btn.textContent = 'Creando cuenta…';
+    const confirmUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'confirm-email.html';
+    const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido }, emailRedirectTo: confirmUrl } });
     if (!error && data.user) {
-      await db.from('usuarios').insert([{ id: data.user.id, nombre, apellido, correo: email, rol: 'usuario' }]);
+      await db.from('usuarios').insert([{ id: data.user.id, nombre, apellido, correo: email, rol: 'usuario', username }]);
     }
     btn.disabled = false; btn.textContent = 'Crear mi cuenta';
     if (error) {
@@ -907,10 +946,63 @@
     else { al.className='alerta-modal exito'; al.innerHTML='<i class="fa-solid fa-circle-check"></i> Cambios guardados correctamente.'; setTimeout(cerrarMiCuenta, 1500); }
   }
 
+  // BUSCADOR INTELIGENTE
+  const CATEGORIAS_SMART = [
+    { nombre: 'Electricista', alias: ['electr','electri','elec','luz','corriente','cable','toma','enchufe','interruptor','apago','cortocircuito','energia'] },
+    { nombre: 'Plomero',      alias: ['plom','fontaner','agua','tuber','tubo','fuga','filtra','desague','desagü','grifo','inodoro','lavabo','ducha','cano','sanitari'] },
+    { nombre: 'Cerrajero',    alias: ['cerraje','cerraj','llave','llav','cerradura','candado','chapa','acceso','puerta bloqueada'] },
+    { nombre: 'Pintor',       alias: ['pint','pintura','pintar','pared','remodelaci','remodelar','revoc','estuco','color','brocha','rodillo'] },
+    { nombre: 'Aire acondicionado', alias: ['aire','acondicion','clima','frio','calefac','ventila','hvac','frigori','refrigera'] },
+    { nombre: 'Carpintero',   alias: ['carpint','mueble','madera','parquet','gabinete','closet','estante','ensamble','tablero'] },
+    { nombre: 'Limpieza',     alias: ['limpi','aseo','barrer','aspirar','trapear','hogar','domicili','sucio','mugre'] },
+    { nombre: 'Mudanzas',     alias: ['mudanz','muda','transport','flete','traslad','camion','cami','carga','mover'] },
+  ];
+
+  function matchCategoria(q) {
+    const ql = q.toLowerCase().trim();
+    if (!ql) return null;
+    for (const cat of CATEGORIAS_SMART) {
+      if (cat.nombre.toLowerCase().startsWith(ql) || ql.startsWith(cat.nombre.toLowerCase())) return cat.nombre;
+    }
+    for (const cat of CATEGORIAS_SMART) {
+      for (const a of cat.alias) {
+        if (ql.startsWith(a) || a.startsWith(ql)) return cat.nombre;
+      }
+    }
+    return null;
+  }
+
+  function filtrarServicios(q) {
+    const match = matchCategoria(q);
+    const cards = document.querySelectorAll('.servicios-grid .serv-card:not(#card-contactanos)');
+    const ctaCard = document.getElementById('card-contactanos');
+    if (!q.trim()) {
+      cards.forEach(c => c.style.display = '');
+      if (ctaCard) ctaCard.style.display = 'none';
+      return;
+    }
+    if (match) {
+      cards.forEach(c => {
+        const lbl = c.querySelector('.serv-lbl')?.textContent || '';
+        c.style.display = lbl === match ? '' : 'none';
+      });
+      if (ctaCard) ctaCard.style.display = 'none';
+    } else {
+      cards.forEach(c => c.style.display = 'none');
+      if (ctaCard) ctaCard.style.display = '';
+    }
+  }
+
   // NAVEGACIÓN A RESULTADOS
   function irAResultados(servicio) {
-    const q = servicio || document.getElementById('busqueda-hero').value || '';
-    window.location.href = 'resultados.html?q=' + encodeURIComponent(q);
+    const raw = servicio || document.getElementById('busqueda-hero').value.trim() || '';
+    if (!servicio && raw) {
+      const match = matchCategoria(raw);
+      if (!match) { window.location.href = 'contacto.html'; return; }
+      window.location.href = 'resultados.html?q=' + encodeURIComponent(match);
+      return;
+    }
+    window.location.href = 'resultados.html?q=' + encodeURIComponent(raw);
   }
 
   // INICIALIZACIÓN
