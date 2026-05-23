@@ -695,7 +695,7 @@
     } else {
       const { data: { session } } = await db.auth.getSession();
       const { data: userData } = session
-        ? await db.from('usuarios').select('rol').eq('id', session.user.id).single()
+        ? await db.from('usuarios').select('rol').eq('correo', session.user.email).single()
         : { data: null };
       if (userData?.rol === 'admin') {
         alerta('alerta-login', 'exito', '¡Bienvenido, Administrador! Redirigiendo…');
