@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Profesionales — El Maestro Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --azul:#1B3F6E; --azul-medio:#2A5FA5; --azul-claro:#EAF1FB; --azul-suave:#C4D9F2;
+    --naranja:#F47B20; --blanco:#FFFFFF; --fondo:#F5F7FA; --texto:#111827;
+    --suave:#4B5563; --tenue:#9CA3AF; --borde:#E5E9F0;
+    --error:#DC2626; --error-bg:#FEF2F2; --exito:#16A34A; --exito-bg:#F0FDF4;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--fondo); color:var(--texto); }
+  :focus-visible { outline:3px solid var(--naranja); outline-offset:3px; border-radius:4px; }
+
+  nav { background:var(--azul); padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .logo { font-family:'Sora',sans-serif; font-size:20px; color:var(--blanco); text-decoration:none; }
+  .logo span { color:var(--naranja); }
+  .nav-badge { background:var(--naranja); color:var(--blanco); font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+  .nav-links { list-style:none; display:flex; gap:6px; font-size:14px; }
+  .nav-links a { text-decoration:none; color:var(--blanco); font-weight:600; padding:8px 16px; border-radius:8px; display:block; }
+  .nav-links a:hover { background:rgba(255,255,255,0.15); }
+  .nav-links a.activo { background:var(--naranja); }
+  .nav-acc { display:flex; gap:10px; align-items:center; }
+  .nav-usuario { color:var(--blanco); font-size:13px; font-weight:600; }
+  .btn-ghost { padding:8px 18px; border:1.5px solid rgba(255,255,255,0.5); border-radius:8px; background:transparent; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--blanco); font-weight:600; cursor:pointer; }
+  .btn-ghost:hover { background:rgba(255,255,255,0.1); }
+
+  .hero-admin { background:var(--azul); padding:32px 48px 28px; border-bottom:1px solid rgba(255,255,255,0.1); }
+  .hero-admin h1 { font-family:'Sora',sans-serif; font-size:24px; color:var(--blanco); }
+  .hero-admin p { font-size:13px; color:#93B8E0; margin-top:6px; }
+
+  .contenido { padding:32px 48px 60px; max-width:1200px; margin:0 auto; }
+
+  .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
+  .panel-titulo { font-family:'Sora',sans-serif; font-size:18px; color:var(--azul); }
+  .btn-primario { padding:9px 20px; background:var(--naranja); border:none; border-radius:8px; color:var(--blanco); font-size:13px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .btn-primario:hover { background:#d96a14; }
+
+  .tabla-wrap { background:var(--blanco); border:1px solid var(--borde); border-radius:14px; overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  thead { background:var(--fondo); }
+  th { padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:var(--suave); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--borde); }
+  td { padding:14px 16px; font-size:13px; color:var(--texto); border-bottom:1px solid var(--borde); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--fondo); }
+  .td-acciones { display:flex; gap:6px; }
+  .btn-icono { width:32px; height:32px; border-radius:7px; border:1.5px solid var(--borde); background:var(--blanco); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; color:var(--suave); transition:all 0.15s; }
+  .btn-icono:hover { border-color:var(--azul-medio); color:var(--azul); }
+  .btn-icono.eliminar:hover { border-color:var(--error); color:var(--error); background:var(--error-bg); }
+  .badge-verif { background:var(--azul-claro); color:var(--azul-medio); font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
+  .badge-no { background:var(--fondo); color:var(--tenue); font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
+  .estrella { color:#F59E0B; }
+  .estado-tabla { padding:32px; text-align:center; color:var(--tenue); font-size:13px; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.abierto { display:flex; }
+  .modal { background:var(--blanco); border-radius:18px; padding:32px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; position:relative; }
+  .modal-titulo { font-family:'Sora',sans-serif; font-size:18px; color:var(--azul); margin-bottom:20px; }
+  .modal-cerrar { position:absolute; top:16px; right:16px; background:none; border:none; font-size:18px; cursor:pointer; color:var(--tenue); }
+  .modal-cerrar:hover { color:var(--texto); }
+  .campo { margin-bottom:14px; }
+  .campo label { display:block; font-size:12px; font-weight:700; color:var(--suave); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.04em; }
+  .campo input, .campo select, .campo textarea { width:100%; padding:10px 12px; border:1.5px solid var(--borde); border-radius:8px; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--texto); background:var(--fondo); }
+  .campo input:focus, .campo select:focus, .campo textarea:focus { border-color:var(--azul-medio); background:var(--blanco); outline:none; }
+  .campo textarea { resize:vertical; min-height:80px; }
+  .campo-fila { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .campo-check { display:flex; align-items:center; gap:8px; }
+  .campo-check input[type=checkbox] { width:18px; height:18px; accent-color:var(--naranja); }
+  .modal-acciones { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+  .btn-guardar { padding:10px 22px; background:var(--naranja); border:none; border-radius:8px; color:var(--blanco); font-size:13px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; }
+  .btn-guardar:hover { background:#d96a14; }
+  .btn-secundario { padding:10px 22px; background:var(--blanco); border:1.5px solid var(--borde); border-radius:8px; font-size:13px; font-weight:600; font-family:'Plus Jakarta Sans',sans-serif; color:var(--suave); cursor:pointer; }
+  .btn-eliminar-confirmar { padding:10px 22px; background:var(--error); border:none; border-radius:8px; color:var(--blanco); font-size:13px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; }
+  .alerta-admin { padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none; }
+  .alerta-admin.err { display:block; background:var(--error-bg); color:var(--error); }
+  .alerta-admin.exito { display:block; background:var(--exito-bg); color:var(--exito); }
+
+  @media(max-width:900px) { nav { padding:0 16px; } .contenido { padding:20px 16px 40px; } .hero-admin { padding:20px 16px; } }
+</style>
+</head>
+<body>
+
+<nav aria-label="Panel de administración">
+  <a href="admin.html" class="logo">El <span>Maestro</span><span class="nav-badge">ADMIN</span></a>
+  <ul class="nav-links" role="list">
+    <li><a href="admin.html">Dashboard</a></li>
+    <li><a href="admin-profesionales.html" class="activo" aria-current="page">Profesionales</a></li>
+    <li><a href="admin-mensajes.html">Mensajes</a></li>
+    <li><a href="admin-usuarios.html">Usuarios</a></li>
+  </ul>
+  <div class="nav-acc">
+    <span class="nav-usuario" id="nav-nombre-admin">—</span>
+    <button class="btn-ghost" onclick="cerrarSesion()">Salir</button>
+  </div>
+</nav>
+
+<div class="hero-admin">
+  <h1>Gestión de Profesionales</h1>
+  <p>Agrega, edita o elimina los profesionales de la plataforma</p>
+</div>
+
+<div class="contenido">
+  <div class="panel-header">
+    <span class="panel-titulo">Profesionales (<span id="count-pros">—</span>)</span>
+    <button class="btn-primario" onclick="abrirModalPro(null)"><i class="fa-solid fa-plus"></i> Agregar profesional</button>
+  </div>
+  <div class="tabla-wrap">
+    <table>
+      <thead><tr><th>Nombre</th><th>Oficio</th><th>Zona</th><th>Rating</th><th>Reseñas</th><th>Tarifa</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="tabla-pros"><tr><td colspan="8" class="estado-tabla">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL EDITAR/AGREGAR PROFESIONAL -->
+<div class="modal-overlay" id="modal-pro" onclick="cerrarModalFuera(event,'modal-pro')" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-pro-titulo">
+    <button class="modal-cerrar" onclick="cerrarModal('modal-pro')" aria-label="Cerrar">✕</button>
+    <div class="modal-titulo" id="modal-pro-titulo">Agregar profesional</div>
+    <div class="alerta-admin" id="alerta-pro" role="alert"></div>
+    <input type="hidden" id="pro-id"/>
+    <div class="campo-fila">
+      <div class="campo"><label for="pro-nombre">Nombre completo</label><input type="text" id="pro-nombre" placeholder="Nombre y apellido"/></div>
+      <div class="campo"><label for="pro-oficio">Oficio</label>
+        <select id="pro-oficio">
+          <option value="">Seleccionar…</option>
+          <option>Electricista</option><option>Plomero</option><option>Cerrajero</option>
+          <option>Pintor</option><option>Carpintero</option><option>Limpieza</option>
+          <option>Aire acondicionado</option><option>Mudanzas</option>
+        </select>
+      </div>
+    </div>
+    <div class="campo-fila">
+      <div class="campo"><label for="pro-zona">Zona</label>
+        <select id="pro-zona"><option value="">Seleccionar…</option><option value="norte">Quito Norte</option><option value="centro">Quito Centro</option><option value="sur">Quito Sur</option><option value="valles">Valles</option></select>
+      </div>
+      <div class="campo"><label for="pro-disponibilidad">Disponibilidad</label>
+        <select id="pro-disponibilidad"><option value="hoy">Disponible hoy</option><option value="semana">Esta semana</option></select>
+      </div>
+    </div>
+    <div class="campo-fila">
+      <div class="campo"><label for="pro-precio">Precio base ($)</label><input type="number" id="pro-precio" placeholder="25" min="0"/></div>
+      <div class="campo"><label for="pro-unidad">Unidad</label><input type="text" id="pro-unidad" placeholder="hora / servicio / m²"/></div>
+    </div>
+    <div class="campo-fila">
+      <div class="campo"><label for="pro-calificacion">Calificación (0-5)</label><input type="number" id="pro-calificacion" placeholder="4.8" min="0" max="5" step="0.1"/></div>
+      <div class="campo"><label for="pro-resenas">N° reseñas</label><input type="number" id="pro-resenas" placeholder="42" min="0"/></div>
+    </div>
+    <div class="campo-fila">
+      <div class="campo"><label for="pro-whatsapp">WhatsApp (09XXXXXXXX)</label><input type="text" id="pro-whatsapp" placeholder="0991234567"/></div>
+      <div class="campo"><label for="pro-cedula">Cédula</label><input type="text" id="pro-cedula" placeholder="17XXXXXXXX" maxlength="10"/></div>
+    </div>
+    <div class="campo"><label for="pro-descripcion">Descripción</label><textarea id="pro-descripcion" placeholder="Experiencia, especialidades y forma de trabajo…"></textarea></div>
+    <div class="campo"><label class="campo-check"><input type="checkbox" id="pro-verificado"/> Profesional verificado</label></div>
+    <div class="modal-acciones">
+      <button class="btn-secundario" onclick="cerrarModal('modal-pro')">Cancelar</button>
+      <button class="btn-guardar" onclick="guardarPro()">Guardar profesional</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINACIÓN -->
+<div class="modal-overlay" id="modal-confirm" onclick="cerrarModalFuera(event,'modal-confirm')" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:400px;">
+    <button class="modal-cerrar" onclick="cerrarModal('modal-confirm')" aria-label="Cerrar">✕</button>
+    <div class="modal-titulo"><i class="fa-solid fa-triangle-exclamation" style="color:var(--error);"></i> Confirmar eliminación</div>
+    <p style="font-size:14px;color:var(--suave);margin-bottom:24px;" id="confirm-msg">¿Estás seguro? Esta acción no se puede deshacer.</p>
+    <div class="modal-acciones">
+      <button class="btn-secundario" onclick="cerrarModal('modal-confirm')">Cancelar</button>
+      <button class="btn-eliminar-confirmar" id="btn-confirmar-eliminar">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+  const ZONA_LABEL = { norte:'Quito Norte', centro:'Quito Centro', sur:'Quito Sur', valles:'Valles' };
+
+  async function init() {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { window.location.href = 'index.html'; return; }
+    const { data: usuario } = await db.from('usuarios').select('rol,nombre,apellido').eq('id', session.user.id).single();
+    if (!usuario || usuario.rol !== 'admin') { alert('Acceso denegado.'); window.location.href = 'index.html'; return; }
+    document.getElementById('nav-nombre-admin').textContent = `${usuario.nombre} ${usuario.apellido}`;
+    await cargarPros();
+  }
+
+  async function cerrarSesion() { await db.auth.signOut(); window.location.href = 'index.html'; }
+
+  async function cargarPros() {
+    const { data, error } = await db.from('profesionales').select('*').order('oficio');
+    const tb = document.getElementById('tabla-pros');
+    if (error || !data) { tb.innerHTML = `<tr><td colspan="8" class="estado-tabla">Error al cargar.</td></tr>`; return; }
+    document.getElementById('count-pros').textContent = data.length;
+    if (data.length === 0) { tb.innerHTML = `<tr><td colspan="8" class="estado-tabla">Sin profesionales registrados.</td></tr>`; return; }
+    tb.innerHTML = data.map(p => `<tr>
+      <td><strong>${p.nombre}</strong></td>
+      <td>${p.oficio}</td>
+      <td>${ZONA_LABEL[p.zona] || p.zona}</td>
+      <td><span class="estrella">★</span> ${parseFloat(p.calificacion).toFixed(1)}</td>
+      <td>${p.resenas}</td>
+      <td>$${p.precio}/${p.unidad}</td>
+      <td>${p.verificado ? '<span class="badge-verif">✔ Verificado</span>' : '<span class="badge-no">Sin verificar</span>'}</td>
+      <td><div class="td-acciones">
+        <button class="btn-icono" onclick="abrirModalPro('${p.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn-icono eliminar" onclick="confirmarEliminar('${p.id}','${p.nombre.replace(/'/g,"\\'")}',cargarPros)" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+  }
+
+  async function abrirModalPro(id) {
+    limpiarAlerta('alerta-pro');
+    document.getElementById('pro-id').value = id || '';
+    document.getElementById('modal-pro-titulo').textContent = id ? 'Editar profesional' : 'Agregar profesional';
+    const campos = ['nombre','oficio','zona','disponibilidad','precio','unidad','calificacion','resenas','whatsapp','cedula','descripcion'];
+    campos.forEach(c => { const el = document.getElementById('pro-'+c); if (el) el.value = ''; });
+    document.getElementById('pro-verificado').checked = false;
+    if (id) {
+      const { data } = await db.from('profesionales').select('*').eq('id', id).single();
+      if (data) {
+        campos.forEach(c => { const el = document.getElementById('pro-'+c); if (el) el.value = data[c] ?? ''; });
+        document.getElementById('pro-verificado').checked = !!data.verificado;
+      }
+    }
+    abrirModal('modal-pro');
+  }
+
+  async function guardarPro() {
+    const id = document.getElementById('pro-id').value;
+    const payload = {
+      nombre:         document.getElementById('pro-nombre').value.trim(),
+      oficio:         document.getElementById('pro-oficio').value,
+      zona:           document.getElementById('pro-zona').value,
+      disponibilidad: document.getElementById('pro-disponibilidad').value,
+      precio:         parseInt(document.getElementById('pro-precio').value) || 0,
+      unidad:         document.getElementById('pro-unidad').value.trim(),
+      calificacion:   parseFloat(document.getElementById('pro-calificacion').value) || 0,
+      resenas:        parseInt(document.getElementById('pro-resenas').value) || 0,
+      whatsapp:       document.getElementById('pro-whatsapp').value.trim(),
+      cedula:         document.getElementById('pro-cedula').value.trim(),
+      descripcion:    document.getElementById('pro-descripcion').value.trim(),
+      verificado:     document.getElementById('pro-verificado').checked,
+    };
+    if (!payload.nombre || !payload.oficio || !payload.zona) {
+      mostrarAlerta('alerta-pro','err','Completa: nombre, oficio y zona.'); return;
+    }
+    const btn = document.querySelector('#modal-pro .btn-guardar');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    const { error } = id
+      ? await db.from('profesionales').update(payload).eq('id', id)
+      : await db.from('profesionales').insert([payload]);
+    btn.disabled = false; btn.textContent = 'Guardar profesional';
+    if (error) { mostrarAlerta('alerta-pro','err','Error: '+error.message); return; }
+    mostrarAlerta('alerta-pro','exito', id ? 'Profesional actualizado.' : 'Profesional creado.');
+    setTimeout(() => { cerrarModal('modal-pro'); cargarPros(); }, 1200);
+  }
+
+  function confirmarEliminar(id, label, callback) {
+    document.getElementById('confirm-msg').textContent = `¿Eliminar a ${label}? Esta acción no se puede deshacer.`;
+    const btn = document.getElementById('btn-confirmar-eliminar');
+    btn.onclick = async () => {
+      btn.disabled = true; btn.textContent = 'Eliminando…';
+      await db.from('profesionales').delete().eq('id', id);
+      btn.disabled = false; btn.textContent = 'Sí, eliminar';
+      cerrarModal('modal-confirm');
+      callback();
+    };
+    abrirModal('modal-confirm');
+  }
+
+  function abrirModal(id) { document.getElementById(id).classList.add('abierto'); document.body.style.overflow='hidden'; }
+  function cerrarModal(id) { document.getElementById(id).classList.remove('abierto'); document.body.style.overflow=''; }
+  function cerrarModalFuera(e, id) { if (e.target === document.getElementById(id)) cerrarModal(id); }
+  document.addEventListener('keydown', e => { if (e.key==='Escape') ['modal-pro','modal-confirm'].forEach(id => { if (document.getElementById(id).classList.contains('abierto')) cerrarModal(id); }); });
+  function mostrarAlerta(id, tipo, msg) { const el=document.getElementById(id); el.className='alerta-admin '+tipo; el.innerHTML=`<i class="fa-solid ${tipo==='exito'?'fa-circle-check':'fa-circle-exclamation'}"></i> ${msg}`; }
+  function limpiarAlerta(id) { const el=document.getElementById(id); el.className='alerta-admin'; el.innerHTML=''; }
+
+  init();
+</script>
+</body>
+</html>

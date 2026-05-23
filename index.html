@@ -693,8 +693,17 @@
         : 'Error al iniciar sesión. Intenta de nuevo.';
       alerta('alerta-login', 'err', msg);
     } else {
-      alerta('alerta-login', 'exito', '¡Bienvenido!');
-      setTimeout(() => { cerrarModal(); verificarSesion(); }, 1500);
+      const { data: { session } } = await db.auth.getSession();
+      const { data: userData } = session
+        ? await db.from('usuarios').select('rol').eq('id', session.user.id).single()
+        : { data: null };
+      if (userData?.rol === 'admin') {
+        alerta('alerta-login', 'exito', '¡Bienvenido, Administrador! Redirigiendo…');
+        setTimeout(() => { window.location.href = 'admin.html'; }, 1200);
+      } else {
+        alerta('alerta-login', 'exito', '¡Bienvenido!');
+        setTimeout(() => { cerrarModal(); verificarSesion(); }, 1500);
+      }
     }
   }
 

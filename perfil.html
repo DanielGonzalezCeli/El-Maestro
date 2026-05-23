@@ -278,15 +278,17 @@
       <!-- SOBRE MÍ — H2 Lenguaje del usuario: texto en primera persona, cercano -->
       <section class="card" aria-labelledby="sobre-titulo">
         <h2 class="card-titulo" id="sobre-titulo">Sobre mí</h2>
-        <p>Soy electricista con más de 10 años de experiencia en instalaciones residenciales y comerciales en Quito. Me especializo en diagnóstico y reparación de tableros eléctricos, instalación de tomacorrientes, iluminación y sistemas de protección contra sobrecargas.</p>
-        <br/>
-        <p>Trabajo con puntualidad, limpieza y garantizo mis servicios. Cada trabajo incluye diagnóstico gratuito y presupuesto sin compromiso antes de iniciar.</p>
+        <div id="descripcion-contenido">
+          <p>Soy electricista con más de 10 años de experiencia en instalaciones residenciales y comerciales en Quito. Me especializo en diagnóstico y reparación de tableros eléctricos, instalación de tomacorrientes, iluminación y sistemas de protección contra sobrecargas.</p>
+          <br/>
+          <p>Trabajo con puntualidad, limpieza y garantizo mis servicios. Cada trabajo incluye diagnóstico gratuito y presupuesto sin compromiso antes de iniciar.</p>
+        </div>
       </section>
 
       <!-- SERVICIOS — H6 Reconocimiento: precios visibles sin necesidad de preguntar -->
       <section class="card" aria-labelledby="servicios-titulo">
         <h2 class="card-titulo" id="servicios-titulo">Servicios y tarifas</h2>
-        <div class="servicios-lista" role="list">
+        <div class="servicios-lista" id="servicios-lista" role="list">
           <div class="servicio-item" role="listitem">
             <div class="servicio-nombre">
               <div class="servicio-ico" aria-hidden="true"><i class="fa-solid fa-bolt"></i></div>
@@ -328,7 +330,7 @@
       <!-- RESEÑAS — H2 Datos reales, lenguaje familiar -->
       <section class="card" aria-labelledby="resenas-titulo">
         <h2 class="card-titulo" id="resenas-titulo">Reseñas de clientes (87)</h2>
-        <div class="resenas-lista" role="list">
+        <div class="resenas-lista" id="resenas-lista" role="list">
 
           <article class="resena" role="listitem" aria-label="Reseña de María G.">
             <div class="resena-cabecera">
@@ -378,7 +380,7 @@
           <div class="precio-valor">$25 <span class="precio-unidad">/ hora</span></div>
         </div>
         <!-- H5 Prevención — botón principal claro, sin ambigüedad sobre qué hará -->
-        <button class="btn-contactar" onclick="abrirModalContacto()" aria-label="Abrir formulario para solicitar servicio a José Ramírez">
+        <button class="btn-contactar" onclick="solicitarServicio()" aria-label="Abrir formulario para solicitar servicio">
           <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
           Solicitar servicio
         </button>
@@ -596,7 +598,7 @@
     return html;
   }
 
-  function seleccionarDia(el, label) {
+  async function seleccionarDia(el, label) {
     document.querySelectorAll('.cal-dia-sel').forEach(d => d.classList.remove('cal-dia-sel'));
     el.classList.add('cal-dia-sel');
     const fechaEl = document.getElementById('cal-fecha-elegida');
@@ -605,11 +607,64 @@
     const campoFecha = document.getElementById('campo-fecha');
     const inputFecha = document.getElementById('c-fecha');
     if (campoFecha && inputFecha) { campoFecha.style.display = 'block'; inputFecha.value = label; }
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { abrirModalAuth('login'); return; }
     abrirModalContacto();
   }
 
-  // ── CARGA DE PERFIL DESDE SUPABASE ──
+  async function solicitarServicio() {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { abrirModalAuth('login'); return; }
+    abrirModalContacto();
+  }
+
+  // ── CONTENIDO DINÁMICO POR OFICIO ──
   const ZONA_LABEL = { norte: 'Quito Norte', centro: 'Quito Centro', sur: 'Quito Sur', valles: 'Valles' };
+
+  const SERVICIOS_POR_OFICIO = {
+    'Electricista':       [{ ico:'fa-bolt', n:'Instalación eléctrica residencial' },{ ico:'fa-plug', n:'Cambio de tomacorrientes e interruptores' },{ ico:'fa-house-signal', n:'Revisión y reparación de tablero eléctrico' },{ ico:'fa-lightbulb', n:'Instalación de iluminación y focos LED' },{ ico:'fa-triangle-exclamation', n:'Diagnóstico y detección de fallas' }],
+    'Plomero':            [{ ico:'fa-faucet', n:'Reparación de tuberías y fugas' },{ ico:'fa-toilet', n:'Instalación de sanitarios y lavabos' },{ ico:'fa-fire-flame-curved', n:'Instalación y reparación de calefón' },{ ico:'fa-droplet-slash', n:'Destape de cañerías y sumideros' },{ ico:'fa-wrench', n:'Mantenimiento general de plomería' }],
+    'Cerrajero':          [{ ico:'fa-lock-open', n:'Apertura de puertas sin daño' },{ ico:'fa-key', n:'Duplicado y corte de llaves' },{ ico:'fa-door-closed', n:'Instalación y cambio de cerraduras' },{ ico:'fa-shield-halved', n:'Cerraduras de alta seguridad' },{ ico:'fa-box', n:'Apertura y reparación de cajas fuertes' }],
+    'Pintor':             [{ ico:'fa-paint-roller', n:'Pintura de interiores y paredes' },{ ico:'fa-house', n:'Pintura de exteriores y fachadas' },{ ico:'fa-spray-can', n:'Pintura de rejas, puertas y metal' },{ ico:'fa-fill-drip', n:'Estucado, masillado y lijado' },{ ico:'fa-star', n:'Acabados decorativos y texturizados' }],
+    'Carpintero':         [{ ico:'fa-hammer', n:'Fabricación de muebles a medida' },{ ico:'fa-door-open', n:'Instalación de puertas y ventanas' },{ ico:'fa-couch', n:'Reparación y restauración de muebles' },{ ico:'fa-table', n:'Mesones, closets y modulares' },{ ico:'fa-screwdriver', n:'Instalación de pisos de madera' }],
+    'Limpieza':           [{ ico:'fa-broom', n:'Limpieza residencial completa' },{ ico:'fa-building', n:'Limpieza de oficinas y locales' },{ ico:'fa-window-restore', n:'Limpieza de vidrios y ventanas' },{ ico:'fa-couch', n:'Lavado de tapicería y alfombras' },{ ico:'fa-soap', n:'Desinfección profunda' }],
+    'Aire acondicionado': [{ ico:'fa-wind', n:'Instalación de equipos de A/C' },{ ico:'fa-wrench', n:'Mantenimiento y limpieza de A/C' },{ ico:'fa-temperature-half', n:'Recarga de gas refrigerante' },{ ico:'fa-screwdriver-wrench', n:'Reparación de equipos dañados' },{ ico:'fa-snowflake', n:'Instalación de extractores de aire' }],
+    'Mudanzas':           [{ ico:'fa-truck-moving', n:'Mudanza residencial completa' },{ ico:'fa-boxes-stacking', n:'Embalaje y desembalaje profesional' },{ ico:'fa-building', n:'Mudanza de oficinas y locales' },{ ico:'fa-couch', n:'Traslado de muebles y objetos grandes' },{ ico:'fa-warehouse', n:'Almacenamiento temporal seguro' }],
+  };
+
+  const POOL_RESENAS = {
+    'Electricista':       [{ini:'MG',n:'María G.',f:'Hace 3 días',t:'Excelente servicio. Llegó puntual, explicó todo antes de empezar y terminó antes del tiempo estimado. El precio fue justo.'},{ini:'CM',n:'Carlos M.',f:'Hace 1 semana',t:'Cambió todas las instalaciones de mi departamento en un día. Trabajo limpio, ordenado y con garantía.'},{ini:'LP',n:'Lucía P.',f:'Hace 2 semanas',t:'Muy buen profesional, resolvió el problema rápido. Solo llegó 15 minutos tarde pero avisó. El trabajo quedó perfecto.'},{ini:'RP',n:'Roberto P.',f:'Hace 3 semanas',t:'Reparó el tablero eléctrico en tiempo récord. Muy profesional y ordenado. Lo recomiendo sin dudas.'},{ini:'AG',n:'Ana G.',f:'Hace 1 mes',t:'Buen trabajo, cumplió con todo lo acordado. El resultado fue satisfactorio y el precio razonable.'},{ini:'JV',n:'Jorge V.',f:'Hace 1 mes',t:'Me instaló la iluminación LED de toda la casa. Profesional, rápido y muy ordenado.'}],
+    'Plomero':            [{ini:'SL',n:'Sandra L.',f:'Hace 2 días',t:'Encontró la fuga en menos de 30 minutos cuando otros habían fallado. Precio justo y trabajo limpio.'},{ini:'FM',n:'Felipe M.',f:'Hace 5 días',t:'Excelente trabajo. Reparó las tuberías y dejó todo impecable. Muy profesional y puntual.'},{ini:'VP',n:'Valeria P.',f:'Hace 1 semana',t:'Me instaló el calefón nuevo sin problemas. Rápido, limpio y con garantía. Volvería a contratar.'},{ini:'DQ',n:'Diego Q.',f:'Hace 2 semanas',t:'Destapó la cañería que teníamos atascada hace meses. Trabajo eficiente y a buen precio.'},{ini:'MP',n:'Mónica P.',f:'Hace 3 semanas',t:'Instaló todo el baño nuevo. Excelente calidad de trabajo. Puntual y muy profesional.'},{ini:'AH',n:'Andrés H.',f:'Hace 1 mes',t:'Buen servicio en general. Resolvió el problema de la llave dañada sin complicaciones.'}],
+    'Cerrajero':          [{ini:'PR',n:'Patricia R.',f:'Hace 1 día',t:'Me quedé sin llave a las 10pm y llegó en 20 minutos. Abrió la puerta sin dañar nada. Un salvavidas.'},{ini:'HV',n:'Hugo V.',f:'Hace 4 días',t:'Cambió todas las cerraduras de la casa. Trabajo rápido y bien hecho.'},{ini:'CL',n:'Carmen L.',f:'Hace 1 semana',t:'Excelente profesional. Duplicó mis llaves y cambió la cerradura dañada. Precio justo.'},{ini:'OT',n:'Oscar T.',f:'Hace 2 semanas',t:'Muy recomendado. Abrió la cerradura trabada de la oficina sin complicaciones.'},{ini:'RN',n:'Rosa N.',f:'Hace 3 semanas',t:'Instaló una cerradura de alta seguridad. Profesional y muy detallado en su trabajo.'},{ini:'EG',n:'Eduardo G.',f:'Hace 1 mes',t:'Rápido, eficiente y honesto. Resolvió el problema de la caja fuerte bloqueada.'}],
+    'Pintor':             [{ini:'NT',n:'Natalia T.',f:'Hace 3 días',t:'Pintó toda la casa en dos días. Trabajo prolijo, sin manchas y el color quedó igual al de la muestra.'},{ini:'BM',n:'Beatriz M.',f:'Hace 1 semana',t:'Hizo el estucado y la pintura del exterior. Excelente trabajo, duradero y a buen precio.'},{ini:'IC',n:'Iván C.',f:'Hace 2 semanas',t:'Pintó la oficina completa en un fin de semana. Muy profesional y puntual.'},{ini:'LF',n:'Laura F.',f:'Hace 3 semanas',t:'Hizo una textura decorativa en el living que quedó espectacular. Muy creativo y detallista.'},{ini:'XO',n:'Xavier O.',f:'Hace 1 mes',t:'Pintó las rejas y la fachada. Trabajo limpio y duradero. Precio justo por la calidad.'},{ini:'GR',n:'Gloria R.',f:'Hace 1 mes',t:'Buen trabajo en general. Cumplió con los plazos y el resultado fue el esperado.'}],
+    'Carpintero':         [{ini:'JM',n:'Joaquín M.',f:'Hace 2 días',t:'Fabricó el closet a medida. Trabajo de calidad, madera excelente y terminados perfectos.'},{ini:'GS',n:'Gabriela S.',f:'Hace 1 semana',t:'Reparó los muebles de la sala que estaban dañados. Los dejó como nuevos a un precio razonable.'},{ini:'PL',n:'Pablo L.',f:'Hace 2 semanas',t:'Instaló las puertas nuevas de la casa. Trabajo preciso y bien terminado.'},{ini:'EM',n:'Elena M.',f:'Hace 3 semanas',t:'Hizo el mesón de la cocina a medida. Quedó perfecto y muy resistente.'},{ini:'FS',n:'Felipe S.',f:'Hace 1 mes',t:'Instaló el piso de madera de la oficina. Trabajo impecable, puntual y a buen precio.'},{ini:'TR',n:'Teresa R.',f:'Hace 1 mes',t:'Fabricó los modulares de la biblioteca. Excelente calidad y muy profesional.'}],
+    'Limpieza':           [{ini:'VN',n:'Verónica N.',f:'Hace 1 día',t:'Dejó el departamento impecable. Muy detallista y profesional. Usó productos de calidad.'},{ini:'SM',n:'Sebastián M.',f:'Hace 4 días',t:'Limpió la oficina a fondo. Excelente trabajo, llegó puntual y dejó todo ordenado.'},{ini:'KP',n:'Karen P.',f:'Hace 1 semana',t:'Lavó los tapetes y tapicería de la sala. Quedaron como nuevos.'},{ini:'OL',n:'Orlando L.',f:'Hace 2 semanas',t:'Hizo la limpieza profunda de toda la casa. Muy profesional y a buen precio.'},{ini:'MV',n:'Miriam V.',f:'Hace 3 semanas',t:'Limpió los vidrios de toda la fachada. Trabajo sin manchas y muy rápido.'},{ini:'PR',n:'Pedro R.',f:'Hace 1 mes',t:'Buena limpieza general del departamento. Cumplió con todo lo acordado.'}],
+    'Aire acondicionado': [{ini:'HQ',n:'Harold Q.',f:'Hace 2 días',t:'Instaló el equipo de A/C en menos de 3 horas. Trabajo limpio, sin huecos innecesarios y con garantía.'},{ini:'YV',n:'Yadira V.',f:'Hace 1 semana',t:'Hizo el mantenimiento del equipo y ahora enfría mucho mejor. Muy profesional.'},{ini:'GC',n:'Gonzalo C.',f:'Hace 2 semanas',t:'Recargó el gas del A/C y lo revisó completo. Servicio excelente a un precio justo.'},{ini:'NB',n:'Nancy B.',f:'Hace 3 semanas',t:'Reparó el equipo que no enfriaba. Lo dejó funcionando perfectamente.'},{ini:'WE',n:'Wilson E.',f:'Hace 1 mes',t:'Instaló dos equipos de A/C en la oficina. Trabajo rápido, limpio y a buen precio.'},{ini:'RP',n:'Ramiro P.',f:'Hace 1 mes',t:'Buen servicio técnico. Resolvió el problema del compresor sin necesidad de cambiarlo todo.'}],
+    'Mudanzas':           [{ini:'CG',n:'César G.',f:'Hace 3 días',t:'Mudamos una casa completa en un día. Muy cuidadosos con los muebles y sin ningún daño.'},{ini:'DB',n:'Diana B.',f:'Hace 1 semana',t:'Embalaron todo con cuidado y llegaron puntual. La mudanza de oficina salió perfecto.'},{ini:'FF',n:'Franklin F.',f:'Hace 2 semanas',t:'Trasladaron el piano sin un rasguño. Muy profesionales y cuidadosos.'},{ini:'MO',n:'Miriam O.',f:'Hace 3 semanas',t:'Mudanza rápida y sin problemas. El equipo fue muy amable y trabajaron con eficiencia.'},{ini:'LC',n:'Luis C.',f:'Hace 1 mes',t:'Muy buen servicio. Llegaron a tiempo, cargaron todo con cuidado y entregaron sin daños.'},{ini:'AS',n:'Anita S.',f:'Hace 1 mes',t:'Mudanza de departamento completo. Todo en orden, puntuales y precio justo.'}],
+  };
+
+  function generarServicios(data) {
+    const lista = SERVICIOS_POR_OFICIO[data.oficio] || [{ ico:'fa-star', n:data.oficio+' en general' },{ ico:'fa-wrench', n:'Mantenimiento y reparación' },{ ico:'fa-house', n:'Servicio a domicilio' }];
+    return lista.map((s, i) => {
+      const precio = i === 0 ? `desde $${data.precio}` : i === lista.length - 1 ? 'Gratis' : 'Consultar';
+      const unidad = i === 0 ? `por ${data.unidad}` : i === lista.length - 1 ? 'con el servicio' : '';
+      return `<div class="servicio-item" role="listitem"><div class="servicio-nombre"><div class="servicio-ico" aria-hidden="true"><i class="fa-solid ${s.ico}"></i></div>${s.n}</div><div class="servicio-precio"><strong>${precio}</strong>${unidad ? ' ' + unidad : ''}</div></div>`;
+    }).join('');
+  }
+
+  function generarResenas(data) {
+    const pool = POOL_RESENAS[data.oficio] || POOL_RESENAS['Limpieza'];
+    const offset = data.id ? data.id.charCodeAt(0) % pool.length : 0;
+    const cal = parseFloat(data.calificacion);
+    const base = cal >= 4.7 ? 5 : cal >= 4.3 ? 4 : 3;
+    return [0, 1, 2].map(i => {
+      const r = pool[(offset + i) % pool.length];
+      const est = i === 0 ? base : i === 1 ? Math.min(base, 5) : Math.max(base - 1, 3);
+      return `<article class="resena" role="listitem" aria-label="Reseña de ${r.n}"><div class="resena-cabecera"><div class="resena-avatar" aria-hidden="true">${r.ini}</div><div><div class="resena-nombre">${r.n}</div><div class="resena-fecha">${r.f}</div></div><div class="resena-estrellas" aria-label="${est} de 5 estrellas">${'★'.repeat(est)+'☆'.repeat(5-est)}</div></div><p class="resena-texto">${r.t}</p></article>`;
+    }).join('');
+  }
+
+  // ── CARGA DE PERFIL DESDE SUPABASE ──
 
   async function cargarPerfil() {
     const urlId = new URLSearchParams(window.location.search).get('id');
@@ -647,15 +702,37 @@
     }
 
     const btnWsp = document.getElementById('btn-wsp');
-    if (btnWsp && data.whatsapp) {
-      const num   = data.whatsapp.replace(/\D/g, '');
-      const numEc = num.startsWith('0') ? '593' + num.slice(1) : num;
-      const msg   = encodeURIComponent(`Hola ${nombre}, me interesa tu servicio de ${data.oficio}. ¿Podemos hablar?`);
-      btnWsp.href = `https://wa.me/${numEc}?text=${msg}`;
+    if (btnWsp) {
+      const msg = encodeURIComponent(`Hola ${nombre}, me interesa tu servicio de ${data.oficio}. ¿Podemos hablar?`);
+      btnWsp.href = `https://wa.me/593992249082?text=${msg}`;
     }
 
     document.getElementById('cal-cuerpo').innerHTML = generarCalendario(data.disponibilidad);
     document.title = `${nombre} — ${data.oficio} | El Maestro`;
+
+    // Contenido dinámico por profesional
+    const descEl = document.getElementById('descripcion-contenido');
+    if (descEl && data.descripcion) descEl.innerHTML = `<p>${data.descripcion}</p>`;
+
+    const serviciosEl = document.getElementById('servicios-lista');
+    if (serviciosEl) serviciosEl.innerHTML = generarServicios(data);
+
+    const resenasSection = document.querySelector('[aria-labelledby="resenas-titulo"]');
+    if (resenasSection) resenasSection.querySelector('h2').textContent = `Reseñas de clientes (${data.resenas})`;
+
+    const resenasEl = document.getElementById('resenas-lista');
+    if (resenasEl) resenasEl.innerHTML = generarResenas(data);
+
+    const modalSub = document.querySelector('#modal-contacto .modal-sub');
+    if (modalSub) modalSub.textContent = `Cuéntale a ${nombre} qué necesitas y te responderá pronto.`;
+
+    const serviceSelect = document.getElementById('c-servicio');
+    if (serviceSelect) {
+      const lista = SERVICIOS_POR_OFICIO[data.oficio] || [];
+      serviceSelect.innerHTML = `<option value="">Selecciona un servicio…</option>` +
+        lista.map(s => `<option>${s.n}</option>`).join('') +
+        `<option>Otro (especificar en descripción)</option>`;
+    }
   }
 
   // ── SESIÓN / NAV ──

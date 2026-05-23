@@ -98,6 +98,8 @@
   .info-item { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
   .info-item:last-child { margin-bottom: 0; }
   .info-ico { width: 36px; height: 36px; background: var(--azul-claro); color: var(--azul); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .info-ico-btn { text-decoration: none; transition: background 0.2s, transform 0.15s; cursor: pointer; }
+  .info-ico-btn:hover { background: var(--naranja); color: var(--blanco); transform: scale(1.12); }
   .info-texto { font-size: 13px; }
   .info-texto strong { display: block; color: var(--texto); margin-bottom: 2px; }
   .info-texto span { color: var(--suave); }
@@ -283,17 +285,17 @@
       <div class="info-card" aria-labelledby="info-titulo">
         <h2 class="info-titulo" id="info-titulo">Otras formas de contacto</h2>
         <div class="info-item">
-          <div class="info-ico" aria-hidden="true"><i class="fa-solid fa-envelope"></i></div>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=hola@elmaestro.ec&su=Consulta%20desde%20El%20Maestro" target="_blank" rel="noopener noreferrer" class="info-ico info-ico-btn" aria-label="Redactar correo a El Maestro en Gmail"><i class="fa-solid fa-envelope"></i></a>
           <div class="info-texto">
             <strong>Correo electrónico</strong>
-            <a href="mailto:hola@elmaestro.ec" style="color:var(--suave);text-decoration:none;" aria-label="Enviar correo a hola@elmaestro.ec">hola@elmaestro.ec</a>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=hola@elmaestro.ec&su=Consulta%20desde%20El%20Maestro" target="_blank" rel="noopener noreferrer" style="color:var(--suave);text-decoration:none;" aria-label="Redactar correo en Gmail">hola@elmaestro.ec</a>
           </div>
         </div>
         <div class="info-item">
-          <div class="info-ico" aria-hidden="true"><i class="fa-brands fa-whatsapp"></i></div>
+          <a href="https://wa.me/593992249082?text=Hola%2C%20me%20interesa%20El%20Maestro" target="_blank" rel="noopener noreferrer" class="info-ico info-ico-btn" aria-label="Enviar mensaje por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
           <div class="info-texto">
             <strong>WhatsApp</strong>
-            <a href="https://wa.me/593990000000?text=Hola%2C%20me%20interesa%20El%20Maestro" target="_blank" rel="noopener noreferrer" style="color:var(--suave);text-decoration:none;" aria-label="Contactar por WhatsApp">+593 99 000 0000</a>
+            <a href="https://wa.me/593992249082?text=Hola%2C%20me%20interesa%20El%20Maestro" target="_blank" rel="noopener noreferrer" style="color:var(--suave);text-decoration:none;" aria-label="Contactar por WhatsApp">+593 99 224 9082</a>
           </div>
         </div>
         <div class="info-item">
