@@ -824,23 +824,18 @@
       document.getElementById('err-reg-username').textContent = 'Este nombre de usuario ya está en uso.';
       alerta('alerta-registro','err','Ese nombre de usuario ya está registrado.'); return;
     }
-    const { data: eExist } = await db.from('usuarios').select('id').eq('correo', email).maybeSingle();
-    if (eExist) {
-      btn.disabled = false; btn.textContent = 'Crear mi cuenta';
-      marcar('reg-email', false); mostrarErr('err-reg-email', true);
-      document.getElementById('err-reg-email').textContent = 'Ya existe una cuenta con este correo.';
-      alerta('alerta-registro','err','Ya existe una cuenta registrada con ese correo electrónico.'); return;
-    }
     btn.textContent = 'Creando cuenta…';
     const confirmUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'confirm-email.html';
     const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido }, emailRedirectTo: confirmUrl } });
-    if (!error && data.user) {
-      await db.from('usuarios').insert([{ id: data.user.id, nombre, apellido, correo: email, rol: 'usuario', username }]);
-    }
     btn.disabled = false; btn.textContent = 'Crear mi cuenta';
     if (error) {
       alerta('alerta-registro', 'err', error.message.includes('already') ? 'Este correo ya está registrado.' : 'Error al crear cuenta. Intenta de nuevo.');
+    } else if (data.user?.identities?.length === 0) {
+      marcar('reg-email', false); mostrarErr('err-reg-email', true);
+      document.getElementById('err-reg-email').textContent = 'Ya existe una cuenta con este correo.';
+      alerta('alerta-registro', 'err', 'Ya existe una cuenta registrada con ese correo electrónico.');
     } else {
+      if (data.user) await db.from('usuarios').insert([{ id: data.user.id, nombre, apellido, correo: email, rol: 'usuario', username }]);
       alerta('alerta-registro', 'exito', '¡Cuenta creada! Revisa tu correo para confirmar.');
       setTimeout(cerrarModal, 2500);
     }

@@ -874,15 +874,13 @@
     if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');return;}
     const btn=document.querySelector('#panel-registro .btn-submit');
     btn.disabled=true; btn.textContent='Verificando…';
-    const {data:eExist}=await db.from('usuarios').select('id').eq('correo',email).maybeSingle();
-    if(eExist){btn.disabled=false;btn.textContent='Crear mi cuenta';marcar('reg-email',false);mostrarErr('err-reg-email',true);alerta('alerta-registro','err','Ya existe una cuenta registrada con ese correo electrónico.');return;}
     btn.textContent='Creando cuenta…';
     const confirmUrl=window.location.origin+window.location.pathname.replace(/[^/]*$/,'')+`confirm-email.html`;
     const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido},emailRedirectTo:confirmUrl}});
-    if(!error&&data.user){await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);}
     btn.disabled=false; btn.textContent='Crear mi cuenta';
     if(error){alerta('alerta-registro','err',error.message.includes('already')?'Este correo ya está registrado.':'Error al crear cuenta.');}
-    else{alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2500);}
+    else if(data.user?.identities?.length===0){marcar('reg-email',false);mostrarErr('err-reg-email',true);alerta('alerta-registro','err','Ya existe una cuenta registrada con ese correo electrónico.');}
+    else{if(data.user)await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);alerta('alerta-registro','exito','¡Cuenta creada! Revisa tu correo para confirmar.');setTimeout(cerrarModal,2500);}
   }
   function checkFortaleza(val) { document.getElementById('fortaleza-wrap').style.display=val.length>0?'block':'none'; let nivel=0; if(val.length>=6)nivel++; if(val.length>=8)nivel++; if(/[A-Z]/.test(val)&&/[0-9]/.test(val))nivel++; if(/[^A-Za-z0-9]/.test(val))nivel++; const clases=['debil','debil','media','fuerte'],textos=['','Débil','Aceptable','Fuerte','Muy fuerte']; ['b1','b2','b3','b4'].forEach((b,i)=>{document.getElementById(b).className='barra'+(i<nivel?' '+clases[nivel-1]:'');}); document.getElementById('fortaleza-txt').textContent=textos[nivel]||''; }
 </script>
