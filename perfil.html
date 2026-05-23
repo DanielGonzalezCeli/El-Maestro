@@ -1012,7 +1012,10 @@
     const pOk=pass.length>=8;marcar('reg-pass',pOk);mostrarErr('err-reg-pass',!pOk);if(!pOk)ok=false;
     const p2Ok=pass===pass2&&pass2.length>0;marcar('reg-pass2',p2Ok);mostrarErr('err-reg-pass2',!p2Ok);if(!p2Ok)ok=false;
     if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos.');return;}
-    const btn=document.querySelector('#panel-registro .btn-submit-auth');btn.disabled=true;btn.textContent='Creando cuenta…';
+    const btn=document.querySelector('#panel-registro .btn-submit-auth');btn.disabled=true;btn.textContent='Verificando…';
+    const {data:eExist}=await db.from('usuarios').select('id').eq('correo',email).maybeSingle();
+    if(eExist){btn.disabled=false;btn.textContent='Crear mi cuenta';marcar('reg-email',false);mostrarErr('err-reg-email',true);alerta('alerta-registro','err','Ya existe una cuenta registrada con ese correo electrónico.');return;}
+    btn.textContent='Creando cuenta…';
     const confirmUrl=window.location.origin+window.location.pathname.replace(/[^/]*$/,'')+`confirm-email.html`;
     const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,apellido},emailRedirectTo:confirmUrl}});
     if(!error&&data.user){await db.from('usuarios').insert([{id:data.user.id,nombre,apellido,correo:email,rol:'usuario'}]);}
