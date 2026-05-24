@@ -965,10 +965,11 @@
 
   function matchCategoria(q) {
     const ql = q.toLowerCase().trim();
-    if (!ql) return null;
+    if (ql.length < 2) return null;
     for (const cat of CATEGORIAS_SMART) {
       if (cat.nombre.toLowerCase().startsWith(ql) || ql.startsWith(cat.nombre.toLowerCase())) return cat.nombre;
     }
+    if (ql.length < 3) return null;
     for (const cat of CATEGORIAS_SMART) {
       for (const a of cat.alias) {
         if (ql.startsWith(a) || a.startsWith(ql)) return cat.nombre;
@@ -981,7 +982,7 @@
     const match = matchCategoria(q);
     const cards = document.querySelectorAll('.servicios-grid .serv-card:not(#card-contactanos)');
     const ctaCard = document.getElementById('card-contactanos');
-    if (!q.trim()) {
+    if (!q.trim() || q.trim().length < 2) {
       cards.forEach(c => c.style.display = '');
       if (ctaCard) ctaCard.style.display = 'none';
       return;
