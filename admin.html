@@ -87,11 +87,29 @@
   .alerta-admin.err { display:block; background:var(--error-bg); color:var(--error); }
   .alerta-admin.exito { display:block; background:var(--exito-bg); color:var(--exito); }
 
+  .nav-hamburger { display:none; background:none; border:none; cursor:pointer; color:var(--blanco); font-size:22px; padding:4px 8px; line-height:1; }
   @media(max-width:900px) {
-    nav { padding:0 16px; }
-    .contenido { padding:20px 16px 40px; }
-    .hero-admin { padding:20px 16px; }
+    nav { padding:0 14px; flex-wrap:wrap; height:auto; min-height:56px; }
+    .logo { font-size:17px; }
+    .nav-badge { display:none; }
+    .nav-hamburger { display:flex; align-items:center; }
+    .nav-acc { gap:8px; flex:0 0 auto; }
+    .btn-volver-sitio { display:none; }
+    .nav-links { order:4; width:100%; flex-direction:column; gap:2px; display:none; padding:10px 0 14px; border-top:1px solid rgba(255,255,255,0.15); }
+    .nav-links.abierto { display:flex; }
+    .nav-links li { width:100%; }
+    .nav-links a { padding:11px 10px; font-size:14px; }
+    .hero-admin { padding:16px 14px; }
+    .hero-admin h1 { font-size:19px; }
+    .contenido { padding:16px 12px 40px; }
     .stats-grid, .acciones-grid, .dos-col { grid-template-columns:1fr; }
+    .tabla-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .panel-header { flex-wrap:wrap; gap:10px; }
+    .campo-fila { grid-template-columns:1fr; }
+    .modal { padding:20px 16px; }
+    .modal-acciones { flex-direction:column-reverse; gap:8px; }
+    .modal-acciones button { width:100%; justify-content:center; }
+    .notif { right:12px; left:12px; max-width:none; }
   }
 </style>
 </head>
@@ -99,13 +117,14 @@
 
 <nav aria-label="Panel de administración">
   <a href="admin.html" class="logo">El <span>Maestro</span><span class="nav-badge">ADMIN</span></a>
-  <ul class="nav-links" role="list">
+  <ul class="nav-links" id="nav-links-main" role="list">
     <li><a href="admin.html" class="activo" aria-current="page">Dashboard</a></li>
     <li><a href="admin-profesionales.html">Profesionales</a></li>
     <li><a href="admin-mensajes.html">Mensajes</a></li>
     <li><a href="admin-usuarios.html">Usuarios</a></li>
   </ul>
   <div class="nav-acc">
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menú" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
     <a href="index.html" class="btn-volver-sitio"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Página principal</a>
     <div class="nav-user-wrap">
       <button class="nav-avatar" id="nav-avatar-btn" onclick="toggleNavDropdown(event)" aria-haspopup="true" aria-expanded="false">—</button>
@@ -260,6 +279,7 @@
     </tr>`).join('');
   }
 
+  function toggleMobileNav(){const nl=document.getElementById('nav-links-main');const btn=document.getElementById('nav-hamburger');const open=nl.classList.toggle('abierto');btn.setAttribute('aria-expanded',open);btn.querySelector('i').className=open?'fa-solid fa-xmark':'fa-solid fa-bars';}
   function toggleNavDropdown(e){e.stopPropagation();const dd=document.getElementById('nav-dropdown');const btn=document.getElementById('nav-avatar-btn');const a=dd.classList.toggle('abierto');if(btn)btn.setAttribute('aria-expanded',a);}
   document.addEventListener('click',()=>{const dd=document.getElementById('nav-dropdown');if(dd)dd.classList.remove('abierto');const b=document.getElementById('nav-avatar-btn');if(b)b.setAttribute('aria-expanded','false');});
 
