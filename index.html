@@ -826,16 +826,15 @@
     }
     btn.textContent = 'Creando cuenta…';
     const confirmUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'confirm-email.html';
-    const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido }, emailRedirectTo: confirmUrl } });
+    const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { nombre, apellido, username }, emailRedirectTo: confirmUrl } });
     btn.disabled = false; btn.textContent = 'Crear mi cuenta';
     if (error) {
-      alerta('alerta-registro', 'err', error.message.includes('already') ? 'Este correo ya está registrado.' : 'Error al crear cuenta. Intenta de nuevo.');
-    } else if (data.user?.identities?.length === 0) {
+      alerta('alerta-registro', 'err', 'Error al crear cuenta. Intenta de nuevo.');
+    } else if (!data.user || !data.user.identities || data.user.identities.length === 0) {
       marcar('reg-email', false); mostrarErr('err-reg-email', true);
       document.getElementById('err-reg-email').textContent = 'Ya existe una cuenta con este correo.';
       alerta('alerta-registro', 'err', 'Ya existe una cuenta registrada con ese correo electrónico.');
     } else {
-      if (data.user) await db.from('usuarios').insert([{ id: data.user.id, nombre, apellido, correo: email, rol: 'usuario', username }]);
       alerta('alerta-registro', 'exito', '¡Cuenta creada! Revisa tu correo para confirmar.');
       setTimeout(cerrarModal, 2500);
     }
