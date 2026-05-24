@@ -253,12 +253,12 @@
           <div class="campo">
             <label for="nombre">Nombre</label>
             <input type="text" id="nombre" placeholder="Tu nombre" autocomplete="given-name" aria-required="true" aria-describedby="err-nombre"/>
-            <div class="msg-error" id="err-nombre" role="alert">Ingresa tu nombre (mínimo 2 caracteres)</div>
+            <div class="msg-error" id="err-nombre" role="alert">Solo letras y espacios, sin números</div>
           </div>
           <div class="campo">
             <label for="apellido">Apellido</label>
             <input type="text" id="apellido" placeholder="Tu apellido" autocomplete="family-name" aria-required="true" aria-describedby="err-apellido"/>
-            <div class="msg-error" id="err-apellido" role="alert">Ingresa tu apellido</div>
+            <div class="msg-error" id="err-apellido" role="alert">Solo letras y espacios, sin números</div>
           </div>
         </div>
 
@@ -296,6 +296,7 @@
           <!-- H5 Prevención — contador en tiempo real evita superar el límite -->
           <div class="campo-contador"><span id="contador-mensaje" aria-live="polite">0 / 500 caracteres</span></div>
           <p class="campo-ayuda" id="ayuda-mensaje">Máximo 500 caracteres. Cuanta más información des, más rápido podremos ayudarte.</p>
+          <div class="msg-error" id="err-mensaje" role="alert">Si escribes un mensaje, debe tener al menos 10 caracteres</div>
         </div>
 
         <!-- H4 Consistencia — botón primario con mismo estilo que el resto del sitio -->
@@ -484,10 +485,14 @@
       if (!condicion) ok = false;
     }
 
-    validar('nombre',   'err-nombre',   nombre.length > 1);
-    validar('apellido', 'err-apellido', apellido.length > 1);
-    validar('email',    'err-email',    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    const SOLO_LETRAS=/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'.-]+$/;
+    const TYPOS_EMAIL=['gma.com','gmai.com','gmial.com','gamil.com','gmali.com','yaho.com','yahooo.com','hotmai.com','hotmal.com','homail.com','outlok.com'];
+    const emailDom=(email.split('@')[1]||'').toLowerCase();
+    validar('nombre',   'err-nombre',   nombre.length >= 2 && SOLO_LETRAS.test(nombre));
+    validar('apellido', 'err-apellido', apellido.length >= 2 && SOLO_LETRAS.test(apellido));
+    validar('email',    'err-email',    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && !TYPOS_EMAIL.includes(emailDom));
     validar('asunto',   'err-asunto',   asunto !== '');
+    validar('mensaje',  'err-mensaje',  mensaje.length === 0 || mensaje.length >= 10);
 
     const alerta = document.getElementById('alerta-principal');
     if (!ok) {

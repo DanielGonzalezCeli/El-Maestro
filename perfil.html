@@ -456,7 +456,7 @@
     <div class="campo">
       <label for="c-nombre">Tu nombre</label>
       <input type="text" id="c-nombre" placeholder="Nombre completo" autocomplete="name" aria-required="true"/>
-      <div class="msg-error" id="err-c-nombre" role="alert">Ingresa tu nombre</div>
+      <div class="msg-error" id="err-c-nombre" role="alert">Solo letras y espacios, sin números</div>
     </div>
     <div class="campo">
       <label for="c-telefono">Teléfono de contacto</label>
@@ -481,6 +481,7 @@
       <label for="c-descripcion">Descripción del problema</label>
       <textarea id="c-descripcion" placeholder="Ej: Tengo un tomacorriente que no funciona en la sala y necesito revisarlo…" aria-describedby="ayuda-descripcion"></textarea>
       <p class="campo-ayuda" id="ayuda-descripcion">Mientras más detalle des, más preciso será el presupuesto.</p>
+      <div class="msg-error" id="err-c-descripcion" role="alert">Si escribes una descripción, debe tener al menos 10 caracteres</div>
     </div>
     <div class="campo" id="campo-fecha" style="display:none;">
       <label for="c-fecha">Fecha seleccionada</label>
@@ -607,9 +608,12 @@
     const serv   = document.getElementById('c-servicio').value;
     const hora   = document.getElementById('c-hora').value;
     let ok = true;
-    const nOk = nombre.length > 1; document.getElementById('c-nombre').classList.toggle('campo-error-input', !nOk); document.getElementById('err-c-nombre').classList.toggle('visible', !nOk); if (!nOk) ok = false;
+    const SOLO_LETRAS_C=/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'.-]+$/;
+    const desc=document.getElementById('c-descripcion').value.trim();
+    const nOk = nombre.length >= 2 && SOLO_LETRAS_C.test(nombre); document.getElementById('c-nombre').classList.toggle('campo-error-input', !nOk); document.getElementById('err-c-nombre').classList.toggle('visible', !nOk); if (!nOk) ok = false;
     const tOk = /^0[0-9]{9}$/.test(tel.replace(/\s/g,'')); document.getElementById('c-telefono').classList.toggle('campo-error-input', !tOk); document.getElementById('err-c-telefono').classList.toggle('visible', !tOk); if (!tOk) ok = false;
     const sOk = serv !== ''; document.getElementById('c-servicio').classList.toggle('campo-error-input', !sOk); document.getElementById('err-c-servicio').classList.toggle('visible', !sOk); if (!sOk) ok = false;
+    const dOk = desc.length === 0 || desc.length >= 10; document.getElementById('c-descripcion').classList.toggle('campo-error-input', !dOk); document.getElementById('err-c-descripcion').classList.toggle('visible', !dOk); if (!dOk) ok = false;
     const al = document.getElementById('alerta-contacto');
     if (ok) {
       const horaTexto = hora ? ` a las ${hora}` : '';
@@ -920,6 +924,11 @@
     const pass = document.getElementById('mc-pass').value;
     const pass2 = document.getElementById('mc-pass2').value;
     const al = document.getElementById('alerta-mi-cuenta');
+    const SOLO_LETRAS_MC=/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'.-]+$/;
+    const mcNombreEl=document.getElementById('mc-nombre');
+    const mcApellidoEl=document.getElementById('mc-apellido');
+    if (nombre && (nombre.length < 2 || !SOLO_LETRAS_MC.test(nombre))) { mcNombreEl.style.borderColor='var(--error)'; al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> El nombre solo puede tener letras y espacios.'; return; } else { mcNombreEl.style.borderColor=''; }
+    if (apellido && (apellido.length < 2 || !SOLO_LETRAS_MC.test(apellido))) { mcApellidoEl.style.borderColor='var(--error)'; al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> El apellido solo puede tener letras y espacios.'; return; } else { mcApellidoEl.style.borderColor=''; }
     if (pass && pass.length < 8) { al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Contraseña mínimo 8 caracteres.'; return; }
     if (pass && pass !== pass2) { al.className='alerta-modal err'; al.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Las contraseñas no coinciden.'; return; }
     const btn = document.getElementById('btn-mc-guardar'); btn.disabled = true; btn.textContent = 'Guardando…';
