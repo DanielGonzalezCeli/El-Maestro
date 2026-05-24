@@ -83,6 +83,7 @@
   .btn-secundario { padding:10px 22px; background:var(--blanco); border:1.5px solid var(--borde); border-radius:8px; font-size:13px; font-weight:600; font-family:'Plus Jakarta Sans',sans-serif; color:var(--suave); cursor:pointer; }
   .btn-eliminar-confirmar { padding:10px 22px; background:var(--error); border:none; border-radius:8px; color:var(--blanco); font-size:13px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; }
 
+  .nav-item-principal { display:none; }
   .nav-hamburger { display:none; background:none; border:none; cursor:pointer; color:var(--blanco); font-size:22px; padding:4px 8px; line-height:1; }
   @media(max-width:900px) {
     nav { padding:0 14px; flex-wrap:wrap; height:auto; min-height:56px; }
@@ -91,6 +92,7 @@
     .nav-hamburger { display:flex; align-items:center; }
     .nav-acc { gap:8px; flex:0 0 auto; }
     .btn-volver-sitio { display:none; }
+    .nav-item-principal { display:block; }
     .nav-links { order:4; width:100%; flex-direction:column; gap:2px; display:none; padding:10px 0 14px; border-top:1px solid rgba(255,255,255,0.15); }
     .nav-links.abierto { display:flex; }
     .nav-links li { width:100%; }
@@ -119,6 +121,7 @@
     <li><a href="admin-profesionales.html">Profesionales</a></li>
     <li><a href="admin-mensajes.html">Mensajes</a></li>
     <li><a href="admin-usuarios.html" class="activo" aria-current="page">Usuarios</a></li>
+    <li class="nav-item-principal"><a href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Página principal</a></li>
   </ul>
   <div class="nav-acc">
     <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menú" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
