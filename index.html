@@ -967,13 +967,7 @@
     const ql = q.toLowerCase().trim();
     if (ql.length < 2) return null;
     for (const cat of CATEGORIAS_SMART) {
-      if (cat.nombre.toLowerCase().startsWith(ql) || ql.startsWith(cat.nombre.toLowerCase())) return cat.nombre;
-    }
-    if (ql.length < 3) return null;
-    for (const cat of CATEGORIAS_SMART) {
-      for (const a of cat.alias) {
-        if (ql.startsWith(a) || a.startsWith(ql)) return cat.nombre;
-      }
+      if (cat.nombre.toLowerCase().startsWith(ql)) return cat.nombre;
     }
     return null;
   }

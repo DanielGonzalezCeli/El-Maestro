@@ -824,9 +824,7 @@
     const telefono = data.telefono || '';
     if (btnWsp) {
       const msg = encodeURIComponent(`Hola ${nombre}, me interesa tu servicio de ${data.oficio}. ¿Podemos hablar?`);
-      const wsNum = telefono ? telefono.replace(/\D/g, '') : '593992249082';
-      const wsIntl = wsNum.startsWith('0') ? '593' + wsNum.slice(1) : wsNum;
-      btnWsp.href = `https://wa.me/${wsIntl}?text=${msg}`;
+      btnWsp.href = `https://wa.me/593992249082?text=${msg}`;
     }
     if (btnTel && telNumero) {
       if (telefono) {
