@@ -453,12 +453,12 @@
         <div class="campo">
           <label for="reg-nombre">Nombre</label>
           <div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="given-name" aria-required="true"/></div>
-          <div class="msg-error" id="err-reg-nombre" role="alert">Ingresa tu nombre</div>
+          <div class="msg-error" id="err-reg-nombre" role="alert">Solo letras y espacios, sin números</div>
         </div>
         <div class="campo">
           <label for="reg-apellido">Apellido</label>
           <div class="input-wrap"><i class="fa-solid fa-user ico-campo" aria-hidden="true"></i><input type="text" id="reg-apellido" placeholder="Tu apellido" autocomplete="family-name" aria-required="true"/></div>
-          <div class="msg-error" id="err-reg-apellido" role="alert">Ingresa tu apellido</div>
+          <div class="msg-error" id="err-reg-apellido" role="alert">Solo letras y espacios, sin números</div>
         </div>
       </div>
       <div class="campo">
@@ -871,10 +871,13 @@
   async function submitRegistro() {
     const nombre=document.getElementById('reg-nombre').value.trim(), apellido=document.getElementById('reg-apellido').value.trim(), username=document.getElementById('reg-username').value.trim().toLowerCase(), email=document.getElementById('reg-email').value.trim(), pass=document.getElementById('reg-pass').value, pass2=document.getElementById('reg-pass2').value;
     let ok=true;
-    const nOk=nombre.length>1; marcar('reg-nombre',nOk); mostrarErr('err-reg-nombre',!nOk); if(!nOk) ok=false;
-    const aOk=apellido.length>1; marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false;
+    const SOLO_LETRAS=/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'.-]+$/;
+    const TYPOS_EMAIL=['gma.com','gmai.com','gmial.com','gamil.com','gmali.com','yaho.com','yahooo.com','hotmai.com','hotmal.com','homail.com','outlok.com'];
+    const nOk=nombre.length>=2&&SOLO_LETRAS.test(nombre); marcar('reg-nombre',nOk); mostrarErr('err-reg-nombre',!nOk); if(!nOk) ok=false;
+    const aOk=apellido.length>=2&&SOLO_LETRAS.test(apellido); marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false;
     const uOk=username.length>=3&&/^[a-z0-9_-]+$/.test(username); marcar('reg-username',uOk); mostrarErr('err-reg-username',!uOk); if(!uOk) ok=false;
-    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
+    const emailDom=(email.split('@')[1]||'').toLowerCase();
+    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)&&!TYPOS_EMAIL.includes(emailDom); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
     const pOk=pass.length>=8; marcar('reg-pass',pOk); mostrarErr('err-reg-pass',!pOk); if(!pOk) ok=false;
     const p2Ok=pass===pass2&&pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false;
     if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');return;}
