@@ -137,6 +137,8 @@
   .btn-contactar:hover { background: #d96a14; }
   .btn-wsp { width: 100%; padding: 11px; background: #25D366; border: none; border-radius: 10px; color: var(--blanco); font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
   .btn-wsp:hover { background: #1ebe5b; }
+  .btn-tel { width: 100%; padding: 11px; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 10px; color: var(--texto); font-size: 14px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: border-color 0.2s, color 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; margin-top: 8px; }
+  .btn-tel:hover { border-color: var(--naranja); color: var(--naranja); }
   .contacto-garantia { margin-top: 14px; padding: 10px 12px; background: var(--exito-bg); border-radius: 8px; font-size: 12px; color: var(--exito); display: flex; gap: 8px; align-items: flex-start; }
   .disponibilidad-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 20px; }
   .disp-titulo { font-size: 13px; font-weight: 700; color: var(--texto); margin-bottom: 12px; }
@@ -416,6 +418,10 @@
         <a class="btn-wsp" id="btn-wsp" href="#" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
           <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
           WhatsApp
+        </a>
+        <a class="btn-tel" id="btn-tel" href="#" aria-label="Llamar por teléfono">
+          <i class="fa-solid fa-phone" aria-hidden="true"></i>
+          <span id="tel-numero">Ver número</span>
         </a>
         <!-- H10 Ayuda — garantía visible que reduce incertidumbre antes de contactar -->
         <div class="contacto-garantia" role="note" aria-label="Garantía de El Maestro">
@@ -813,9 +819,22 @@
     }
 
     const btnWsp = document.getElementById('btn-wsp');
+    const btnTel = document.getElementById('btn-tel');
+    const telNumero = document.getElementById('tel-numero');
+    const telefono = data.telefono || '';
     if (btnWsp) {
       const msg = encodeURIComponent(`Hola ${nombre}, me interesa tu servicio de ${data.oficio}. ¿Podemos hablar?`);
-      btnWsp.href = `https://wa.me/593992249082?text=${msg}`;
+      const wsNum = telefono ? telefono.replace(/\D/g, '') : '593992249082';
+      const wsIntl = wsNum.startsWith('0') ? '593' + wsNum.slice(1) : wsNum;
+      btnWsp.href = `https://wa.me/${wsIntl}?text=${msg}`;
+    }
+    if (btnTel && telNumero) {
+      if (telefono) {
+        telNumero.textContent = telefono;
+        btnTel.href = `tel:${telefono}`;
+      } else {
+        btnTel.style.display = 'none';
+      }
     }
 
     document.getElementById('cal-cuerpo').innerHTML = generarCalendario(data.disponibilidad);
