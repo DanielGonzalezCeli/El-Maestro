@@ -877,7 +877,8 @@
     const aOk=apellido.length>=2&&SOLO_LETRAS.test(apellido); marcar('reg-apellido',aOk); mostrarErr('err-reg-apellido',!aOk); if(!aOk) ok=false;
     const uOk=username.length>=3&&/^[a-z0-9_-]+$/.test(username); marcar('reg-username',uOk); mostrarErr('err-reg-username',!uOk); if(!uOk) ok=false;
     const emailDom=(email.split('@')[1]||'').toLowerCase();
-    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)&&!TYPOS_EMAIL.includes(emailDom); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
+    const domName=emailDom.split('.')[0];
+    const eOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)&&domName.length>=3&&!TYPOS_EMAIL.includes(emailDom); marcar('reg-email',eOk); mostrarErr('err-reg-email',!eOk); if(!eOk) ok=false;
     const pOk=pass.length>=8; marcar('reg-pass',pOk); mostrarErr('err-reg-pass',!pOk); if(!pOk) ok=false;
     const p2Ok=pass===pass2&&pass2.length>0; marcar('reg-pass2',p2Ok); mostrarErr('err-reg-pass2',!p2Ok); if(!p2Ok) ok=false;
     if(!ok){alerta('alerta-registro','err','Completa correctamente todos los campos marcados.');return;}
